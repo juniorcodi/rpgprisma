@@ -2224,62 +2224,78 @@ function addTag(side, type) {
     doc, onSnapshot, setDoc, getDoc
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const hpSlider = document.getElementById("char_hp_range-a");
-  const hpText = document.getElementById("char_hp-a");
-  const status = document.getElementById("save-indicator");
-
   const docRef = doc(db, "campaigns", "alpha", "arena_fields", "characterA");
 
-  // Override after page load
-  window.addEventListener("load", () => {
-    setTimeout(() => {
-      console.log("📥 Getting HP from Firebase...");
-      getDoc(docRef).then((docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          console.log("✅ Loaded from Firestore:", data);
-          if (data?.hp !== undefined) {
-            hpSlider.value = data.hp;
-            hpText.textContent = data.hp;
-          }
-        } else {
-          console.warn("❌ No document found. Firestore may be empty.");
-        }
-      }).catch(err => {
-        console.error("🔥 Firestore GET error:", err);
-      });
-    }, 600); // let CSV load first
-  });
+  const hpSlider = document.getElementById("char_hp_range-a");
+  const hpText = document.getElementById("char_hp-a");
+  const energySlider = document.getElementById("char_energy_range-a");
+  const energyText = document.getElementById("char_energy-a");
+  const maxHpText = document.getElementById("char_maxhp-a");
+  const maxEnergyText = document.getElementById("char_maxenergy-a");
+  const status = document.getElementById("save-indicator");
 
-  // Live updates
-  onSnapshot(docRef, (docSnap) => {
-    const data = docSnap.data();
-    console.log("🔁 Snapshot update:", data);
+  // Apply data to UI
+  function applyData(data) {
     if (data?.hp !== undefined) {
       hpSlider.value = data.hp;
       hpText.textContent = data.hp;
     }
+    if (data?.maxhp !== undefined) {
+      maxHpText.textContent = data.maxhp;
+    }
+    if (data?.energy !== undefined) {
+      energySlider.value = data.energy;
+      energyText.textContent = data.energy;
+    }
+    if (data?.maxenergy !== undefined) {
+      maxEnergyText.textContent = data.maxenergy;
+    }
+  }
+
+  // Initial load (after CSV)
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      getDoc(docRef).then((docSnap) => {
+        if (docSnap.exists()) {
+          applyData(docSnap.data());
+        } else {
+          console.warn("No Firebase document found. Move a slider to create one.");
+        }
+      });
+    }, 500); // delay to override PapaParse
   });
 
-  // Input → Firestore
-  hpSlider.addEventListener("input", () => {
-    const newHP = parseInt(hpSlider.value);
-    hpText.textContent = newHP;
-    console.log("⬆️ Saving HP to Firebase:", newHP);
+  // Live sync from Firestore
+  onSnapshot(docRef, (docSnap) => {
+    const data = docSnap.data();
+    applyData(data);
+  });
 
+  // Update logic
+  function updateField(field, value) {
     status.textContent = "☁️ Salvando...";
-    setDoc(docRef, { hp: newHP }, { merge: true }).then(() => {
+    setDoc(docRef, { [field]: value }, { merge: true }).then(() => {
       status.textContent = "✅ Salvo!";
-      console.log("✅ Save complete");
       setTimeout(() => {
         status.textContent = "☁️ Aguardando...";
       }, 2000);
-    }).catch(err => {
-      console.error("🔥 Firestore SAVE error:", err);
-      status.textContent = "❌ Erro ao salvar";
     });
+  }
+
+  hpSlider.addEventListener("input", () => {
+    const hp = parseInt(hpSlider.value);
+    hpText.textContent = hp;
+    updateField("hp", hp);
   });
+
+  energySlider.addEventListener("input", () => {
+    const energy = parseInt(energySlider.value);
+    energyText.textContent = energy;
+    updateField("energy", energy);
+  });
+
 </script>
+
 
 
 
