@@ -2210,7 +2210,7 @@ function addTag(side, type) {
 <script type="module">
   import { db } from './firebase-config.js';
   import {
-    doc, onSnapshot, setDoc
+    doc, onSnapshot, setDoc, getDoc
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const hpSlider = document.getElementById("char_hp_range-a");
@@ -2218,7 +2218,18 @@ function addTag(side, type) {
 
   const docRef = doc(db, "campaigns", "alpha", "arena_fields", "characterA");
 
-  // Real-time update from Firebase → UI
+  // Override HP field on load (after CSV populates)
+  window.addEventListener("load", () => {
+    getDoc(docRef).then((docSnap) => {
+      const data = docSnap.data();
+      if (data?.hp !== undefined) {
+        hpSlider.value = data.hp;
+        hpText.textContent = data.hp;
+      }
+    });
+  });
+
+  // Real-time updates from Firebase
   onSnapshot(docRef, (docSnap) => {
     const data = docSnap.data();
     if (data?.hp !== undefined) {
@@ -2227,7 +2238,7 @@ function addTag(side, type) {
     }
   });
 
-  // Update from UI → Firebase
+  // Updates from UI → Firebase
   hpSlider.addEventListener("input", () => {
     const newHP = parseInt(hpSlider.value);
     hpText.textContent = newHP;
@@ -2238,9 +2249,9 @@ setDoc(docRef, { hp: newHP }, { merge: true }).then(() => {
     document.getElementById("save-indicator").textContent = "☁️ Aguardando...";
   }, 2000);
 });
-
   });
 </script>
+
 
 
 
