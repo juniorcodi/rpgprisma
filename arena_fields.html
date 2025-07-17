@@ -635,9 +635,20 @@ function safeNumber(id) {
 </script>
 </head>
 <body>
-<div id="save-indicator" style="position:fixed; top:10px; right:10px; font-size:18px; font-family:'Nova Flat'; color:#aaa;">
-  ☁️ Aguardando...
-</div>
+<div id="save-indicator" style="
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  background: #222;
+  padding: 8px 12px;
+  font-size: 16px;
+  font-family: 'Nova Flat', sans-serif;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 6px;
+  z-index: 9999;
+  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+">☁️ Aguardando...</div>
 <div id="top-bar" class="top-toolbar">
   <button id="toggle-spells" class="top-button" title="Feitiços" onclick="toggleSpellSection()">🪄</button>
   <button class="top-button" id="calculator-button" title="Calculadora de Dificuldade" onclick="window.open('difficulty_calculator.html', 'CalculadoraDeDificuldade', 'width=1000,height=700,resizable=yes,scrollbars=yes')">🧮</button>
@@ -2219,7 +2230,8 @@ function addTag(side, type) {
   const docRef = doc(db, "campaigns", "alpha", "arena_fields", "characterA");
 
   // Override HP field on load (after CSV populates)
-  window.addEventListener("load", () => {
+window.addEventListener("load", () => {
+  setTimeout(() => {
     getDoc(docRef).then((docSnap) => {
       const data = docSnap.data();
       if (data?.hp !== undefined) {
@@ -2227,7 +2239,9 @@ function addTag(side, type) {
         hpText.textContent = data.hp;
       }
     });
-  });
+  }, 500); // wait for the CSV logic to finish
+});
+
 
   // Real-time updates from Firebase
   onSnapshot(docRef, (docSnap) => {
@@ -2240,16 +2254,19 @@ function addTag(side, type) {
 
   // Updates from UI → Firebase
   hpSlider.addEventListener("input", () => {
-    const newHP = parseInt(hpSlider.value);
-    hpText.textContent = newHP;
-    document.getElementById("save-indicator").textContent = "☁️ Salvando...";
-setDoc(docRef, { hp: newHP }, { merge: true }).then(() => {
-  document.getElementById("save-indicator").textContent = "✅ Salvo!";
-  setTimeout(() => {
-    document.getElementById("save-indicator").textContent = "☁️ Aguardando...";
-  }, 2000);
-});
+  const newHP = parseInt(hpSlider.value);
+  hpText.textContent = newHP;
+  const status = document.getElementById("save-indicator");
+  status.textContent = "☁️ Salvando...";
+
+  setDoc(docRef, { hp: newHP }, { merge: true }).then(() => {
+    status.textContent = "✅ Salvo!";
+    setTimeout(() => {
+      status.textContent = "☁️ Aguardando...";
+    }, 2000);
   });
+});
+
 </script>
 
 
