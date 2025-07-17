@@ -2261,7 +2261,7 @@ function addTag(side, type) {
 
   function bindCharacter(characterName) {
     if (!characterName) return;
-    const docRef = doc(db, "campaigns", "alpha", "characters", characterName);
+    const docRef = doc(db, "campaigns", "alpha", "characters_range", characterName);
 
     // Stop listening to previous character
     if (unsubscribe) unsubscribe();
@@ -2275,7 +2275,7 @@ function addTag(side, type) {
       }
     });
 
-    // Subscribe to real-time changes
+    // Subscribe to live changes
     unsubscribe = onSnapshot(docRef, (docSnap) => {
       const data = docSnap.data();
       updateUI(data);
@@ -2302,21 +2302,22 @@ function addTag(side, type) {
     };
   }
 
-  // When dropdown changes character, rebind
+  // When dropdown changes
   charSelect.addEventListener("change", () => {
-  const character = charSelect.options[charSelect.selectedIndex].textContent.trim();
-  console.log("🎭 Switching to character:", character);
-  bindCharacter(character);
-});
-
-
-  // Initial bind
-  window.addEventListener("load", () => {
-  setTimeout(() => {
     const character = charSelect.options[charSelect.selectedIndex].textContent.trim();
+    console.log("🎭 Switching to character:", character);
     bindCharacter(character);
-  }, 600);
-});
+  });
+
+  // Initial load
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      const character = charSelect.options[charSelect.selectedIndex].textContent.trim();
+      bindCharacter(character);
+    }, 600);
+  });
+</script>
+
 
 </script>
 
