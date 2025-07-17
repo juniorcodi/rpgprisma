@@ -1,0 +1,178 @@
+environment_location,environment_category,environment_items,environment_use,environment_rarity
+Residência,"ATAQUE, PRENDER","Lustre, ventilador de teto, luminária",Derrubar sobre inimigos,6
+Residência,"ATAQUE, PRENDER","Vasos, bancos, baús",Derrubar sobre inimigos,3
+Natureza,"ATAQUE, PRENDER","Trepadeiras, galhos soltos, ninhos de pássaro",Derrubar sobre inimigos,3
+Cidade ao ar livre,"ATAQUE, PRENDER","Poste de luz, placas, faixas, andaimes",Derrubar sobre inimigos,6
+Cidade ao ar livre,"ATAQUE, PRENDER","Estalactites, correntes, pedras soltas",Derrubar sobre inimigos,9
+Cidade ao ar livre,"ATAQUE, PRENDER",Barril,Derrubar sobre inimigos,6
+Residência,CONFUNDIR,"Televisão, equipamento de som, itens programáveis",Derrubar sobre inimigos,3
+Cidade ao ar livre,"ATAQUE, PRENDER","Livros, utensílios, ferramentas",Jogar contra inimigos,3
+Cidade ao ar livre,"ATAQUE, PRENDER","Pedras, gravetos, pinhas, frutas",Jogar contra inimigos,3
+Cidade ao ar livre,"ATAQUE, PRENDER","Garrafas, tijolos, lixo",Jogar contra inimigos,3
+Cidade ao ar livre,"ATAQUE, PRENDER","Ossos, cerâmica quebrada",Jogar contra inimigos,6
+Cidade ao ar livre,"ATAQUE, PRENDER","Cordas, cabos elétricos, cortinas",Prender movimentos,3
+Cidade ao ar livre,"ATAQUE, PRENDER","Trepadeiras, teias de aranha, arbustos espinhosos",Prender movimentos,3
+Cidade ao ar livre,"ATAQUE, PRENDER","Cercas, cadeados de bicicleta, redes",Prender movimentos,6
+Cidade ao ar livre,"ATAQUE, PRENDER","Correntes, portões de ferro, mecanismos antigos",Prender movimentos,9
+Cidade ao ar livre,"ATAQUE, PRENDER","Cintos, abraçadeiras de nylon, cachecóis",Restringir movimentos,3
+Cidade ao ar livre,"ATAQUE, PRENDER","Raízes, plantas espinhosas, trepadeiras",Restringir movimentos,3
+Cidade ao ar livre,"ATAQUE, PRENDER","Algema, corda, barra de ferro",Restringir movimentos,6
+Cidade ao ar livre,"ATAQUE, PRENDER","Cordas, barras de ferro, correntes",Restringir movimentos,9
+Cidade ao ar livre,"ATAQUE, PRENDER","Frisbee, aviões de papel, bola, sacos com lixo",Jogar para desviar ou distrair,3
+Cidade ao ar livre,"ATAQUE, PRENDER","Pássaros, folhas, insetos, sementes",Jogar para desviar ou distrair,3
+Cidade ao ar livre,"ATAQUE, PRENDER","Drones, panfletos, detritos",Jogar para desviar ou distrair,6
+Cidade ao ar livre,"ATAQUE, PRENDER","Morcegos, poeira, insetos",Jogar para desviar ou distrair,9
+Cidade ao ar livre,"ATAQUE, PRENDER","Sprays, fogão, velas, óleo de cozinha, bebidas alcoólicas",Criar explosão ou fogo,6
+Cidade ao ar livre,"ATAQUE, PRENDER","Piche, folhas secas, agulhas de pinheiro",Criar explosão ou fogo,6
+Cidade ao ar livre,"ATAQUE, PRENDER","Gasolina, fogos de artifício, tanques de propano",Criar explosão ou fogo,12
+Cidade ao ar livre,"ATAQUE, PRENDER","Barris de pólvora, lâmpadas a óleo, produtos químicos antigos",Criar explosão ou fogo,15
+Cidade ao ar livre,PROTEÇÃO,"Móveis, colchões, armários",Fornecer proteção,3
+"Cidade, Masmorra",PROTEÇÃO,"Pedras grandes, troncos, toras",Fornecer proteção,3
+"Cidade, Masmorra",PROTEÇÃO,"Veículos, outdoors, caixas de correio",Fornecer proteção,6
+"Cidade, Masmorra",PROTEÇÃO,"Sarcófagos, paredes de pedra, móveis antigos",Fornecer proteção,9
+"Cidade, Masmorra",PROTEÇÃO,"Cobertores, tendas, closets, mesas",Fornecer proteção temporária,3
+"Cidade, Masmorra",PROTEÇÃO,"Cavernas, árvores densas, folhas",Fornecer proteção temporária,3
+"Cidade, Masmorra",PROTEÇÃO,"Parada de ônibus, viaduto, abrigo de parque",Fornecer proteção temporária,6
+"Cidade, Natureza",PROTEÇÃO,"Alcovas, tendas, estruturas ocas",Fornecer proteção temporária,9
+"Cidade, Residência",ARMADILHA,"Rádios, relógios, timers, panelas","Distrair, atrair atenção",3
+"Cidade, Residência",ARMADILHA,"Galhos quebrando, folhas farfalhantes","Distrair, atrair atenção",3
+"Cidade, Residência",ARMADILHA,"Alarmes de carro, equipamentos, vidro quebrado","Distrair, atrair atenção",6
+Masmorra,ARMADILHA,"Passos ecoando, portas rangendo, máquinas antigas","Distrair, atrair atenção",9
+Masmorra,ARMADILHA,"Extensões, brinquedos, tapetes",Tropeçar ou enredar,3
+Masmorra,ARMADILHA,"Raízes, pedras, terreno irregular",Tropeçar ou enredar,3
+Masmorra,ARMADILHA,"Cabos, pavimento irregular, correntes",Tropeçar ou enredar,6
+Masmorra,ARMADILHA,"Correntes, piso irregular, escombros",Tropeçar ou enredar,9
+Masmorra,ARMADILHA,"Ratoeiras, pregos, fios",Criar armadilha ou perigo,6
+Masmorra,ARMADILHA,"Fossas, armadilhas naturais, plantas espinhosas",Criar armadilha ou perigo,9
+Masmorra,ARMADILHA,"Armadilhas para ursos, barricadas, tampas de bueiro",Criar armadilha ou perigo,12
+Masmorra,ARMADILHA,"Placas de pressão, fossas, espinhos ocultos",Criar armadilha ou perigo,15
+Masmorra,ARMADILHA,"Aromatizantes, produtos de limpeza, perfumes",Afetar sentidos ou distrair,3
+Masmorra,ARMADILHA,"Plantas pungentes, cheiros de animais",Afetar sentidos ou distrair,3
+Masmorra,ARMADILHA,"Fumaça, produtos químicos industriais",Afetar sentidos ou distrair,6
+Masmorra,ARMADILHA,"Incensos, matéria em decomposição",Afetar sentidos ou distrair,9
+Masmorra,ARMADILHA,"Cortinas, persianas, toalhas de mesa",Obscurecer visão,3
+Masmorra,ARMADILHA,"Névoa, grama alta, galhos",Obscurecer visão,3
+Masmorra,ARMADILHA,"Fumaça, poeira, entulho",Obscurecer visão,6
+Masmorra,ARMADILHA,"Teias de aranha, neblina, nuvens de poeira",Obscurecer visão,9
+Masmorra,ARMADILHA,"Móveis, portas, caixas",Bloquear caminho,3
+Masmorra,ARMADILHA,"Árvores caídas, rochas, arbustos",Bloquear caminho,3
+"Masmorra, Caverna",ARMADILHA,"Veículos estacionados, bloqueios, barreiras",Bloquear caminho,6
+"Masmorra, Caverna",ARMADILHA,"Escombros, portões antigos, estátuas",Bloquear caminho,9
+"Masmorra, Caverna",ARMADILHA,"Pisos molhados, brinquedos espalhados, tapetes soltos",Criar perigo ou obstáculos,3
+"Masmorra, Caverna",ARMADILHA,"Lama, solo solto, terreno irregular, plantas espinhosas",Criar perigo ou obstáculos,3
+"Masmorra, Caverna",ARMADILHA,"Pavimento quebrado, calçadas geladas, entulho afiado",Criar perigo ou obstáculos,6
+"Masmorra, Caverna",ARMADILHA,"Pisos desmoronados, rochas afiadas, fossos escondidos",Criar perigo ou obstáculos,9
+"Masmorra, Caverna",CONFUNDIR,"Closets, debaixo de camas, atrás de móveis",Esconder-se ou obscurecer-se,3
+"Masmorra, Caverna",CONFUNDIR,"Foliagem densa, cavernas, corpos d’água",Esconder-se ou obscurecer-se,3
+"Masmorra, Caverna",CONFUNDIR,"Beco, atrás de lixeiras, sob pontes",Esconder-se ou obscurecer-se,6
+"Masmorra, Caverna",CONFUNDIR,"Alcovas escondidas, nichos de criptas, sombras",Esconder-se ou obscurecer-se,9
+"Masmorra, Caverna",CONFUNDIR,"Manequins, bichos de pelúcia, casacos",Enganar ou confundir inimigos,3
+"Masmorra, Caverna",CONFUNDIR,"Espantalhos, restos de animais, ninhos falsos",Enganar ou confundir inimigos,3
+"Masmorra, Caverna",CONFUNDIR,"Manequins, grafites, pôsteres, sacos de lixo",Enganar ou confundir inimigos,6
+"Masmorra, Caverna",CONFUNDIR,"Estátuas, esqueletos, bonecos",Enganar ou confundir inimigos,9
+"Masmorra, Caverna",CONFUNDIR,"Espelhos, janelas, móveis polidos, telas de TV",Refletir luz ou imagens,3
+"Masmorra, Caverna",CONFUNDIR,"Superfícies de água, gelo, pedras reflexivas",Refletir luz ou imagens,3
+"Masmorra, Caverna",CONFUNDIR,"Janelas de carros, poças, prédios de vidro",Refletir luz ou imagens,6
+"Masmorra, Caverna",CONFUNDIR,"Metal polido, cristais, poças d’água",Refletir luz ou imagens,9
+"Masmorra, Caverna","COMUNICAÇÃO, DISTRAIR","Lâmpadas, lanternas, velas, TVs",Fornecer luz ou sinal,3
+"Masmorra, Caverna","COMUNICAÇÃO, DISTRAIR","Luz do luar, vaga-lumes, plantas bioluminescentes",Fornecer luz ou sinal,3
+"Masmorra, Caverna","COMUNICAÇÃO, DISTRAIR","Poste de luz, faróis, outdoors, néon",Fornecer luz ou sinal,6
+"Masmorra, Caverna","COMUNICAÇÃO, DISTRAIR","Tochas, fungos brilhantes, pedras encantadas",Fornecer luz ou sinal,9
+"Masmorra, Caverna","COMUNICAÇÃO, DISTRAIR","Lanternas, rádios, alarmes, telefones",Enviar sinais ou distrair,3
+"Masmorra, Caverna","COMUNICAÇÃO, DISTRAIR","Espelhos, pedras para bater, fogo, chamados de pássaros",Enviar sinais ou distrair,3
+"Masmorra, Caverna","COMUNICAÇÃO, DISTRAIR","Apitos, sinalizadores, buzinas",Enviar sinais ou distrair,6
+"Masmorra, Caverna","COMUNICAÇÃO, DISTRAIR","Sinos, gongos, bandeiras de sinalização",Enviar sinais ou distrair,9
+"Masmorra, Cidade",FONTE,"Pias, banheiras, garrafas de água",Derramar ou usar líquidos,3
+"Masmorra, Laboratório",FONTE,"Rios, lagos, chuva, seiva",Derramar ou usar líquidos,3
+"Masmorra, Laboratório",FONTE,"Hidrantes, fontes, poças",Derramar ou usar líquidos,6
+"Masmorra, Natureza",FONTE,"Barris de água, cisternas",Derramar ou usar líquidos,9
+"Masmorra, Residência",FONTE,"Fogões, lareiras, fósforos",Gerar calor ou fogo,3
+"Masmorra, Residência",FONTE,"Sol, fontes termais, fogueiras",Gerar calor ou fogo,3
+Natureza,FONTE,"Fogueiras, motores, geradores",Gerar calor ou fogo,6
+Natureza,FONTE,"Tochas, lanternas, fontes termais",Gerar calor ou fogo,9
+Natureza,FONTE,"Baterias, geradores, tomadas",Fornecer energia ou eletricidade,6
+Natureza,FONTE,"Painéis solares, ventos térmicos, cachoeiras",Fornecer energia ou eletricidade,9
+Natureza,FONTE,"Linhas de energia, baterias de carro, turbinas eólicas",Fornecer energia ou eletricidade,12
+Natureza,FONTE,"Cristais, artefatos antigos",Fornecer energia ou eletricidade,15
+Natureza,"CRAFT, FUGIR","Pés de cabra, chaves de fenda, facas, martelos",Manipular o ambiente ou objetos,3
+Natureza,"CRAFT, FUGIR","Galhos, pedras, trepadeiras, gravetos",Manipular o ambiente ou objetos,3
+Natureza,"CRAFT, FUGIR","Macacos, alicates, ferramentas públicas",Manipular o ambiente ou objetos,6
+Natureza,"CRAFT, FUGIR","Alavancas, polias, ferramentas antigas",Manipular o ambiente ou objetos,9
+Natureza,"CRAFT, FUGIR","Escadas de emergência, alçapões, lençóis",Auxiliar em fugas rápidas,6
+Natureza,"CRAFT, FUGIR","Caminhos claros, árvores escaláveis, cavernas",Auxiliar em fugas rápidas,6
+Natureza,"CRAFT, FUGIR","Saídas de incêndio, portões abertos, túneis",Auxiliar em fugas rápidas,9
+Natureza,"CRAFT, FUGIR","Passagens ocultas, cordas, escadas",Auxiliar em fugas rápidas,12
+Natureza,"CRAFT, FUGIR","Escadas, prateleiras, cadeiras, escadas de corda",Ganhar altura ou escapar,3
+Natureza,"CRAFT, FUGIR","Árvores, faces rochosas, raízes, colinas",Ganhar altura ou escapar,3
+Natureza,"CRAFT, FUGIR","Andaimes, paredes, escadas",Ganhar altura ou escapar,6
+Natureza,"CRAFT, FUGIR","Pontes de corda, beiradas, trepadeiras",Ganhar altura ou escapar,9
+Natureza,FONTE,"Caldeirão, chaleira, panelas","Esquentar poções, líquidos, ferver",3
+Natureza,FONTE,"Poções básicas, ingredientes comuns","Curar, ajudar aliados",3
+Natureza,FONTE,"Poções raras, ingredientes mágicos","Curar ferimentos graves, remover venenos",15
+Natureza,CONFUNDIR,"Espelhos encantados, quadros falantes","Vigiar, conversar à distância",12
+Natureza,"COMUNICAÇÃO, DISTRAIR","Bastões de luz, varinhas luminosas","Gerar luz mágica, revelar invisíveis",9
+Natureza,CONFUNDIR,"Pedra filosofal falsa, réplicas mágicas","Distrair, enganar vilões",15
+Natureza,CONFUNDIR,"Medalhão falso, joias cenográficas","Enganar inimigos, criar armadilhas",6
+Natureza,PROTEÇÃO,"Amuletos de proteção, talismãs","Reduzir dano, repelir magia",12
+Natureza,"ARMADILHA, CONFUNDIR","Caixas mágicas, baús com senha","Proteger tesouros, dificultar acesso",9
+"Natureza, Cidade","ARMADILHA, DISTRAIR","Relógio de bolso, ampulheta","Cronometrar ações, chamar atenção",3
+"Natureza, Masmorra","CRAFT, FUGIR, CONFUNDIR","Areia de tempo, ampulheta mágica",Retardar ou apressar ações,18
+"Natureza, Masmorra",CONFUNDIR,"Máscaras, mantos, capas longas","Disfarçar identidade, confundir perseguidores",6
+"Natureza, Masmorra",CONFUNDIR,"Disfarces elaborados, poções de polissuco",Mudar aparência totalmente,15
+"Natureza, Masmorra","CRAFT, FUGIR","Livros de feitiços, pergaminhos","Aprender magias, decifrar enigmas",6
+Residência,"CRAFT, FUGIR","Livros raros, grimórios secretos",Revelar informações cruciais,18
+Residência,"ARMADILHA, ATAQUE","Galhos secos, pedras, ossos","Arremessar, criar armadilha",3
+Residência,"ARMADILHA, ATAQUE","Ossos de dragão, pedras rúnicas","Golpe poderoso, ativar armadilha mágica",15
+Residência,"ARMADILHA, CRAFT, FUGIR","Corda de vassoura, arame, redes","Imobilizar inimigo, criar obstáculos",6
+Residência,"CRAFT, FUGIR","Vassouras voadoras, tapetes mágicos","Escapar voando, movimentar-se rápido",15
+Residência,"ARMADILHA, CONFUNDIR","Frascos de perfume, ervas aromáticas","Disfarçar cheiro, atrair/repelir criaturas",3
+Residência,"ARMADILHA, CONFUNDIR","Poções de cheiro, essências mágicas","Confundir inimigos, criar distrações",12
+Residência,"COMUNICAÇÃO, DISTRAIR","Penas de coruja, cartas, selos mágicos","Enviar avisos, entregar segredos",6
+Residência,"COMUNICAÇÃO, DISTRAIR","Instrumentos musicais, sinos","Atrair atenção, emitir sinais",3
+Residência,"COMUNICAÇÃO, DISTRAIR","Gongo mágico, harpa encantada","Abrir passagens, encantar criaturas",15
+Residência,ATAQUE,"Lanças, flechas improvisadas",Atacar inimigos à distância,6
+Residência,"ATAQUE, ARMADILHA","Varinhas partidas, espadas antigas",Usar em ataques ou bloquear passagem,9
+Residência,"ATAQUE, ARMADILHA","Armas mágicas, relíquias","Golpes poderosos, ativar efeitos mágicos",18
+Residência,"PROTEÇÃO, ARMADILHA","Escudos, tambores, placas","Bloquear ataques, criar barreira",6
+Residência,PROTEÇÃO,"Armaduras antigas, elmos","Reduzir dano, proteger usuário",12
+Residência,"PROTEÇÃO, CONFUNDIR","Capas de invisibilidade, mantos mágicos","Evitar ser visto, escapar",18
+Residência,"CRAFT, FUGIR, COMUNICAÇÃO","Poeira de Fada, pó de Flu",Movimentar-se rapidamente,18
+Residência,"CRAFT, FUGIR","Chave de portal, portais mágicos","Acessar locais distantes, escapar",21
+Residência,COMUNICAÇÃO,"Medalhas, insígnias, crachás","Facilitar entrada, ganhar respeito",3
+Residência,"CRAFT, FUGIR","Chaves mestras, cartões magnéticos",Permitir passagem restrita,6
+Residência,"ARMADILHA, CONFUNDIR","Livros trancados, diários secretos","Guardar segredos, desafiar intrusos",6
+Residência,"ARMADILHA, ATAQUE","Poções de sono, dardos tranquilizantes","Adormecer inimigos, prender",12
+Residência,ATAQUE,"Fluidos corrosivos, ácidos","Danificar objetos, armadilhas",15
+Residência,ARMADILHA,"Estatuetas mágicas, golems pequenos","Proteger tesouro, atacar intrusos",18
+Residência,ARMADILHA,"Runas explosivas, gemas de choque","Ativar armadilhas, causar dano em área",15
+Residência,"ARMADILHA, DISTRAIR","Caixas de música, brinquedos barulhentos","Atrair atenção, desviar foco",3
+Residência,"ARMADILHA, DISTRAIR","Relógios-cuco, despertadores","Criar confusão, chamar ajuda",3
+Residência,CONFUNDIR,"Perfumes enfeitiçados, flor de mandrágora","Adormecer, confundir",12
+Residência,ARMADILHA,"Plantas carnívoras, trepadeiras vivas",Capturar ou atrasar personagens,15
+Residência,"COMUNICAÇÃO, CRAFT, FUGIR","Ratos, corujas treinadas, gatos","Entregar itens, espionar lugares",6
+Residência,"ARMADILHA, CONFUNDIR","Bichos-papão, trasgos pequenos","Afastar inimigos, criar pânico",15
+Residência,"CONFUNDIR, CRAFT, FUGIR","Quadros com passagem, vitrines falsas","Facilitar fuga, esconder passagem",9
+Residência,"CONFUNDIR, CRAFT, FUGIR","Tijolos falsos, piso secreto","Escapar de prisões, criar rotas",9
+Residência,PROTEÇÃO,"Travesseiros, almofadas, cobertores","Reduzir dano de quedas, amortecer impactos",3
+Residência,PROTEÇÃO,"Colchões, sofás, camas grandes",Barreira improvisada,3
+Residência,"PROTEÇÃO, ARMADILHA","Poltronas, mesas pesadas","Bloquear passagem, atrasar inimigos",6
+Residência,"PROTEÇÃO, ARMADILHA","Malas grandes, armários","Esconder-se, bloquear portas",6
+"Residência, Cidade","ARMADILHA, ATAQUE","Garrafas, taças, copos","Quebrar, causar dano leve",3
+"Residência, Cidade","ARMADILHA, ATAQUE","Latas, tubos, canos velhos","Criar ruído, machucar",6
+"Residência, Cidade","ARMADILHA, ATAQUE, PROTEÇÃO","Panelas de ferro, frigideiras","Atacar, bloquear golpes",3
+"Residência, Cidade","ATAQUE, ARMADILHA","Estacas de madeira, dardos","Atingir inimigos, ativar armadilhas",6
+"Residência, Cidade",FONTE,"Pederneira, fósforos, velas","Acender fogueiras, criar distrações",3
+"Residência, Cidade","ARMADILHA, FONTE","Frascos de óleo, cera","Criar incêndios, dificultar perseguição",6
+"Residência, Cidade","ARMADILHA, ATAQUE","Estalactites, pedras soltas","Derrubar sobre inimigos, bloquear caminho",9
+"Residência, Cidade","ARMADILHA, CONFUNDIR","Cordas mágicas, fios encantados","Imobilizar, fingir passagens",12
+"Residência, Cidade",PROTEÇÃO,"Placas de metal, portas reforçadas","Bloquear ataques, criar obstáculos",12
+"Residência, Masmorra","PROTEÇÃO, ARMADILHA","Veículos abandonados, carros velhos","Bloquear vias, proteger aliados",12
+"Residência, Masmorra","ARMADILHA, PROTEÇÃO","Estátuas antigas, colunas caídas","Derrubar sobre inimigos, esconder-se",12
+"Residência, Masmorra","ARMADILHA, CONFUNDIR","Poças de água, lamaçal","Dificultar movimento, esconder rastros",3
+"Residência, Masmorra","CONFUNDIR, ARMADILHA","Sinais mágicos, runas, marcas no chão","Confundir inimigos, ativar armadilhas",15
+"Residência, Masmorra","COMUNICAÇÃO, DISTRAIR, FONTE","Lanternas mágicas, globos de luz","Iluminar passagens, revelar perigos",9
+"Residência, Masmorra","COMUNICAÇÃO, DISTRAIR","Bandeiras, faixas, panfletos","Atrair atenção, indicar locais",3
+"Residência, Masmorra",ARMADILHA,"Ninhos de pássaros, colmeias","Derrubar sobre inimigos, criar distração",6
+"Residência, Masmorra","PROTEÇÃO, ARMADILHA","Andames, grades, portões","Bloquear caminho, proteger aliados",9
+"Residência, Natureza",ARMADILHA,"Fossas, buracos escondidos",Prender ou atrasar inimigos,9
+Residência,"ARMADILHA, FONTE",Produtos químicos antigos,"Envenenar, criar explosão",15

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Log de Evento (A vs B)</title>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: 'Nova Flat', sans-serif;
+      margin: 10px;
+    }
+    .wrapper {
+      display: flex;
+      justify-content: center;
+    }
+    .main-container {
+      display: grid;
+      grid-template-columns: 450px 100px 450px;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .char-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #1b1b1b;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #444;
+    }
+    .header-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .roll-line {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .result-large {
+      font-size: 20px;
+      text-align: center;
+      margin-top: 4px;
+      color: #FFD700;
+    }
+    .mid-column {
+      font-size: 14px;
+      text-align: center;
+      color: #FDA528;
+      font-weight: bold;
+      margin-top: 120px;
+    }
+    .mid-column .value {
+      font-size: 28px;
+      display: block;
+      margin-top: 6px;
+    }
+    input, select, textarea {
+      background: #191919;
+      color: white;
+      border: 1px solid #555;
+      padding: 4px;
+      font-size: 13px;
+      border-radius: 4px;
+    }
+    .row-inline {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .two-column {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .tag {
+      background: #444;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .tag button {
+      background: none;
+      border: none;
+      color: red;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+    .effect-edit {
+      font-size: 14px;
+      width: 100%;
+    }
+    .icon-label {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .preview-box {
+      background: #222;
+      color: #ddd;
+      padding: 10px;
+      border-radius: 6px;
+      white-space: normal;
+      margin-top: 16px;
+      font-size: 13px;
+    }
+    .field-label {
+      font-size: 12px;
+      color: #aaa;
+      margin: 4px 0 2px;
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="main-container">
+    <div id="char-a" class="char-section"></div>
+
+    <div class="mid-column">
+      <div style="font-size: 11px;">Resultado A - B</div>
+      <span id="result-diff" class="value">--</span>
+      <div id="winner-arrow" style="font-size: 30px; margin-top: 8px;">⬌</div>
+    </div>
+
+    <div id="char-b" class="char-section"></div>
+  </div>
+</div>
+<button onclick="sendLogsToArena()">📤 Enviar para Arena</button>
+
+<!-- Coloque isso ao final do <body> -->
+<script src="papaparse.min.js"></script>
+<script>
+let data = {};
+let actionsRange = {};
+let actionEnergyMap = {};
+let conditionsRange = [];
+let conditionDescriptions = {};
+
+let dataReady = false;
+let actionsReady = false;
+let conditionsReady = false;
+
+window.addEventListener("message", (event) => {
+  if (!event.data || !event.data.charA || !event.data.charB) return;
+	console.log("✅ Dados recebidos no popup:", event.data);
+
+  data.a = event.data.charA;
+  data.b = event.data.charB;
+  dataReady = true;
+  maybeBuildNow();
+});
+
+Papa.parse("actions_range.csv", {
+  header: true,
+  download: true,
+  complete: (results) => {
+    results.data.forEach(row => {
+      const action = row["action"];
+      actionsRange[action] = {
+        "-3": row["resultminus3"],
+        "-2": row["resultminus2"],
+        "-1": row["resultminus1"],
+        "0": row["result0"],
+        "1": row["result1"],
+        "2": row["result2"],
+        "3": row["result3"]
+      };
+      actionEnergyMap[action] = parseInt(row["action_energy"]) || 0;
+    });
+    actionsReady = true;
+    maybeBuildNow();
+  }
+});
+
+Papa.parse("conditions_range.csv", {
+  header: true,
+  download: true,
+  complete: (results) => {
+    results.data.forEach(row => {
+      conditionsRange.push(row["condition"]);
+      conditionDescriptions[row["condition"]] = row["cond_effects"];
+    });
+    conditionsReady = true;
+    maybeBuildNow();
+  }
+});
+
+const emotionsList = ["SATISFAÇÃO", "CULPA", "CALMA", "ESTRESSE", "AFETO", "DESCONFIANÇA", "RAIVA", "MEDO"];
+
+function maybeBuildNow() {
+  if (!dataReady || !actionsReady || !conditionsReady) return;
+  buildSideFields("a");
+  buildSideFields("b");
+  updatePreviews();
+}
+
+function buildSideFields(side) {
+  const c = data[side];
+  const actionEnergy = actionEnergyMap[c.action] || 0;
+  const el = document.getElementById(`char-${side}`);
+  el.innerHTML = `
+    <div class="icon-label">${c.name}</div>
+    <div class="header-line">
+      <span>${c.action} (${c.atr})</span>
+      <span>Contra: ${c.target}</span>
+    </div>
+
+    <div class="roll-line">
+      NdF: <span>${typeof c.ndf !== "undefined" ? c.ndf : "❓"}</span>
+      Motivo: <input id="bonus-reason-${side}" value="${c.bonus_reason || ""}" style="flex:1;">
+    </div>
+
+    <div class="roll-line" id="breakdown-${side}">
+      Rolagem: ${c.breakdown.map(b => `<span title="${b.label}"><b>${b.value}</b></span>`).join(" + ")} =<br>
+      <input id="res-${side}" class="result-large" type="number" value="${c.result}" style="width: 60px;">
+      (<span style="color: #ccc;">Max:</span> <span id="maxdiff-${side}" style="color: #FFD700;">0</span>)
+    </div>
+
+    <textarea id="effect-${side}" class="effect-edit" placeholder="Resultado narrativo...">...</textarea>
+
+    <div class="row-inline">
+  HP -(${c.spell_dmg || " "}): 
+  <input type="number" id="hpmod-${side}" value="${c.altered_hp}" style="width:50px;">
+  Energia: <input type="number" id="enmod-${side}" value="${c.altered_en}" style="width:50px;">
+</div>
+<div style="display: flex; gap: 20px; margin: 6px 0;">
+  <div><b>Efeito:</b> <span id="effect-spell-condition${side}">${c.spell_effect_condition || "—"}</span></div>
+  <div><b>Efeito Extra:</b> <span id="effect-extra-condition${side}">${c.spell_extra_condition || "—"}</span></div>
+</div>
+
+
+
+
+
+<div class="row-inline">
+  Condição:
+  <select id="cond-${side}">${conditionsRange.map(c => `<option>${c}</option>`)}</select>
+  Turnos: <input type="number" id="cond-turns-${side}" value="0" style="width: 50px;">
+  <button onclick="addTag('${side}','cond')">+</button>
+</div>
+    <div id="cond-tags-${side}" class="tag-list"></div>
+    <div id="cond-desc-${side}" class="field-label" style="font-style:italic; margin-top:4px;"></div>
+
+    <br>
+
+    <div class="row-inline">
+      Emoção:
+      <select id="emo-${side}">${emotionsList.map(e => `<option>${e}</option>`)}</select>
+      <input type="number" id="emo-val-${side}" value="1" style="width:40px;">
+      <button onclick="addTag('${side}','emo')">+</button>
+    </div>
+    <div id="emo-tags-${side}" class="tag-list"></div>
+
+    <textarea id="obs-${side}" placeholder="Obs..."></textarea>
+
+    <div id="cond-desc-${side}" style="margin-top:4px;"></div>
+    <div class="preview-box" id="preview-${side}"></div>
+  `;
+
+  document.querySelectorAll(`#char-${side} input, #char-${side} textarea, #char-${side} select`).forEach(input => {
+    input.addEventListener("input", updatePreviews);
+  });
+}
+
+function addTag(side, type) {
+  const list = document.getElementById(`${type}-tags-${side}`);
+  const sel = document.getElementById(`${type}-${side}`);
+  const val = sel.value;
+
+  const extra = type === "emo"
+    ? ` (${document.getElementById(`emo-val-${side}`).value})`
+    : ` (${parseInt(document.getElementById(`cond-turns-${side}`).value) || 0})`;
+
+  const full = val + extra;
+  if ([...list.children].some(e => e.dataset.value === full)) return;
+
+  const tag = document.createElement("span");
+  tag.className = "tag";
+  tag.dataset.value = full;
+  tag.innerHTML = `${full}<button onclick="this.parentElement.remove(); updatePreviews()">✕</button>`;
+  list.appendChild(tag);
+  updatePreviews();
+}
+
+function updatePreviews() {
+  const resA = parseInt(document.getElementById("res-a").value);
+  const resB = parseInt(document.getElementById("res-b").value);
+  const diff = resA - resB;
+  const maxA = Math.max(-3, Math.min(3, diff));
+  const maxB = -maxA;
+
+  document.getElementById("result-diff").textContent = diff;
+  document.getElementById("maxdiff-a").textContent = maxA;
+  document.getElementById("maxdiff-b").textContent = maxB;
+
+  const arrow = diff > 0 ? "⬅️" : diff < 0 ? "➡️" : "⬌";
+  const arrowEl = document.getElementById("winner-arrow");
+  if (arrowEl) arrowEl.textContent = arrow;
+
+  ["a", "b"].forEach(side => {
+    const c = data[side];
+    const res = parseInt(document.getElementById(`res-${side}`).value);
+    const opp = parseInt(document.getElementById(`res-${side === "a" ? "b" : "a"}`).value);
+    const diffReal = res - opp;
+    const maxDiff = Math.max(-3, Math.min(3, diffReal));
+    const isWinner = diffReal > 0 && side === "a" || diffReal < 0 && side === "b";
+    const isLoser = diffReal < 0 && side === "a" || diffReal > 0 && side === "b";
+
+    const effect = actionsRange[c.action]?.[maxDiff.toString()] || "Efeito indefinido";
+    document.getElementById(`effect-${side}`).value = effect;
+
+    const bonusReason = document.getElementById(`bonus-reason-${side}`).value;
+    
+    const hp = parseInt(document.getElementById(`hpmod-${side}`).value);
+    const en = parseInt(document.getElementById(`enmod-${side}`).value);
+    const currHp = c.current_hp + hp;
+    const currEn = c.current_en + en;
+
+    const emos = [...document.getElementById(`emo-tags-${side}`).children].map(e => e.dataset.value);
+    const condTags = [...document.getElementById(`cond-tags-${side}`).children].map(e => e.dataset.value);
+
+    const obs = document.getElementById(`obs-${side}`).value;
+
+    // Atualiza descrições
+    document.getElementById(`cond-desc-${side}`).innerHTML =
+      condTags.map(tag => {
+        const condName = tag.split(" (")[0];
+        return `<div>🔹 <b>${condName}</b>: ${conditionDescriptions[condName] || "sem descrição"}</div>`;
+      }).join("");
+
+    // Log
+    let log = `${c.name} usou ${c.action} contra ${c.target}: (${c.atr}) <span>${c.breakdown.map(b => `<span title="${b.label}"><b>${b.value}</b></span>`).join(" + ")} = ${res} (Max: ${maxDiff})</span>`;
+    if (isWinner) log += `, VENCENDO por ${maxDiff}`;
+    else if (isLoser) log += `, PERDENDO por ${Math.abs(maxDiff)}`;
+    log += ` : ${effect}.`;
+
+    if (emos.length) log += ` Alterações em: ${emos.join(", ")}.`;
+    log += ` ${hp >= 0 ? "+" : ""}${hp} HP (${currHp}) ${en >= 0 ? "+" : ""}${en} ENERGIA (${currEn}).`;
+    if (condTags.length) {
+      const full = condTags.map(tag => {
+        const [name, val] = tag.split(" (");
+        const num = parseInt(val) || 0;
+        return `${name} (${num > 0 ? num + " turnos" : num < 0 ? "Enquanto houver concentração" : "Indefinidamente"})`;
+      }).join(", ");
+      log += ` Recebeu condições: ${full}.`;
+    }
+
+    if (bonusReason.trim()) log += ` Recebeu bônus por conta de: ${bonusReason}.`;
+    if (obs.trim()) log += ` Obs.: ${obs}`;
+
+    document.getElementById(`preview-${side}`).innerHTML = log;
+  });
+}
+	function sendLogsToArena() {
+    const logA = document.getElementById("preview-a")?.innerHTML || "";
+    const logB = document.getElementById("preview-b")?.innerHTML || "";
+
+    if (window.opener) {
+      window.opener.postMessage({ logs: [logA, logB] }, "*");
+      window.close(); // opcional: fecha o popup
+    }
+  }
+
+	
+</script>
+</body>
+
+</html>

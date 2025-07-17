@@ -1,0 +1,165 @@
+difficulty_action,difficulty_category,difficulty_question,difficulty_amount
+Investigação,ENTRAR OU SAIR DE UM LOCAL,Do que é feita a entrada ou porta?,3
+Investigação,ENTRAR OU SAIR DE UM LOCAL,Vejo alguma abertura ou brecha?,6
+Investigação,ENTRAR OU SAIR DE UM LOCAL,O que parece não fazer parte ou estar fora do lugar?,9
+Investigação,ENTRAR OU SAIR DE UM LOCAL,O que os microvestígios físicos no local sugerem sobre a forma que se entra ou sai?,12
+Investigação,ENTRAR OU SAIR DE UM LOCAL,O que os resquícios mágicos no local sugerem sobre a forma que se entra ou sai?,15
+Investigação,ENTRAR OU SAIR DE UM LOCAL,Qual é a forma exata de entrar?,18
+Investigação,ENTRAR OU SAIR DE UM LOCAL,Qual é a forma de entrar ou sair sem ser detectado?,21
+Investigação,RESQUÍCIOS DE MAGIA,O local ou item está enfeitiçado?,3
+Investigação,RESQUÍCIOS DE MAGIA,Qual magia é percebida no ambiente? ( repelente / proteção / maldição / charm / etc. ),6
+Investigação,RESQUÍCIOS DE MAGIA,"Qual a fonte da magia empregnada no local / item? (de duende, de elfo, de bruxos, magia antiga, outro",9
+Investigação,RESQUÍCIOS DE MAGIA,Sobre o tempo e intensidade: Parece ter sido enfeitiçada há quanto tempo? Qual a duração da magia? Etc.,12
+Investigação,RESQUÍCIOS DE MAGIA,O que a magia presente faz exatamente?,15
+Investigação,RESQUÍCIOS DE MAGIA,"Como ativar, alterar ou desativar a magia presente?",18
+Investigação,RESQUÍCIOS DE MAGIA,(Qualquer pergunta que o jogador tenha),21
+Investigação,FUNCIONAMENTO DE UM ARTEFATO OU POÇÕES,"Quais aspectos físicos se percebem à primeira vista (cor, detalhes ou ornamentos mais óbvios)",3
+Investigação,FUNCIONAMENTO DE UM ARTEFATO OU POÇÕES,"O que se nota numa segunda vista mais cuidadosa ou mais aproximada? (cheiro, textura, viscosidade, etc)",6
+Investigação,FUNCIONAMENTO DE UM ARTEFATO OU POÇÕES,É um item potencialmente danoso?,9
+Investigação,FUNCIONAMENTO DE UM ARTEFATO OU POÇÕES,"O que é o item, por alto?",12
+Investigação,FUNCIONAMENTO DE UM ARTEFATO OU POÇÕES,O que é o item?,15
+Investigação,FUNCIONAMENTO DE UM ARTEFATO OU POÇÕES,"O que é exatamente o item, inclusive suas propriedades específicas e como ele funciona?",18
+Investigação,FUNCIONAMENTO DE UM ARTEFATO OU POÇÕES,"Como alterar o item, reprogramá-lo ou destruí-lo?",21
+Investigação,CAUSA DE UM FERIMENTO OU DANO,"Quais aspectos físicos se percebem à primeira vista? (tamanho, formato geral)",3
+Investigação,CAUSA DE UM FERIMENTO OU DANO,"Quais aspectos físicos se percebem com mais escrutínio? (formato exato, profundidade, etc.)",6
+Investigação,CAUSA DE UM FERIMENTO OU DANO,"O que exatamente o trauma ou dano causou? (fez parar de funcionar, etc.)",9
+Investigação,CAUSA DE UM FERIMENTO OU DANO,"Quais vestígios do ambiente se ligam ao dano? Há pegadas, sangue, rastros, etc.?",12
+Investigação,CAUSA DE UM FERIMENTO OU DANO,"É possível reparar o dano, ou impedir a continuação dele?",15
+Investigação,CAUSA DE UM FERIMENTO OU DANO,Como reparar o dano?,18
+Investigação,CAUSA DE UM FERIMENTO OU DANO,(Qualquer pergunta que o jogador tenha),21
+Investigação,TRACKING,-,3
+Investigação,TRACKING,Há pegadas ou rastros à primeira vista?,6
+Investigação,TRACKING,"O que se nota numa segunda vista mais cuidadosa ou mais aproximada? (cheiro, rastros, micromodificações do ambiente)",9
+Investigação,TRACKING,Há quanto tempo foram deixados os vestígios?,12
+Investigação,TRACKING,Para qual direção foi o que estou rastreando?,15
+Investigação,TRACKING,Onde exatamente está o objeto do meu rastreio?,18
+Investigação,TRACKING,Diga mais detalhes sobre a localização e status do que eu estou rastreando.,21
+Investigação,"DECIFRAR SÍMBOLOS, INSCRIÇÕES OU GRAVURAS",São letras ou símbolos?,3
+Investigação,"DECIFRAR SÍMBOLOS, INSCRIÇÕES OU GRAVURAS",De que origem os símbolos são?,6
+Investigação,"DECIFRAR SÍMBOLOS, INSCRIÇÕES OU GRAVURAS",Me diga uma parte que eu consigo entender por alto.,9
+Investigação,"DECIFRAR SÍMBOLOS, INSCRIÇÕES OU GRAVURAS","O que os símbolos querem dizer, por alto?",12
+Investigação,"DECIFRAR SÍMBOLOS, INSCRIÇÕES OU GRAVURAS",Me diga uma parte que eu consigo entender totalmente.,15
+Investigação,"DECIFRAR SÍMBOLOS, INSCRIÇÕES OU GRAVURAS",O que exatamente os símbolos querem dizer?,18
+Investigação,"DECIFRAR SÍMBOLOS, INSCRIÇÕES OU GRAVURAS",O que as partes incompletas devem ser?,21
+Investigação,OBSERVAÇÕES FÍSICAS DE LOCAIS OU ITENS,Quais aspectos físicos se percebem à primeira vista?,3
+Investigação,OBSERVAÇÕES FÍSICAS DE LOCAIS OU ITENS,Qual parece ser o propósito deste ambiente?,6
+Investigação,OBSERVAÇÕES FÍSICAS DE LOCAIS OU ITENS,Há indícios de atividade humana recente? Qual?,9
+Investigação,OBSERVAÇÕES FÍSICAS DE LOCAIS OU ITENS,Quais rastros menos perceptíveis se encontram numa investigação mais criteriosa?,12
+Investigação,OBSERVAÇÕES FÍSICAS DE LOCAIS OU ITENS,Há armadilhas no ambiente?,15
+Investigação,OBSERVAÇÕES FÍSICAS DE LOCAIS OU ITENS,"O que costumava/costuma acontecer aqui, em detalhes?",18
+Investigação,OBSERVAÇÕES FÍSICAS DE LOCAIS OU ITENS,"Qualquer pergunta sobre o lugar pode ser respondida, desde que tenha a ver com indícios  investigação.",21
+Buscar,Acesso,Item de fácil acesso,3
+Buscar,Acesso,Item de acesso normal,6
+Buscar,Acesso,"Guardado, mas não escondido",9
+Buscar,Acesso,"Escondido de propósito, mas não muito bem",12
+Buscar,Acesso,"Escondido de propósito, de maneira mais efetiva",15
+Buscar,Acesso,Escondido por duas ou mais etapas,18
+Buscar,Acesso,"Escondido com muitas camadas, e quem escondeu também não lembra de como",21
+Buscar,Raridade,Comum,3
+Buscar,Raridade,Menos acessível,6
+Buscar,Raridade,Difícil de Conseguir,9
+Buscar,Raridade,Raro,12
+Buscar,Raridade,Muito Raro,15
+Buscar,Raridade,Pouquíssimas Unidades Existentes,18
+Buscar,Raridade,Único,21
+Buscar,TAMANHO OU APARÊNCIA,Grande ou distintivo,3
+Buscar,TAMANHO OU APARÊNCIA,Médio ou característico,6
+Buscar,TAMANHO OU APARÊNCIA,"Entre médio e pequeno, e pode não dar na vista se desatento",9
+Buscar,TAMANHO OU APARÊNCIA,Pequeno e se mistura com o ambiente,12
+Buscar,TAMANHO OU APARÊNCIA,Pequeno ou muito semelhante os demais,15
+Buscar,TAMANHO OU APARÊNCIA,Pequeno ou invisível,18
+Buscar,TAMANHO OU APARÊNCIA,Minúsculo ou não pode ser sentido por nenhum dos 5 sentidos básicos,21
+Buscar,AMBIENTE,Organizado e categorizado,3
+Buscar,AMBIENTE,Organizado,6
+Buscar,AMBIENTE,Levemente bagunçado,9
+Buscar,AMBIENTE,Bagunçado,12
+Buscar,AMBIENTE,Bastante bagunçado ou ruínas,15
+Buscar,AMBIENTE,Caótico,18
+Buscar,AMBIENTE,"Totalmente caótico e sem nenhuma ordem, com lugares inacessíveis.",21
+Buscar,QUANTIDADE DE ATRAPALHO,Localização centralizada e óbvia,3
+Buscar,QUANTIDADE DE ATRAPALHO,Poucas coisas para revirar,6
+Buscar,QUANTIDADE DE ATRAPALHO,Poucos lugares onde possa estar,9
+Buscar,QUANTIDADE DE ATRAPALHO,Alguns lugares onde o item pode estar,12
+Buscar,QUANTIDADE DE ATRAPALHO,Vários lugares onde o item pode estar,15
+Buscar,QUANTIDADE DE ATRAPALHO,Centenas de itens e lugares onde o objeto da busca pode estar,18
+Buscar,QUANTIDADE DE ATRAPALHO,Milhares de itens e lugares onde o objeto da busca pode estar,21
+Sensibilidade,Identificar a Verdade,Suspeita de que está mentindo ou escondendo algo: A pessoa está nervosa ou escolhendo as palavras?,4
+Sensibilidade,Identificar a Verdade,Existem inconsistências nas informações fornecidas? Quais palavras-chaves na conversa podem indicar alguma dissimulação ou inverdade?,6
+Sensibilidade,Identificar a Verdade,Saber se está mentindo ou escondendo algo ou se está sob efeito de algo.,8
+Sensibilidade,Identificar a Verdade,Me conte uma pista vaga do que está sendo escondido.,9
+Sensibilidade,Identificar a Verdade,Uma pista clara sobre o que está escondendo.,10
+Sensibilidade,Identificar a Verdade,Me conte parte da verdade que estaria sendo encoberta.,12
+Sensibilidade,Identificar a Verdade,Qual é a verdade por trás do que a pessoa está querendo esconder ou enganar?,14
+Sensibilidade,Emoções ,Identificar emoção aparente ,4
+Sensibilidade,Emoções ,Identificar melhor abordagem com o objeto ,6
+Sensibilidade,Emoções ,Identificar emoção velada,7
+Sensibilidade,Legilimencia ,"Identificar gosto, desgosto, interesse ou medo do objeto ",8
+Sensibilidade,Legilimencia ,Identificar informação específica,9
+Sensibilidade,Legilimencia ,Ver memória clara ao objeto,10
+Sensibilidade,Legilimencia ,Ver memória no subconsciente do objeto ,12
+Sensibilidade,Legilimencia ,Ver memória esquecida pelo objeto ,14
+Conhecimento,Raridade,Óbvio. 90% das pessoas têm esse saber. Saber comum e de fácil acesso,3
+Conhecimento,Raridade,Comum. 50% das pessoas têm esse saber. Pode-se achar com certa facilidade,6
+Conhecimento,Raridade,Obtível. Saber que 30% das pessoas que prendem sobre esse assunto absorvem.,9
+Conhecimento,Raridade,Incomum. Saber que apenas 10% das pessoas conhece.,12
+Conhecimento,Raridade,Raro. 1% das pessoas tem esse conhecimento disponível. Ele se encontra com mais dificuldade.,15
+Conhecimento,Raridade,"Inacessível. 0.1%, ou seja, uma em cada 1000 pessoas tem esse conhecimento.",18
+Conhecimento,Raridade,Inatingível. Saber perdido e sem nenhum registro.,21
+Aprender,Dificuldade de Estudo,"Revisão de algo já visto, com explicação perfeita e tempo ideal.",3
+Aprender,Dificuldade de Estudo,"Explicação clara, materiais adequados e tempo disponível.",6
+Aprender,Dificuldade de Estudo,"Conteúdo complexo, mas com algum apoio ou exemplo.",9
+Aprender,Dificuldade de Estudo,"Conceito difícil, acesso parcial a fontes confiáveis.",12
+Aprender,Dificuldade de Estudo,"Tema completamente novo, sem ajuda ou referência.",15
+Aprender,Dificuldade de Estudo,"Nenhuma base, material insuficiente ou ambiente hostil.",18
+Aprender,Dificuldade de Estudo,Assunto que requer anos de estudo e experiência.,21
+Contatos,Especialidade,Pessoa comum que trabalha ou convive no mesmo ambiente e pode oferecer ajuda prática ou informação simples.,3
+Contatos,Especialidade,"Alguém com experiência ou função prática no setor envolvido, como zeladores, auxiliares, funcionários de baixo calão.",6
+Contatos,Especialidade,"Contato com acesso moderado a equipamentos, documentos ou itens mágicos relativamente raros.",9
+Contatos,Especialidade,"Especialista ou estudioso sobre área técnica, informações antigas ou itens fora do comum.",12
+Contatos,Especialidade,"Pessoa influente ou com autoridade informal; pode interceder, liberar acesso ou alterar decisões menores.",15
+Contatos,Especialidade,"Uma autoridade, ou alguém que possua bens restritos ou recursos totalmente ilegais; acesso que só é possível via confiança ou troca arriscada.",18
+Contatos,Especialidade,"Contato quase impossível: envolvido com conspirações, segredos de estado, artefatos lendários ou corrupção de alto nível.",21
+Relação,Probabilidade de Conhecer,"Convivem no mesmo ambiente e participam do mesmo grupo, equipe ou rotina diária.",3
+Relação,Probabilidade de Conhecer,"Compartilham um círculo social próximo, convivem no mesmo local ou têm amigos em comum.",6
+Relação,Probabilidade de Conhecer,Já se viram algumas vezes ou trocaram palavras em eventos anteriores; nomes talvez sejam reconhecidos.,9
+Relação,Probabilidade de Conhecer,"São completos estranhos, mas vivem no mesmo mundo ou região e podem já ter ouvido falar um do outro.",12
+Relação,Probabilidade de Conhecer,"Vêm de realidades diferentes (como classes sociais, regiões ou culturas distintas), sem pontos de contato evidentes.",15
+Relação,Probabilidade de Conhecer,"Vivem em contextos opostos e isolados; não compartilham conexões, interesses nem referências.",18
+Relação,Probabilidade de Conhecer,"Há uma barreira extrema: vivem em mundos diferentes, temporalidades distintas ou foram deliberadamente separados.",21
+Percepção,Clareza Espacial,Sinais óbvios ou sons evidentes.,3
+Percepção,Clareza Espacial,"Algo discreto, mas visível se atento.",6
+Percepção,Clareza Espacial,Vestígios sutis ou escondidos entre distrações.,9
+Percepção,Clareza Espacial,Oculto por magia ou manipulação experiente.,12
+Percepção,Clareza Espacial,Presença imperceptível para olhos não treinados.,15
+Percepção,Clareza Espacial,Ilusões bem feitas ou mentiras convincentes.,18
+Percepção,Clareza Espacial,Verdade oculta de forma sobrenatural ou divina.,21
+Resolver Enigma,Dificuldade do Enigma,"Enigma direto ou lógico, com pistas evidentes.",3
+Resolver Enigma,Dificuldade do Enigma,"Charada simples, mas com linguagem ambígua.",6
+Resolver Enigma,Dificuldade do Enigma,Requer conexão entre ideias ou pistas dispersas.,9
+Resolver Enigma,Dificuldade do Enigma,Solução exige pensamento lateral ou não literal.,12
+Resolver Enigma,Dificuldade do Enigma,"Elementos são incompletos, exigindo dedução criativa.",15
+Resolver Enigma,Dificuldade do Enigma,Repleto de armadilhas lógicas ou pistas falsas.,18
+Resolver Enigma,Dificuldade do Enigma,Enigma impossível sem um lampejo de genialidade.,21
+Liderança,OBJETIVOS,Grupo tem o mesmo objetivo final e todos concordam nos específicos.,6
+Liderança,OBJETIVOS,Grupo tem o mesmo objetivo final mas não concordam totalmente nos epecíficos.,9
+Liderança,OBJETIVOS,"Grupo tem objetivos distintos, mas que podem ser complementados.",12
+Liderança,OBJETIVOS,Grupo tem objetivos totalmente antagônicos.,15
+Liderança,EXPERIÊNCIA,Grupo já realizou ações conjuntas desse tipo com pleno sucesso.,6
+Liderança,EXPERIÊNCIA,"Grupo já realizou ações conjuntas parecidas, mas não iguais.",9
+Liderança,EXPERIÊNCIA,"Grupo já atuou junto em outras situações, mas nunca nesse contexto.",12
+Liderança,EXPERIÊNCIA,É a primeira vez que tentam agir juntos fazendo algo assim.,15
+Liderança,CONFLITOS,Não há conflitos ou rivalidades entre os membros do grupo.,6
+Liderança,CONFLITOS,"Há pequenos atritos, mas nada que prejudique a cooperação.",9
+Liderança,CONFLITOS,Existem conflitos não resolvidos ou desconfianças claras.,12
+Liderança,CONFLITOS,Conflitos abertos ou hostilidade ativa entre membros do grupo.,15
+Liderança,EMOCIONAL,"Clima emocional positivo: confiança, entusiasmo, moral alta.",6
+Liderança,EMOCIONAL,Clima emocional neutro ou levemente positivo.,9
+Liderança,EMOCIONAL,"Clima emocional negativo: insegurança, cansaço, ansiedade.",12
+Liderança,EMOCIONAL,Clima emocional hostil ou de total desmotivação.,15
+Carregar / Força,MASSA,"POR 3 - até 20kg (saco de cimento, criança, baú pequeno, elfo doméstico)",3
+Carregar / Força,MASSA,"POR 6 - até 70kg (humano médio, duende pesado)",6
+Carregar / Força,MASSA,"POR 9 - até 150kg (geladeira cheia, cervo grande, pedregulho)",9
+Carregar / Força,MASSA,"POR 12 - até 250kg (urso, moto, mesa pesada, centauro)",12
+Carregar / Força,MASSA,"POR 15 - até 400kg (trasgo montanhês, touro jovem, sofá grande)",15
+Carregar / Força,MASSA,"POR 18 - até 600kg (rinoceronte jovem, carro compacto, dragão)",18
+Carregar / Força,MASSA,"POR 21 - acima de 600kg (elefante, piano de cauda, armário muito cheio)",21

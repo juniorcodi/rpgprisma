@@ -1,0 +1,4 @@
+event_log_timestamp,event_log_row_checkbox,event_log_row,event_log_row_done,event_log_row_status
+,selected,,done,active
+,unselected,,to do,deleted
+,,,,inactive

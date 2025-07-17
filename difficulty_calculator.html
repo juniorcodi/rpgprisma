@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Difficulty Discover</title>
+</head>
+
+<body>
+  <h2>📊 Calculadora de Dificuldade</h2>
+  <div style="margin-bottom: 10px;">
+    <label for="action-select">Selecione uma ação:</label>
+    <select id="action-select"></select>
+    <span id="media-output" style="margin-left: 20px; font-weight: bold;">Média: -</span>
+  </div>
+  <div id="table-container"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script>
+    let csvData = [];
+
+    fetch("difficulty_range.csv")
+      .then(res => res.text())
+      .then(text => {
+        Papa.parse(text, {
+          header: false,
+          skipEmptyLines: true,
+          complete: function(results) {
+            csvData = results.data.map(row => ({
+              action: row[0],
+              category: row[1],
+              question: row[2],
+              difficulty: parseInt(row[3])
+            }));
+            initDropdown();
+          }
+        });
+      });
+
+    function initDropdown() {
+      const select = document.getElementById('action-select');
+      const uniqueActions = [...new Set(csvData.map(row => row.action))];
+      uniqueActions.forEach(action => {
+        const option = document.createElement('option');
+        option.value = action;
+        option.textContent = action;
+        select.appendChild(option);
+      });
+
+      select.addEventListener('change', () => {
+        document.getElementById('media-output').textContent = 'Média: -';
+        renderTable(select.value);
+      });
+    }
+
+    function renderTable(selectedAction) {
+      const filtered = csvData.filter(row => row.action === selectedAction);
+      const difficulties = [...new Set(filtered.map(r => r.difficulty))].sort((a, b) => a - b);
+      const grouped = {};
+
+      filtered.forEach(row => {
+        if (!grouped[row.category]) grouped[row.category] = {};
+        grouped[row.category][row.difficulty] = row.question;
+      });
+
+      const table = document.createElement('table');
+      table.style.borderCollapse = 'collapse';
+      table.style.width = '100%';
+      table.style.marginTop = '10px';
+
+      // Cabeçalho dinâmico
+      const headerRow = document.createElement('tr');
+      headerRow.innerHTML = `<th style="border:1px solid #ccc; padding:4px;">Categoria</th>` +
+        difficulties.map(d => `<th style="border:1px solid #ccc; padding:4px;">${d}</th>`).join('');
+      table.appendChild(headerRow);
+
+      // Linhas por categoria
+      for (const category in grouped) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td style="border:1px solid #ccc; padding:4px;"><strong>${category}</strong></td>`;
+
+        difficulties.forEach(dif => {
+          const cell = document.createElement('td');
+          cell.style.border = '1px solid #ccc';
+          cell.style.padding = '4px';
+
+          const question = grouped[category][dif];
+          if (question) {
+            const label = document.createElement('label');
+label.style.cursor = 'pointer';
+
+const checkbox = document.createElement('input');
+checkbox.type = 'checkbox';
+checkbox.dataset.difficulty = dif;
+checkbox.addEventListener('change', updateAverage);
+label.appendChild(checkbox);
+
+label.appendChild(document.createTextNode(' ' + question));
+cell.appendChild(label);
+
+          }
+
+          row.appendChild(cell);
+        });
+
+        table.appendChild(row);
+      }
+
+      const container = document.getElementById('table-container');
+      container.innerHTML = '';
+      container.appendChild(table);
+    }
+
+    function updateAverage() {
+      const checkboxes = document.querySelectorAll('#table-container input[type="checkbox"]:checked');
+      if (checkboxes.length === 0) {
+        document.getElementById('media-output').textContent = 'Média: -';
+        return;
+      }
+      const total = Array.from(checkboxes).reduce((sum, cb) => sum + parseInt(cb.dataset.difficulty), 0);
+      const average = (total / checkboxes.length).toFixed(2);
+      document.getElementById('media-output').textContent = `Média: ${average}`;
+    }
+  </script>
+</body>
+
+
+</html>
