@@ -644,6 +644,10 @@ function safeNumber(id) {
   <button class="top-button" title="Inventário">🎒</button>
   <button class="top-button" title="Filtro de Ações">❓</button>
 </div>
+
+<div id="save-indicator" style="position:fixed; top:10px; right:10px; font-size:18px; font-family:'Nova Flat'; color:#aaa;">
+  ☁️ Aguardando...
+</div>
 	
   <center><div id="spells-area" class="spell-container">
     <div style="display: grid; grid-template-columns: 880px 880px; gap: 30px; justify-content: center;">
@@ -2213,7 +2217,7 @@ function addTag(side, type) {
 
   const docRef = doc(db, "campaigns", "alpha", "arena_fields", "characterA");
 
-  // Live update: from Firebase → UI
+  // Real-time update from Firebase → UI
   onSnapshot(docRef, (docSnap) => {
     const data = docSnap.data();
     if (data?.hp !== undefined) {
@@ -2222,13 +2226,21 @@ function addTag(side, type) {
     }
   });
 
-  // Change in UI → Firebase
+  // Update from UI → Firebase
   hpSlider.addEventListener("input", () => {
-    const hp = parseInt(hpSlider.value);
-    hpText.textContent = hp;
-    setDoc(docRef, { hp }, { merge: true });
+    const newHP = parseInt(hpSlider.value);
+    hpText.textContent = newHP;
+    document.getElementById("save-indicator").textContent = "☁️ Salvando...";
+setDoc(docRef, { hp: newHP }, { merge: true }).then(() => {
+  document.getElementById("save-indicator").textContent = "✅ Salvo!";
+  setTimeout(() => {
+    document.getElementById("save-indicator").textContent = "☁️ Aguardando...";
+  }, 2000);
+});
+
   });
 </script>
+
 
 
 
