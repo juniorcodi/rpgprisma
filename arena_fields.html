@@ -1593,22 +1593,19 @@ function getActionAttrKey(actionRow) {
 
 function loadData() {
   Papa.parse(charCSV, {
-    download: true,
-    header: true,
-    complete: function(results) {
-      setFields(results.data); // ← apply CSV baseline first
-
-      // 🔁 Now override HP/energy fields with Firebase values
-      const character = document.getElementById("char-select-a")
-        .options[document.getElementById("char-select-a").selectedIndex]
-        .textContent.trim();
-        
-      console.log("🧪 Post-CSV Firebase bind for:", character);
-      bindCharacter(character); // Call your Firebase function here
+    header: true, download: true, skipEmptyLines: true,
+    complete: function(charResults) {
+      Papa.parse(actionCSV, {
+        header: true, download: true, skipEmptyLines: true,
+        complete: function(actionResults) {
+          charData = charResults.data;
+          actionData = actionResults.data;
+          setupDropdowns();
+        }
+      });
     }
   });
 }
-
 
 // --- DICE LOGIC PATCH ---
 
@@ -2264,7 +2261,7 @@ function addTag(side, type) {
 
   function bindCharacter(characterName) {
     if (!characterName) return;
-    const docRef = doc(db, "campaigns", "alpha", "characters_range", characterName);
+    const docRef = doc(db, "campaigns", "alpha", "characters", characterName);
 
     // Stop listening to previous character
     if (unsubscribe) unsubscribe();
@@ -2278,7 +2275,7 @@ function addTag(side, type) {
       }
     });
 
-    // Subscribe to live changes
+    // Subscribe to real-time changes
     unsubscribe = onSnapshot(docRef, (docSnap) => {
       const data = docSnap.data();
       updateUI(data);
@@ -2305,22 +2302,21 @@ function addTag(side, type) {
     };
   }
 
-  // When dropdown changes
+  // When dropdown changes character, rebind
   charSelect.addEventListener("change", () => {
-    const character = charSelect.options[charSelect.selectedIndex].textContent.trim();
-    console.log("🎭 Switching to character:", character);
-    bindCharacter(character);
-  });
+  const character = charSelect.options[charSelect.selectedIndex].textContent.trim();
+  console.log("🎭 Switching to character:", character);
+  bindCharacter(character);
+});
 
-  // Initial load
+
+  // Initial bind
   window.addEventListener("load", () => {
-    setTimeout(() => {
-      const character = charSelect.options[charSelect.selectedIndex].textContent.trim();
-      bindCharacter(character);
-    }, 600);
-  });
-</script>
-
+  setTimeout(() => {
+    const character = charSelect.options[charSelect.selectedIndex].textContent.trim();
+    bindCharacter(character);
+  }, 600);
+});
 
 </script>
 
