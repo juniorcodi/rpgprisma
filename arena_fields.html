@@ -2226,48 +2226,61 @@ function addTag(side, type) {
 
   const hpSlider = document.getElementById("char_hp_range-a");
   const hpText = document.getElementById("char_hp-a");
+  const status = document.getElementById("save-indicator");
 
   const docRef = doc(db, "campaigns", "alpha", "arena_fields", "characterA");
 
-  // Override HP field on load (after CSV populates)
-window.addEventListener("load", () => {
-  setTimeout(() => {
-    getDoc(docRef).then((docSnap) => {
-      const data = docSnap.data();
-      if (data?.hp !== undefined) {
-        hpSlider.value = data.hp;
-        hpText.textContent = data.hp;
-      }
-    });
-  }, 500); // wait for the CSV logic to finish
-});
+  // Override after page load
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      console.log("📥 Getting HP from Firebase...");
+      getDoc(docRef).then((docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          console.log("✅ Loaded from Firestore:", data);
+          if (data?.hp !== undefined) {
+            hpSlider.value = data.hp;
+            hpText.textContent = data.hp;
+          }
+        } else {
+          console.warn("❌ No document found. Firestore may be empty.");
+        }
+      }).catch(err => {
+        console.error("🔥 Firestore GET error:", err);
+      });
+    }, 600); // let CSV load first
+  });
 
-
-  // Real-time updates from Firebase
+  // Live updates
   onSnapshot(docRef, (docSnap) => {
     const data = docSnap.data();
+    console.log("🔁 Snapshot update:", data);
     if (data?.hp !== undefined) {
       hpSlider.value = data.hp;
       hpText.textContent = data.hp;
     }
   });
 
-  // Updates from UI → Firebase
+  // Input → Firestore
   hpSlider.addEventListener("input", () => {
-  const newHP = parseInt(hpSlider.value);
-  hpText.textContent = newHP;
-  const status = document.getElementById("save-indicator");
-  status.textContent = "☁️ Salvando...";
+    const newHP = parseInt(hpSlider.value);
+    hpText.textContent = newHP;
+    console.log("⬆️ Saving HP to Firebase:", newHP);
 
-  setDoc(docRef, { hp: newHP }, { merge: true }).then(() => {
-    status.textContent = "✅ Salvo!";
-    setTimeout(() => {
-      status.textContent = "☁️ Aguardando...";
-    }, 2000);
+    status.textContent = "☁️ Salvando...";
+    setDoc(docRef, { hp: newHP }, { merge: true }).then(() => {
+      status.textContent = "✅ Salvo!";
+      console.log("✅ Save complete");
+      setTimeout(() => {
+        status.textContent = "☁️ Aguardando...";
+      }, 2000);
+    }).catch(err => {
+      console.error("🔥 Firestore SAVE error:", err);
+      status.textContent = "❌ Erro ao salvar";
+    });
   });
-});
-
 </script>
+
 
 
 
