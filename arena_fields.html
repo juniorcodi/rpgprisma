@@ -2201,11 +2201,36 @@ function addTag(side, type) {
   input.value = "";
   input.removeAttribute("data-tooltip");
 }
-
-
-
-	
 </script>
+<script type="module">
+  import { db } from './firebase-config.js';
+  import {
+    doc, onSnapshot, setDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const hpSlider = document.getElementById("char_hp_range-a");
+  const hpText = document.getElementById("char_hp-a");
+
+  const docRef = doc(db, "campaigns", "alpha", "arena_fields", "characterA");
+
+  // Live update: from Firebase → UI
+  onSnapshot(docRef, (docSnap) => {
+    const data = docSnap.data();
+    if (data?.hp !== undefined) {
+      hpSlider.value = data.hp;
+      hpText.textContent = data.hp;
+    }
+  });
+
+  // Change in UI → Firebase
+  hpSlider.addEventListener("input", () => {
+    const hp = parseInt(hpSlider.value);
+    hpText.textContent = hp;
+    setDoc(docRef, { hp }, { merge: true });
+  });
+</script>
+
+
 
 </body>
 </html>
