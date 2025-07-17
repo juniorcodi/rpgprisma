@@ -1593,19 +1593,22 @@ function getActionAttrKey(actionRow) {
 
 function loadData() {
   Papa.parse(charCSV, {
-    header: true, download: true, skipEmptyLines: true,
-    complete: function(charResults) {
-      Papa.parse(actionCSV, {
-        header: true, download: true, skipEmptyLines: true,
-        complete: function(actionResults) {
-          charData = charResults.data;
-          actionData = actionResults.data;
-          setupDropdowns();
-        }
-      });
+    download: true,
+    header: true,
+    complete: function(results) {
+      setFields(results.data); // ← apply CSV baseline first
+
+      // 🔁 Now override HP/energy fields with Firebase values
+      const character = document.getElementById("char-select-a")
+        .options[document.getElementById("char-select-a").selectedIndex]
+        .textContent.trim();
+        
+      console.log("🧪 Post-CSV Firebase bind for:", character);
+      bindCharacter(character); // Call your Firebase function here
     }
   });
 }
+
 
 // --- DICE LOGIC PATCH ---
 
