@@ -2304,18 +2304,20 @@ function addTag(side, type) {
 
   // When dropdown changes character, rebind
   charSelect.addEventListener("change", () => {
-    const character = charSelect.value;
-    console.log("🎭 Switching to character:", character);
-    bindCharacter(character);
-  });
+  const character = charSelect.options[charSelect.selectedIndex].textContent.trim();
+  console.log("🎭 Switching to character:", character);
+  bindCharacter(character);
+});
+
 
   // Initial bind
   window.addEventListener("load", () => {
-    setTimeout(() => {
-      const character = charSelect.value;
-      bindCharacter(character);
-    }, 600);
-  });
+  setTimeout(() => {
+    const character = charSelect.options[charSelect.selectedIndex].textContent.trim();
+    bindCharacter(character);
+  }, 600);
+});
+
 </script>
 
 
