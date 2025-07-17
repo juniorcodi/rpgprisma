@@ -635,6 +635,9 @@ function safeNumber(id) {
 </script>
 </head>
 <body>
+<div id="save-indicator" style="position:fixed; top:10px; right:10px; font-size:18px; font-family:'Nova Flat'; color:#aaa;">
+  ☁️ Aguardando...
+</div>
 <div id="top-bar" class="top-toolbar">
   <button id="toggle-spells" class="top-button" title="Feitiços" onclick="toggleSpellSection()">🪄</button>
   <button class="top-button" id="calculator-button" title="Calculadora de Dificuldade" onclick="window.open('difficulty_calculator.html', 'CalculadoraDeDificuldade', 'width=1000,height=700,resizable=yes,scrollbars=yes')">🧮</button>
@@ -645,9 +648,7 @@ function safeNumber(id) {
   <button class="top-button" title="Filtro de Ações">❓</button>
 </div>
 
-<div id="save-indicator" style="position:fixed; top:10px; right:10px; font-size:18px; font-family:'Nova Flat'; color:#aaa;">
-  ☁️ Aguardando...
-</div>
+
 	
   <center><div id="spells-area" class="spell-container">
     <div style="display: grid; grid-template-columns: 880px 880px; gap: 30px; justify-content: center;">
