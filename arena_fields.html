@@ -2224,8 +2224,7 @@ function addTag(side, type) {
     doc, onSnapshot, setDoc, getDoc
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const docRef = doc(db, "campaigns", "alpha", "arena_fields", "characterA");
-
+  const charSelect = document.getElementById("char-select-a");
   const hpSlider = document.getElementById("char_hp_range-a");
   const hpText = document.getElementById("char_hp-a");
   const energySlider = document.getElementById("char_energy_range-a");
@@ -2234,8 +2233,16 @@ function addTag(side, type) {
   const maxEnergyText = document.getElementById("char_maxenergy-a");
   const status = document.getElementById("save-indicator");
 
-  // Apply data to UI
-  function applyData(data) {
+  let unsubscribe = null;
+
+  function setStatus(text) {
+    status.textContent = text;
+    if (text !== "☁️ Aguardando...") {
+      setTimeout(() => status.textContent = "☁️ Aguardando...", 2000);
+    }
+  }
+
+  function updateUI(data) {
     if (data?.hp !== undefined) {
       hpSlider.value = data.hp;
       hpText.textContent = data.hp;
@@ -2252,49 +2259,65 @@ function addTag(side, type) {
     }
   }
 
-  // Initial load (after CSV)
-  window.addEventListener("load", () => {
-    setTimeout(() => {
-      getDoc(docRef).then((docSnap) => {
-        if (docSnap.exists()) {
-          applyData(docSnap.data());
-        } else {
-          console.warn("No Firebase document found. Move a slider to create one.");
-        }
-      });
-    }, 500); // delay to override PapaParse
-  });
+  function bindCharacter(characterName) {
+    if (!characterName) return;
+    const docRef = doc(db, "campaigns", "alpha", "characters", characterName);
 
-  // Live sync from Firestore
-  onSnapshot(docRef, (docSnap) => {
-    const data = docSnap.data();
-    applyData(data);
-  });
+    // Stop listening to previous character
+    if (unsubscribe) unsubscribe();
 
-  // Update logic
-  function updateField(field, value) {
-    status.textContent = "☁️ Salvando...";
-    setDoc(docRef, { [field]: value }, { merge: true }).then(() => {
-      status.textContent = "✅ Salvo!";
-      setTimeout(() => {
-        status.textContent = "☁️ Aguardando...";
-      }, 2000);
+    // Load once initially
+    getDoc(docRef).then((docSnap) => {
+      if (docSnap.exists()) {
+        updateUI(docSnap.data());
+      } else {
+        console.warn("⚠️ Character not found in Firestore:", characterName);
+      }
     });
+
+    // Subscribe to real-time changes
+    unsubscribe = onSnapshot(docRef, (docSnap) => {
+      const data = docSnap.data();
+      updateUI(data);
+    });
+
+    // Save HP
+    hpSlider.oninput = () => {
+      const hp = parseInt(hpSlider.value);
+      hpText.textContent = hp;
+      setStatus("☁️ Salvando...");
+      setDoc(docRef, { hp }, { merge: true }).then(() => {
+        setStatus("✅ Salvo!");
+      });
+    };
+
+    // Save Energy
+    energySlider.oninput = () => {
+      const energy = parseInt(energySlider.value);
+      energyText.textContent = energy;
+      setStatus("☁️ Salvando...");
+      setDoc(docRef, { energy }, { merge: true }).then(() => {
+        setStatus("✅ Salvo!");
+      });
+    };
   }
 
-  hpSlider.addEventListener("input", () => {
-    const hp = parseInt(hpSlider.value);
-    hpText.textContent = hp;
-    updateField("hp", hp);
+  // When dropdown changes character, rebind
+  charSelect.addEventListener("change", () => {
+    const character = charSelect.value;
+    console.log("🎭 Switching to character:", character);
+    bindCharacter(character);
   });
 
-  energySlider.addEventListener("input", () => {
-    const energy = parseInt(energySlider.value);
-    energyText.textContent = energy;
-    updateField("energy", energy);
+  // Initial bind
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      const character = charSelect.value;
+      bindCharacter(character);
+    }, 600);
   });
-
 </script>
+
 
 
 
