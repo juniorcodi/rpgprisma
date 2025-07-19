@@ -376,6 +376,90 @@ function updatePreviews() {
 
 	
 </script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCoO7sYTOcz_1JrW46VoRowvHYa5wUFSTk",
+    authDomain: "rpg-prisma-f5a11.firebaseapp.com",
+    projectId: "rpg-prisma-f5a11",
+    storageBucket: "rpg-prisma-f5a11.appspot.com",
+    messagingSenderId: "65278749627",
+    appId: "1:65278749627:web:804f5d41adbab5351e729e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.getFirebaseCollection = async function(collectionName) {
+    const ref = collection(db, "campaigns", "alpha", collectionName);
+    const snap = await getDocs(ref);
+    const result = [];
+    snap.forEach(doc => result.push(doc.data()));
+    return result;
+  };
+
+  window.getFirebaseDoc = async function(collectionName, docId) {
+    const ref = doc(db, "campaigns", "alpha", collectionName, docId);
+    const snap = await getDoc(ref);
+    return snap.exists() ? snap.data() : null;
+  };
+</script>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCoO7sYTOcz_1JrW46VoRowvHYa5wUFSTk",
+  authDomain: "rpg-prisma-f5a11.firebaseapp.com",
+  projectId: "rpg-prisma-f5a11",
+  storageBucket: "rpg-prisma-f5a11.appspot.com",
+  messagingSenderId: "65278749627",
+  appId: "1:65278749627:web:804f5d41adbab5351e729e"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Firebase utility functions
+window.getFirebaseCollection = async function(collectionName) {
+  const ref = collection(db, "campaigns", "alpha", collectionName);
+  const snap = await getDocs(ref);
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
+
+window.getFirebaseDoc = async function(collectionName, docId) {
+  const ref = doc(db, "campaigns", "alpha", collectionName, docId);
+  const snap = await getDoc(ref);
+  return snap.exists() ? snap.data() : null;
+};
+
+window.setFirebaseDocField = async function(collectionName, docId, field, value) {
+  const ref = doc(db, "campaigns", "alpha", collectionName, docId);
+  await setDoc(ref, { [field]: value }, { merge: true });
+};
+</script>
+
+
+<script type="module">
+window.addEventListener("DOMContentLoaded", async () => {
+  const conditions = await getFirebaseCollection("conditions_range");
+  const datalist = document.getElementById("cond-list");
+  if (datalist) {
+    datalist.innerHTML = "";
+    conditions.forEach(cond => {
+      const opt = document.createElement("option");
+      opt.value = cond.id;
+      datalist.appendChild(opt);
+    });
+  }
+});
+</script>
+
 </body>
 
 </html>
