@@ -12,41 +12,40 @@
   <p id="status" style="margin-top:20px;"></p>
 
   <script type="module">
-    import {{ initializeApp }} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {{ getFirestore, doc, setDoc }} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { firebaseSeedData } from "./firebase_seed_data.js";
 
-    import {{ firebaseSeedData }} from "./firebase_seed_data.js";
-
-    const firebaseConfig = {{
+    const firebaseConfig = {
       apiKey: "AIzaSyCoO7sYTOcz_1JrW46VoRowvHYa5wUFSTk",
       authDomain: "rpg-prisma-f5a11.firebaseapp.com",
       projectId: "rpg-prisma-f5a11",
       storageBucket: "rpg-prisma-f5a11.appspot.com",
       messagingSenderId: "65278749627",
       appId: "1:65278749627:web:804f5d41adbab5351e729e"
-    }};
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    document.getElementById("uploadBtn").addEventListener("click", async () => {{
+    document.getElementById("uploadBtn").addEventListener("click", async () => {
       const status = document.getElementById("status");
       status.textContent = "Uploading...";
 
-      try {{
-        for (const [collection, docs] of Object.entries(firebaseSeedData)) {{
-          for (const {{ id, data }} of docs) {{
-            const path = `campaigns/alpha/${{collection}}/${{id}}`;
+      try {
+        for (const [collection, docs] of Object.entries(firebaseSeedData)) {
+          for (const { id, data } of docs) {
+            const path = `campaigns/alpha/${collection}/${id}`;
             await setDoc(doc(db, path), data);
             console.log(`✅ Uploaded to ${path}`);
-          }}
-        }}
+          }
+        }
         status.textContent = "✅ Upload complete!";
-      }} catch (err) {{
+      } catch (err) {
         console.error(err);
         status.textContent = "❌ Upload failed: " + err.message;
-      }}
-    }});
+      }
+    });
   </script>
 </body>
 </html>
