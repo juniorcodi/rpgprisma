@@ -1311,10 +1311,10 @@ function setFields(charRow, actionRow, suffix) {
     const keywords = raw.split(/\s*,\s*/).map(str => str.trim());
 
     const keywordToAttr = {
-      INS: [ "ATACAR", "BLOQUEAR / CONTRA-ATACAR", "INTERROMPER", "RESISTIR IMPACTO", "ARREMESSAR", "CARREGAR / FORÇA", "ESCALAR", "INICIATIVA / ALCANÇAR", "INTIMIDAR", "DESAFIAR", "FORÇA DE VONTADE", "ORIENTAÇÃO / SOBREVIVÊNCIA", "CLARIVIDÊNCIA" ],
-      SIM: [ "PROTEGER OUTREM", "CURAR", "PERSUADIR", "BARGANHAR", "SEDUZIR", "INSPIRAR", "IMPLORAR", "ACALMAR", "DOMAR / TREINAR", "CONTATOS", "RELAÇÃO", "SENSIBILIDADE", "LIDERAR / COORDENAR" ],
-      RAZ: [ "MIRAR", "PROTEGER-SE", "FOCAR", "ENFEITIÇAR / DESENFEITIÇAR", "TRANSFORMAR", "CONFECCIONAR / REPARAR", "PERCEPÇÃO", "INVESTIGAÇÃO", "OCLUMÊNCIA", "BUSCAR", "APRENDER", "CONHECIMENTO", "RESOLVER ENIGMA" ],
-      MAL: [ "MALDIÇÃO / INFLIGIR DOR", "AZARAR", "DESVIAR", "EMBOSCAR", "SURPREENDER", "DISTRAIR", "FUGIR", "ENGANAR", "MANIPULAR", "RESISTIR SÚPLICA", "FURTIVIDADE", "ROUBAR / PLANTAR", "MANUSEAR" ]
+      INS: [ "ATACAR", "BLOQUEAR, CONTRA-ATACAR", "INTERROMPER", "RESISTIR IMPACTO", "ARREMESSAR", "CARREGAR, FORÇA", "ESCALAR", "INICIATIVA, ALCANÇAR", "INTIMIDAR", "DESAFIAR", "FORÇA DE VONTADE", "ORIENTAÇÃO, SOBREVIVÊNCIA", "CLARIVIDÊNCIA" ],
+      SIM: [ "PROTEGER OUTREM", "CURAR", "PERSUADIR", "BARGANHAR", "SEDUZIR", "INSPIRAR", "IMPLORAR", "ACALMAR", "DOMAR, TREINAR", "CONTATOS", "RELAÇÃO", "SENSIBILIDADE", "LIDERAR, COORDENAR" ],
+      RAZ: [ "MIRAR", "PROTEGER-SE", "FOCAR", "ENFEITIÇAR, DESENFEITIÇAR", "TRANSFORMAR", "CONFECCIONAR, REPARAR", "PERCEPÇÃO", "INVESTIGAÇÃO", "OCLUMÊNCIA", "BUSCAR", "APRENDER", "CONHECIMENTO", "RESOLVER ENIGMA" ],
+      MAL: [ "MALDIÇÃO, INFLIGIR DOR", "AZARAR", "DESVIAR", "EMBOSCAR", "SURPREENDER", "DISTRAIR", "FUGIR", "ENGANAR", "MANIPULAR", "RESISTIR SÚPLICA", "FURTIVIDADE", "ROUBAR, PLANTAR", "MANUSEAR" ]
     };
 
     const getAttrClass = (word) => {
@@ -1350,18 +1350,18 @@ function setFields(charRow, actionRow, suffix) {
 }
 const keywordToAttr = {
   // INS
-  "ATACAR": "ins", "BLOQUEAR / CONTRA-ATACAR": "ins", "INTERROMPER": "ins", "RESISTIR IMPACTO": "ins",
-  "ARREMESSAR": "ins", "CARREGAR / FORÇA": "ins", "ESCALAR": "ins", "INICIATIVA / ALCANÇAR": "ins",
-  "INTIMIDAR": "ins", "DESAFIAR": "ins", "FORÇA DE VONTADE": "ins", "ORIENTAÇÃO / SOBREVIVÊNCIA": "ins", "CLARIVIDÊNCIA": "ins",
+  "ATACAR": "ins", "BLOQUEAR, CONTRA-ATACAR": "ins", "INTERROMPER": "ins", "RESISTIR IMPACTO": "ins",
+  "ARREMESSAR": "ins", "CARREGAR, FORÇA": "ins", "ESCALAR": "ins", "INICIATIVA, ALCANÇAR": "ins",
+  "INTIMIDAR": "ins", "DESAFIAR": "ins", "FORÇA DE VONTADE": "ins", "ORIENTAÇÃO, SOBREVIVÊNCIA": "ins", "CLARIVIDÊNCIA": "ins",
   // SIM
   "PROTEGER OUTREM": "sim", "CURAR": "sim", "PERSUADIR": "sim", "BARGANHAR": "sim", "SEDUZIR": "sim", "INSPIRAR": "sim",
-  "IMPLORAR": "sim", "ACALMAR": "sim", "DOMAR / TREINAR": "sim", "CONTATOS": "sim", "RELAÇÃO": "sim", "SENSIBILIDADE": "sim", "LIDERAR / COORDENAR": "sim",
+  "IMPLORAR": "sim", "ACALMAR": "sim", "DOMAR, TREINAR": "sim", "CONTATOS": "sim", "RELAÇÃO": "sim", "SENSIBILIDADE": "sim", "LIDERAR, COORDENAR": "sim",
   // RAZ
-  "MIRAR": "raz", "PROTEGER-SE": "raz", "FOCAR": "raz", "ENFEITIÇAR / DESENFEITIÇAR": "raz", "TRANSFORMAR": "raz", "CONFECCIONAR / REPARAR": "raz",
+  "MIRAR": "raz", "PROTEGER-SE": "raz", "FOCAR": "raz", "ENFEITIÇAR, DESENFEITIÇAR": "raz", "TRANSFORMAR": "raz", "CONFECCIONAR, REPARAR": "raz",
   "PERCEPÇÃO": "raz", "INVESTIGAÇÃO": "raz", "OCLUMÊNCIA": "raz", "BUSCAR": "raz", "APRENDER": "raz", "CONHECIMENTO": "raz", "RESOLVER ENIGMA": "raz",
   // MAL
-  "MALDIÇÃO / INFLIGIR DOR": "mal", "AZARAR": "mal", "DESVIAR": "mal", "EMBOSCAR": "mal", "SURPREENDER": "mal", "DISTRAIR": "mal",
-  "FUGIR": "mal", "ENGANAR": "mal", "MANIPULAR": "mal", "RESISTIR SÚPLICA": "mal", "FURTIVIDADE": "mal", "ROUBAR / PLANTAR": "mal", "MANUSEAR": "mal"
+  "MALDIÇÃO, INFLIGIR DOR": "mal", "AZARAR": "mal", "DESVIAR": "mal", "EMBOSCAR": "mal", "SURPREENDER": "mal", "DISTRAIR": "mal",
+  "FUGIR": "mal", "ENGANAR": "mal", "MANIPULAR": "mal", "RESISTIR SÚPLICA": "mal", "FURTIVIDADE": "mal", "ROUBAR, PLANTAR": "mal", "MANUSEAR": "mal"
 };
 
 function renderCounterSpans(rawText) {
@@ -2218,114 +2218,67 @@ function addTag(side, type) {
   input.removeAttribute("data-tooltip");
 }
 </script>
+
+
+
 <script type="module">
-  import { db } from './firebase-config.js';
-  import {
-    doc, onSnapshot, setDoc, getDoc
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+window.addEventListener("DOMContentLoaded", async () => {
+  const db = getFirestore();
 
-  const charSelect = document.getElementById("char-select-a");
-  const hpSlider = document.getElementById("char_hp_range-a");
-  const hpText = document.getElementById("char_hp-a");
-  const energySlider = document.getElementById("char_energy_range-a");
-  const energyText = document.getElementById("char_energy-a");
-  const maxHpText = document.getElementById("char_maxhp-a");
-  const maxEnergyText = document.getElementById("char_maxenergy-a");
-  const status = document.getElementById("save-indicator");
-
-  let unsubscribe = null;
-
-  function setStatus(text) {
-    status.textContent = text;
-    if (text !== "☁️ Aguardando...") {
-      setTimeout(() => status.textContent = "☁️ Aguardando...", 2000);
-    }
-  }
-
-  function updateUI(data) {
-    if (data?.hp !== undefined) {
-      hpSlider.value = data.hp;
-      hpText.textContent = data.hp;
-    }
-    if (data?.maxhp !== undefined) {
-      maxHpText.textContent = data.maxhp;
-    }
-    if (data?.energy !== undefined) {
-      energySlider.value = data.energy;
-      energyText.textContent = data.energy;
-    }
-    if (data?.maxenergy !== undefined) {
-      maxEnergyText.textContent = data.maxenergy;
-    }
-  }
-
-  function bindCharacter(characterName) {
-    if (!characterName) return;
-    const docRef = doc(db, "campaigns", "alpha", "characters", characterName);
-
-    // Stop listening to previous character
-    if (unsubscribe) unsubscribe();
-
-    // Load once initially
-    getDoc(docRef).then((docSnap) => {
-      if (docSnap.exists()) {
-        updateUI(docSnap.data());
-      } else {
-        console.warn("⚠️ Character not found in Firestore:", characterName);
-      }
-    });
-
-    // Subscribe to real-time changes
-    unsubscribe = onSnapshot(docRef, (docSnap) => {
-      const data = docSnap.data();
-      updateUI(data);
-    });
-
-    // Save HP
-    hpSlider.oninput = () => {
-      const hp = parseInt(hpSlider.value);
-      hpText.textContent = hp;
-      setStatus("☁️ Salvando...");
-      setDoc(docRef, { hp }, { merge: true }).then(() => {
-        setStatus("✅ Salvo!");
+  async function populateDropdowns() {
+    const chars = await getFirebaseCollection("characters_range");
+    const dropdowns = [document.getElementById("char-select-a"), document.getElementById("char-select-b")];
+    dropdowns.forEach(dropdown => {
+      dropdown.innerHTML = "";
+      chars.forEach(char => {
+        const opt = document.createElement("option");
+        opt.value = char.char_name;
+        opt.textContent = char.char_name;
+        dropdown.appendChild(opt);
       });
-    };
-
-    // Save Energy
-    energySlider.oninput = () => {
-      const energy = parseInt(energySlider.value);
-      energyText.textContent = energy;
-      setStatus("☁️ Salvando...");
-      setDoc(docRef, { energy }, { merge: true }).then(() => {
-        setStatus("✅ Salvo!");
-      });
-    };
+    });
   }
 
-  // When dropdown changes character, rebind
-  charSelect.addEventListener("change", () => {
-  const character = charSelect.options[charSelect.selectedIndex].textContent.trim();
-  console.log("🎭 Switching to character:", character);
-  bindCharacter(character);
+  function bindRealtimeCharSync(idSuffix) {
+    const dropdown = document.getElementById("char-select-" + idSuffix);
+    const hp = document.getElementById("char_hp-" + idSuffix);
+    const energy = document.getElementById("char_energy-" + idSuffix);
+    const bonus = document.getElementById("char_bonus1-" + idSuffix);
+    const cond1 = document.getElementById("char_cond1-" + idSuffix);
+    const cond2 = document.getElementById("char_cond2-" + idSuffix);
+
+    let unsubscribe = null;
+
+    function watchCharacter(name) {
+      if (unsubscribe) unsubscribe(); // remove previous listener
+      const ref = doc(db, "campaigns", "alpha", "characters_range", name);
+      unsubscribe = onSnapshot(ref, snap => {
+        const data = snap.data();
+        if (data) {
+          hp.value = data.char_hp ?? 0;
+          energy.value = data.char_energy ?? 0;
+          bonus.value = data.char_bonus1 ?? "-";
+          cond1.value = data.char_cond1 ?? "-";
+          cond2.value = data.char_cond2 ?? "-";
+        }
+      });
+    }
+
+    dropdown.addEventListener("change", () => watchCharacter(dropdown.value));
+
+    hp.addEventListener("input", () => setFirebaseDocField("characters_range", dropdown.value, "char_hp", parseInt(hp.value)));
+    energy.addEventListener("input", () => setFirebaseDocField("characters_range", dropdown.value, "char_energy", parseInt(energy.value)));
+    cond1.addEventListener("input", () => setFirebaseDocField("characters_range", dropdown.value, "char_cond1", cond1.value));
+    cond2.addEventListener("input", () => setFirebaseDocField("characters_range", dropdown.value, "char_cond2", cond2.value));
+
+    watchCharacter(dropdown.value);
+  }
+
+  await populateDropdowns();
+  bindRealtimeCharSync("a");
+  bindRealtimeCharSync("b");
 });
-
-
-  // Initial bind
-  window.addEventListener("load", () => {
-  setTimeout(() => {
-    const character = charSelect.options[charSelect.selectedIndex].textContent.trim();
-    bindCharacter(character);
-  }, 600);
-});
-
 </script>
-
-
-
-
-
-
-
 
 </body>
 </html>
