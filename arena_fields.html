@@ -682,10 +682,7 @@ function safeNumber(id) {
     let spellsList = [];
 
     // Fetch CSV
-    Papa.parse("spells_range.csv", {
-      header: true,
-      download: true,
-      complete: (results) => {
+     => {
         spellsData = results.data;
         spellsList = spellsData.map(s => s.spell_name);
         buildSpellsTables(); // após carregar, constrói as tabelas
@@ -1378,17 +1375,13 @@ function renderCounterSpans(rawText) {
 
 
 
-const charCSV = "characters_range.csv";
-const actionCSV = "actions_range.csv";
+
+
 let charData = [], actionData = [];
 
-const conditionsCSV = "conditions_range.csv";
 
-Papa.parse(conditionsCSV, {
-  header: true,
-  download: true,
-  skipEmptyLines: true,
-  complete: function(results) {
+
+ {
     setupConditionsAutocomplete(results.data, "a");
     setupConditionsAutocomplete(results.data, "b");
 
@@ -1524,15 +1517,7 @@ actSelB.innerHTML = actionData.map((row, i) => `<option class="option" value="${
   setupDiceSection("b");
 }
 
-function applyActionVariableClasses(groupSuffix = 'a') {
-  fetch(actionCSV)
-    .then(res => res.text())
-    .then(csvText => {
-      const lines = csvText.trim().split('\n');
-      const header = lines[0].split(',').map(h => h.trim().toLowerCase());
-      const actionIndex = header.indexOf('action');
-      const attIndex = header.indexOf('att');
-      const lookup = {};
+;
 
       lines.slice(1).forEach(line => {
         const cols = line.split(',').map(c => c.trim());
@@ -1592,12 +1577,8 @@ function getActionAttrKey(actionRow) {
 }
 
 function loadData() {
-  Papa.parse(charCSV, {
-    header: true, download: true, skipEmptyLines: true,
-    complete: function(charResults) {
-      Papa.parse(actionCSV, {
-        header: true, download: true, skipEmptyLines: true,
-        complete: function(actionResults) {
+   {
+       {
           charData = charResults.data;
           actionData = actionResults.data;
           setupDropdowns();
