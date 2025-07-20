@@ -684,7 +684,9 @@ function safeNumber(id) {
          
     // Constrói as tabelas mágicas A e B
     function buildSpellsTables() {
-      ["a", "b"].forEach(side `);
+      ["a", "b"].forEach(side => {
+  // TODO: Add logic here
+});
         container.innerHTML = `
           <table style="width: 100%; font-size: 13px;">
             <tr style="vertical-align: top;">
@@ -1347,7 +1349,9 @@ let charData = [], actionData = [];
     setupConditionsAutocomplete(results.data, "b");
 
     // Se ainda houver selects (como em event_log_window), povoar:
-    ["a", "b"].forEach(side `);
+    ["a", "b"].forEach(side => {
+  // TODO: Add logic here
+});
       if (sel?.tagName === "SELECT") {
         sel.innerHTML = results.data.map(row => `<option>${row.condition}</option>`).join("");
       }
@@ -1393,7 +1397,9 @@ function setupConditionsAutocomplete(data, side) {
       suggestionBox.appendChild(option);
     suggestionBox.style.display = "block";
   // Fecha o dropdown ao clicar fora
-  document.addEventListener("click", (e) 
+  document.addEventListener("click", (e) => {
+  // TODO: Add logic here
+});
   // Restaura o tooltip ao passar o mouse
   input.addEventListener("mouseenter", () );
 }
@@ -1838,7 +1844,9 @@ function getFormattedTimestamp() {
   turnInput.value = turno + 1;
 
   // ⬇️ Parte 2: Reduzir turnos das condições
-  ["a", "b"].forEach(side `);
+  ["a", "b"].forEach(side => {
+  // TODO: Add logic here
+});
     if (!container) return;
 
     const tags = Array.from(container.querySelectorAll(".tag"));
