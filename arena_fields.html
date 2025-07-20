@@ -1246,7 +1246,10 @@ function setupConditionsAutocomplete(side) {
       option.textContent = cond.condition;
       option.style.padding = "4px 8px";
       option.style.cursor = "pointer";
-      option.title = `${cond.cond_category || ""}: ${cond.cond_description || ""}\nEFEITO: ${cond.cond_effects || ""}`;
+     option.title = `${cond.cond_category || ""}: ${cond.cond_description || ""}\nEFEITO: ${cond.cond_effects || ""}`;
+console.log("Setting tooltip for", cond.condition, "=", option.title);
+
+      
       option.onclick = () => {
         input.value = cond.condition;
         list.remove();
@@ -2089,6 +2092,8 @@ async function loadFirebaseData() {
 const querySnap = await getDocs(collection(db, "campaigns", "alpha", "conditions_range"));
 conditionsData = [];
 querySnap.forEach(doc => conditionsData.push(doc.data()));
+	  console.log("Loaded conditionsData:", conditionsData);
+
 setupConditionsAutocomplete('a');
 setupConditionsAutocomplete('b');
 
