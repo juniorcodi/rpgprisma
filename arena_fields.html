@@ -789,7 +789,7 @@ const db = getFirestore(app);
 <span class="title">CONDIÇÕES</span>
 <div style="display: flex; gap: 6px; align-items: center;">
 <input id="cond-a" placeholder="Nome da condição" style="width: 140px; padding: 4px; font-size: 14px;" type="text"/>
-<input id="cond-turns-a" min="-1" placeholder="Turnos" style="width: 60px; padding: 4px; font-size: 14px;" type="number"/>
+<input id="cond-turns-a" placeholder="Turnos" style="width: 60px; padding: 4px; font-size: 14px;" type="number"/>
 <button onclick="addTag('a','cond')">+</button>
 </div>
 <div class="tag-list" id="cond-tags-a"></div>
@@ -989,7 +989,7 @@ const db = getFirestore(app);
 <span class="title">CONDIÇÕES</span>
 <div style="display: flex; gap: 6px; align-items: center;">
 <input class="cond-obs" id="cond-b" placeholder="Nome da condição" style="width: 140px; padding: 4px; font-size: 14px;" type="text"/>
-<input id="cond-turns-b" min="-1" placeholder="Turnos" style="width: 60px; padding: 4px; font-size: 14px;" type="number"/>
+<input id="cond-turns-b" placeholder="Turnos" style="width: 60px; padding: 4px; font-size: 14px;" type="number"/>
 <button onclick="addTag('b','cond')">+</button>
 </div>
 <div class="tag-list" id="cond-tags-b"></div>
@@ -1246,9 +1246,7 @@ function setupConditionsAutocomplete(side) {
       option.textContent = cond.condition;
       option.style.padding = "4px 8px";
       option.style.cursor = "pointer";
-      option.onmouseover = () => {
-        option.title = `${cond.cond_category || ""}: ${cond.cond_description || ""}\nEFEITO: ${cond.cond_effects || ""}`;
-      };
+      option.title = `${cond.cond_category || ""}: ${cond.cond_description || ""}\nEFEITO: ${cond.cond_effects || ""}`;
       option.onclick = () => {
         input.value = cond.condition;
         list.remove();
