@@ -141,7 +141,7 @@
 <button onclick="sendLogsToArena()">📤 Enviar para Arena</button>
 
 <!-- Coloque isso ao final do <body> -->
-<script src="papaparse.min.js"></script>
+
 <script>
 let data = {};
 let actionsRange = {};
@@ -163,10 +163,7 @@ window.addEventListener("message", (event) => {
   maybeBuildNow();
 });
 
-Papa.parse("actions_range.csv", {
-  header: true,
-  download: true,
-  complete: (results) => {
+ => {
     results.data.forEach(row => {
       const action = row["action"];
       actionsRange[action] = {
@@ -185,10 +182,7 @@ Papa.parse("actions_range.csv", {
   }
 });
 
-Papa.parse("conditions_range.csv", {
-  header: true,
-  download: true,
-  complete: (results) => {
+ => {
     results.data.forEach(row => {
       conditionsRange.push(row["condition"]);
       conditionDescriptions[row["condition"]] = row["cond_effects"];
