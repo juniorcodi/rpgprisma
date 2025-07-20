@@ -1856,9 +1856,9 @@ function styleSpellActions(side) {
 }
 
 function addArenaCondition(side) {
-  const condInput = document.getElementById(`char-cond-${side}`);
-  const turnsInput = document.getElementById(`char-cond-turns-${side}`);
-  const tagList = document.getElementById(`char-cond-tags-${side}`);
+  const condInput = document.getElementById(`cond-${side}`);
+  const turnsInput = document.getElementById(`cond-turns-${side}`);
+  const tagList = document.getElementById(`cond-tags-${side}`);
   const value = condInput.value.trim();
   const turns = parseInt(turnsInput.value) || 0;
 
@@ -1866,13 +1866,13 @@ function addArenaCondition(side) {
 
   const displayTurns = turns < 0 ? "Enquanto houver concentração" :
                       turns === 0 ? "Indefinidamente" :
-                      `${turns}`;
+                      `${turns} turno(s)`;
 
-  // Procurar tooltip baseado nos dados carregados
+  // Tooltip from Firebase
   const match = conditionsData?.find(c => c.condition === value);
-  const tooltip = match ?
-    `${match.cond_category || ''}: ${match.cond_description || ''}\nEFEITO: ${match.cond_effects || ''}` :
-    "";
+  const tooltip = match
+    ? `${match.cond_category || ''}: ${match.cond_description || ''}\nEFEITO: ${match.cond_effects || ''}`
+    : "";
 
   const tag = document.createElement("span");
   tag.className = "tag";
@@ -1881,24 +1881,22 @@ function addArenaCondition(side) {
   tag.innerHTML = `${value} (${displayTurns}) <button onclick="this.parentElement.remove()">✕</button>`;
   tagList.appendChild(tag);
 
-const match = conditionsData?.find(c => c.condition === value);
-tag.title = match
-  ? `${match.cond_category || ""}: ${match.cond_description || ""}\nEFEITO: ${match.cond_effects || ""}`
-  : "";
-
   condInput.value = "";
   turnsInput.value = "0";
 }
-
 function updateArenaConditionDescriptions(side) {
   const tagList = [...document.getElementById(`cond-tags-${side}`).children];
   const descDiv = document.getElementById(`cond-desc-${side}`);
   descDiv.innerHTML = tagList.map(tag => {
     const [name] = tag.dataset.value.split(" (");
-    return `<div>🔹 <b>${name}</b>: ${conditionDescriptions[name] || "sem descrição"}</div>`;
+    // Tooltip (optional for this UI element, but included if wanted)
+    const match = conditionsData?.find(c => c.condition === name);
+    const tooltip = match
+      ? `${match.cond_category || ''}: ${match.cond_description || ''}\nEFEITO: ${match.cond_effects || ''}`
+      : "";
+    return `<div title="${tooltip}">🔹 <b>${name}</b>: ${match?.cond_description || "sem descrição"}</div>`;
   }).join("");
 }
-
 function addTag(side, type) {
   const inputId = type === "cond" ? `cond-${side}` : `${type}-${side}`;
   const turnsId = type === "cond" ? `cond-turns-${side}` : `${type}-turns-${side}`;
@@ -1909,45 +1907,38 @@ function addTag(side, type) {
   const value = input.value.trim();
   if (!value) return;
 
-  // Evitar entradas duplicadas
+  // Prevent duplicate
   const existingTags = tagContainer.querySelectorAll("span");
   for (const tag of existingTags) {
     if (tag.dataset.value === value) return;
   }
 
+  // Tooltip from Firebase
+  let tooltip = "";
+  if (type === "cond" && typeof conditionsData !== "undefined") {
+    const match = conditionsData.find(c => c.condition === value);
+    tooltip = match
+      ? `${match.cond_category || ''}: ${match.cond_description || ''}\nEFEITO: ${match.cond_effects || ''}`
+      : "";
+  }
+
   const span = document.createElement("span");
   span.className = "tag";
   span.dataset.value = value;
+  span.title = tooltip;
 
   let turnLabel = "";
   if (turns === 0) turnLabel = " (Indefinido)";
   else if (turns < 0) turnLabel = " (Concentração)";
   else turnLabel = ` (${turns})`;
 
-  span.textContent = `${value}${turnLabel}`;
-
-  // Tooltip opcional baseado no campo original
-  if (input.dataset.tooltip) {
-    span.title = input.dataset.tooltip;
-  }
-
-  const remove = document.createElement("button");
-  remove.textContent = "x";
-  remove.className = "tag-remove";
-  remove.onclick = () => span.remove();
-  span.appendChild(remove);
+  span.innerHTML = `${value}${turnLabel} <button onclick="this.parentElement.remove()">✕</button>`;
 
   tagContainer.appendChild(span);
   input.value = "";
   input.removeAttribute("data-tooltip");
 }
 
-// Spell section functions
-function toggleSpellSection() {
-  const spellArea = document.getElementById("spells-area");
-  if (!spellArea) return; // Previne erro se ainda não existe
-  spellArea.style.display = spellArea.style.display === "none" ? "flex" : "none";
-}
 
 // Constrói as tabelas mágicas A e B
 function buildSpellsTables() {
