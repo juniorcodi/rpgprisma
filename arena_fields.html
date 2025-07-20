@@ -1211,82 +1211,63 @@ function renderCounterSpans(rawText) {
     .join(" ");
 }
 
-function setupConditionsAutocomplete(data, side) {
+function setupConditionsAutocomplete(side) {
   const input = document.getElementById(`cond-${side}`);
-  if (!input) return;
+  const listId = `cond-autocomplete-list-${side}`;
 
-  const wrapper = document.createElement("div");
-  wrapper.style.position = "relative";
-  input.parentNode.insertBefore(wrapper, input);
-  wrapper.appendChild(input);
+  input.addEventListener("input", function() {
+    // Remove any old autocomplete
+    let old = document.getElementById(listId);
+    if (old) old.remove();
 
-  const suggestionBox = document.createElement("div");
-  suggestionBox.className = "autocomplete-suggestions";
-  suggestionBox.style.position = "absolute";
-  suggestionBox.style.top = "100%";
-  suggestionBox.style.left = "0";
-  suggestionBox.style.right = "0";
-  suggestionBox.style.background = "#222";
-  suggestionBox.style.border = "1px solid #444";
-  suggestionBox.style.zIndex = "999";
-  suggestionBox.style.maxHeight = "150px";
-  suggestionBox.style.overflowY = "auto";
-  suggestionBox.style.display = "none";
-  wrapper.appendChild(suggestionBox);
+    const val = input.value.toLowerCase();
+    if (!val || !conditionsData) return;
 
-  input.addEventListener("input", () => {
-    const value = input.value.trim().toLowerCase();
-    suggestionBox.innerHTML = "";
-
-    if (!value) {
-      suggestionBox.style.display = "none";
-      return;
-    }
-
-    const matches = data.filter(row =>
-      row.condition?.toLowerCase().includes(value)
+    const matches = conditionsData.filter(c =>
+      c.condition && c.condition.toLowerCase().includes(val)
     );
 
-    if (matches.length === 0) {
-      suggestionBox.style.display = "none";
-      return;
-    }
+    if (!matches.length) return;
 
-    matches.forEach(match => {
+    const list = document.createElement("div");
+    list.id = listId;
+    list.style.position = "absolute";
+    list.style.background = "#222";
+    list.style.zIndex = 10;
+    list.style.border = "1px solid #333";
+    list.style.maxHeight = "140px";
+    list.style.overflowY = "auto";
+    list.style.width = input.offsetWidth + "px";
+    list.style.left = input.getBoundingClientRect().left + "px";
+    list.style.top = (input.getBoundingClientRect().bottom + window.scrollY) + "px";
+
+    matches.forEach(cond => {
       const option = document.createElement("div");
-      option.textContent = match.condition;
+      option.textContent = cond.condition;
       option.style.padding = "4px 8px";
       option.style.cursor = "pointer";
-      option.style.borderBottom = "1px solid #333";
-
-      option.addEventListener("click", () => {
-        input.value = match.condition;
-        input.setAttribute(
-          "data-tooltip",
-          `${match.cond_category || ''}: ${match.cond_description || ''}\nEFEITO: ${match.cond_effects || ''}`
-        );
-        input.classList.add("filled");
-        suggestionBox.style.display = "none";
-      });
-
-      suggestionBox.appendChild(option);
+      option.onmouseover = () => {
+        option.title = `${cond.cond_category || ""}: ${cond.cond_description || ""}\nEFEITO: ${cond.cond_effects || ""}`;
+      };
+      option.onclick = () => {
+        input.value = cond.condition;
+        list.remove();
+      };
+      list.appendChild(option);
     });
 
-    suggestionBox.style.display = "block";
-  });
+    document.body.appendChild(list);
 
-  // Fecha o dropdown ao clicar fora
-  document.addEventListener("click", (e) => {
-    if (!wrapper.contains(e.target)) {
-      suggestionBox.style.display = "none";
-    }
-  });
-
-  // Restaura o tooltip ao passar o mouse
-  input.addEventListener("mouseenter", () => {
-    if (input.dataset.tooltip) input.title = input.dataset.tooltip;
+    // Remove autocomplete when clicking outside
+    document.addEventListener("click", function onDocClick(e) {
+      if (e.target !== input) {
+        if (document.getElementById(listId)) document.getElementById(listId).remove();
+        document.removeEventListener("click", onDocClick);
+      }
+    });
   });
 }
+
 
 function setupDropdowns() {
   const charSelA = document.getElementById("char-select-a");
@@ -2107,8 +2088,12 @@ async function loadFirebaseData() {
     // Setup UI after data is loaded
     setupDropdowns();
     buildSpellsTables();
-    setupConditionsAutocomplete(conditionsData, "a");
-    setupConditionsAutocomplete(conditionsData, "b");
+
+const querySnap = await getDocs(collection(db, "campaigns", "alpha", "conditions_range"));
+conditionsData = [];
+querySnap.forEach(doc => conditionsData.push(doc.data()));
+setupConditionsAutocomplete('a');
+setupConditionsAutocomplete('b');
 
     console.log("Firebase data loaded successfully");
   } catch (error) {
