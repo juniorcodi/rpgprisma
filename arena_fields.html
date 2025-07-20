@@ -681,12 +681,18 @@ function safeNumber(id) {
     let spellsData = [];
     let spellsList = [];
 
-         
+    // Fetch CSV
+     => {
+        spellsData = results.data;
+        spellsList = spellsData.map(s => s.spell_name);
+        buildSpellsTables(); // após carregar, constrói as tabelas
+      }
+    });
+
     // Constrói as tabelas mágicas A e B
     function buildSpellsTables() {
       ["a", "b"].forEach(side => {
-  // TODO: Add logic here
-});
+        const container = document.getElementById(`spells-${side}`);
         container.innerHTML = `
           <table style="width: 100%; font-size: 13px;">
             <tr style="vertical-align: top;">
@@ -718,7 +724,8 @@ function safeNumber(id) {
         `;
 
         setupAutocomplete(`spell-name-${side}`, side);
-      }
+      });
+    }
 
     // Preenche os dados de acordo com o feitiço selecionado
     function populateSpellData(side) {
@@ -771,7 +778,11 @@ function safeNumber(id) {
       input.setAttribute("list", `spells-list-${side}`);
       const datalist = document.createElement("datalist");
       datalist.id = `spells-list-${side}`;
-      spellsList.forEach(spell );
+      spellsList.forEach(spell => {
+        const opt = document.createElement("option");
+        opt.value = spell;
+        datalist.appendChild(opt);
+      });
       document.body.appendChild(datalist);
 
       input.addEventListener("change", () => populateSpellData(side));
@@ -1244,7 +1255,11 @@ function getAttributeData() {
 
 function sendLogPopupData() {
   const popup = window.open("event_log_window.html", "LogPopup", "width=1060,height=630");
-  setTimeout(() );
+  setTimeout(() => {
+      console.log("✅ Enviando dados para o popup:", {
+  charA: getCharacterData("a"),
+  charB: getCharacterData("b"),
+});
 	  popup.postMessage({
       charA: getCharacterData("a"),
       charB: getCharacterData("b"),
@@ -1255,8 +1270,11 @@ function sendLogPopupData() {
 document.querySelector('.top-button[title="Calculadora de Dificuldade"]')
     .addEventListener('click', function () {
       window.open('difficulty_calculator.html', 'CalculadoraDeDificuldade', 'width=1000,height=700,resizable=yes,scrollbars=yes');
-    </script>
+    });
+
+</script>
 <script>
+// Define constants and CSV paths
 const charFields = [
   "char_avatar", "char_name", "char_player", "char_hp", "char_maxhp", "char_energy", "char_maxenergy",
   "char_ins", "char_sim", "char_raz", "char_mal", "char_por", "char_ndf", "char_agi",
@@ -1275,8 +1293,14 @@ function setFields(charRow, actionRow, suffix) {
     selectedAttNameEl.textContent = actionRow && actionRow.att ? actionRow.att.trim() : "";
   }
 
-  charFields.forEach(f );
-  actionFields.forEach(f );
+  charFields.forEach(f => {
+    const el = document.getElementById(f + suffix);
+    if (el) el.textContent = charRow && charRow[f] ? charRow[f] : "";
+  });
+  actionFields.forEach(f => {
+    const el = document.getElementById(f + suffix);
+    if (el) el.textContent = actionRow && actionRow[f] ? actionRow[f] : "";
+  });
 	  // Override and format counter separately
   const counterEl = document.getElementById("counter" + suffix);
   if (counterEl && actionRow && actionRow.counter) {
@@ -1290,10 +1314,19 @@ function setFields(charRow, actionRow, suffix) {
       MAL: [ "MALDIÇÃO, INFLIGIR DOR", "AZARAR", "DESVIAR", "EMBOSCAR", "SURPREENDER", "DISTRAIR", "FUGIR", "ENGANAR", "MANIPULAR", "RESISTIR SÚPLICA", "FURTIVIDADE", "ROUBAR, PLANTAR", "MANUSEAR" ]
     };
 
-    const getAttrClass = (word) ;
+    const getAttrClass = (word) => {
+      const upper = word.toUpperCase();
+      if (keywordToAttr.INS.includes(upper)) return 'ins';
+      if (keywordToAttr.SIM.includes(upper)) return 'sim';
+      if (keywordToAttr.RAZ.includes(upper)) return 'raz';
+      if (keywordToAttr.MAL.includes(upper)) return 'mal';
+      return 'none';
+    };
 
-    const spansHTML = keywords.map(word ">${word}</span>`;
-    .join(" ");
+    const spansHTML = keywords.map(word => {
+      const cssClass = getAttrClass(word);
+      return `<span class="action-block ${cssClass}">${word}</span>`;
+    }).join(" ");
 
     counterEl.innerHTML = spansHTML;
   }
@@ -1332,7 +1365,11 @@ function renderCounterSpans(rawText) {
   if (!rawText) return "";
   return rawText
     .split(/\s*,\s*/) // Split only on commas, with optional spaces
-    .map(kw ">${clean}</span>`;
+    .map(kw => {
+      const clean = kw.trim();
+      const attr = keywordToAttr[clean.toUpperCase()] || "none";
+      return `<span class="action-block ${attr}">${clean}</span>`;
+    })
     .join(" ");
 }
 
@@ -1350,12 +1387,17 @@ let charData = [], actionData = [];
 
     // Se ainda houver selects (como em event_log_window), povoar:
     ["a", "b"].forEach(side => {
-  // TODO: Add logic here
-});
+      const sel = document.getElementById(`cond-${side}`);
       if (sel?.tagName === "SELECT") {
         sel.innerHTML = results.data.map(row => `<option>${row.condition}</option>`).join("");
       }
-    }
+    });
+  }
+});
+
+
+	
+	
 function setupConditionsAutocomplete(data, side) {
   const input = document.getElementById(`cond-${side}`);
   if (!input) return;
@@ -1379,7 +1421,14 @@ function setupConditionsAutocomplete(data, side) {
   suggestionBox.style.display = "none";
   wrapper.appendChild(suggestionBox);
 
-  input.addEventListener("input", () 
+  input.addEventListener("input", () => {
+    const value = input.value.trim().toLowerCase();
+    suggestionBox.innerHTML = "";
+
+    if (!value) {
+      suggestionBox.style.display = "none";
+      return;
+    }
 
     const matches = data.filter(row =>
       row.condition?.toLowerCase().includes(value)
@@ -1390,18 +1439,40 @@ function setupConditionsAutocomplete(data, side) {
       return;
     }
 
-    matches.forEach(match : ${match.cond_description || ''}\nEFEITO: ${match.cond_effects || ''}`
+    matches.forEach(match => {
+      const option = document.createElement("div");
+      option.textContent = match.condition;
+      option.style.padding = "4px 8px";
+      option.style.cursor = "pointer";
+      option.style.borderBottom = "1px solid #333";
+
+      option.addEventListener("click", () => {
+        input.value = match.condition;
+        input.setAttribute(
+          "data-tooltip",
+          `${match.cond_category || ''}: ${match.cond_description || ''}\nEFEITO: ${match.cond_effects || ''}`
         );
         input.classList.add("filled");
         suggestionBox.style.display = "none";
+      });
+
       suggestionBox.appendChild(option);
+    });
+
     suggestionBox.style.display = "block";
+  });
+
   // Fecha o dropdown ao clicar fora
   document.addEventListener("click", (e) => {
-  // TODO: Add logic here
-});
+    if (!wrapper.contains(e.target)) {
+      suggestionBox.style.display = "none";
+    }
+  });
+
   // Restaura o tooltip ao passar o mouse
-  input.addEventListener("mouseenter", () );
+  input.addEventListener("mouseenter", () => {
+    if (input.dataset.tooltip) input.title = input.dataset.tooltip;
+  });
 }
 
 
@@ -1420,13 +1491,19 @@ actSelB.innerHTML = actionData.map((row, i) => `<option class="option" value="${
   setFields(charData[charSelA.value], actionData[actSelA.value], "-a");
   updatePartialResult("a");
   updateStatRanges("a");
-  setTimeout(() , 30);
+  setTimeout(() => {
+    applyActionVariableClasses("a");
+    applySimpleVariableClassesFromField("a");
+    }, 30);
 }
   function refreshB() {
     setFields(charData[charSelB.value], actionData[actSelB.value], "-b");
     updatePartialResult("b");
     updateStatRanges("b");
-      setTimeout(() , 30);
+      setTimeout(() => {
+    applyActionVariableClasses("b");
+    applySimpleVariableClassesFromField("b");
+     }, 30);
 
   }
   charSelA.onchange = refreshA;
@@ -1442,10 +1519,31 @@ actSelB.innerHTML = actionData.map((row, i) => `<option class="option" value="${
 
 ;
 
-      lines.slice(1).forEach(line 
+      lines.slice(1).forEach(line => {
+        const cols = line.split(',').map(c => c.trim());
+        const action = cols[actionIndex]?.toUpperCase();
+        const att = cols[attIndex]?.toUpperCase();
+        if (action && att) {
+          lookup[action] = att;
+        }
+      });
+
       const elements = document.querySelectorAll(`.action-variable[id$="-${groupSuffix}"]`);
-      elements.forEach(el 
-      }
+      elements.forEach(el => {
+        const content = el.textContent.trim().toUpperCase();
+        const matchedAtt = lookup[content];
+        el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
+        switch (matchedAtt) {
+          case 'INS': el.classList.add('ins'); break;
+          case 'SIM': el.classList.add('sim'); break;
+          case 'RAZ': el.classList.add('raz'); break;
+          case 'MAL': el.classList.add('mal'); break;
+          default: el.classList.add('none');
+        }
+      });
+    })
+    
+}
 
 	function applySimpleVariableClassesFromField(groupSuffix = 'a') {
   const attrEl = document.getElementById(`selected_att_name-${groupSuffix}`);
@@ -1460,9 +1558,14 @@ actSelB.innerHTML = actionData.map((row, i) => `<option class="option" value="${
     'back-variable', 'light-div', 'dark-div', 'text-variable', 'text-variable-emoji'
   ];
 
-  classTypes.forEach(classType [id$="-${groupSuffix}"]`);
-    elements.forEach(el );
-  }
+  classTypes.forEach(classType => {
+    const elements = document.querySelectorAll(`.${classType}[id$="-${groupSuffix}"]`);
+    elements.forEach(el => {
+      el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
+      el.classList.add(att.toLowerCase());
+    });
+  });
+}
 	
 	
 window.onload = loadData;
@@ -1480,8 +1583,10 @@ function loadData() {
           actionData = actionResults.data;
           setupDropdowns();
         }
-      }
-  }
+      });
+    }
+  });
+}
 
 // --- DICE LOGIC PATCH ---
 
@@ -1553,9 +1658,17 @@ function setupDiceSection(side) {
   // Handle special dice
   let specialTotal = 0;
   const specialArea = document.getElementById('specialdice_area-' + side);
-  specialArea.querySelectorAll('.dice-group').forEach(group -${max}*"><b>${r}</b></span>`);
+  specialArea.querySelectorAll('.dice-group').forEach(group => {
+    const amount = parseInt(group.querySelector('.special-amount').value) || 1;
+    const max = parseInt(group.querySelector('.special-max').value);
+    const min = parseInt(group.querySelector('.special-min').value);
+    for (let j = 0; j < amount; ++j) {
+      const r = Math.floor(Math.random() * (max - min + 1)) + min;
+      breakdown.push(`<span class="partial-result" title="Dado Especial ${min}-${max}*"><b>${r}</b></span>`);
       specialTotal += r;
     }
+  });
+
   const finalSum = total + specialTotal;
 
   // Output
@@ -1657,8 +1770,15 @@ energyRange.oninput = function () {
       { id: 'char_guilt_satisf-b', left: '#aa1e57', right: '#08626D' }
     ];
 
-    sliders.forEach(({ id, left, right );
-    function updateSliderFill(slider, color) {
+    sliders.forEach(({ id, left, right }) => {
+      const slider = document.getElementById(id);
+      setCenteredGradient(slider, left, right);
+      slider.addEventListener('input', () => {
+        setCenteredGradient(slider, left, right);
+      });
+    });
+	
+function updateSliderFill(slider, color) {
   const value = (slider.value - slider.min) / (slider.max - slider.min);
   const percent = value * 100;
   slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${percent}%, #333 ${percent}%, #333 100%)`;
@@ -1670,13 +1790,32 @@ energyRange.oninput = function () {
     const isVisible = obsField.style.display !== "none";
     obsField.style.display = isVisible ? "none" : "block";
   }	
-document.getElementById("obs-toggle-b").addEventListener("click", function () {
+});
+	  document.getElementById("obs-toggle-b").addEventListener("click", function () {
   const obsField = document.getElementById("obs-field-b");
   if (obsField) {
     const isVisible = obsField.style.display !== "none";
     obsField.style.display = isVisible ? "none" : "block";
   }
-document.getElementById("rollalldice-b").addEventListener("click", () );
+});
+	
+   
+
+document.getElementById("rollalldice-b").addEventListener("click", () => {
+  // Supondo que sua lógica de rolagem já esteja aqui...
+  // Agora adicionamos o envio do popup com log de confirmação:
+
+  setTimeout(() => {
+    const popup = window.open("event_log_window.html", "LogPopup", "width=1060,height=630");
+
+    setTimeout(() => {
+      const charAData = getCharacterData("a");
+      const charBData = getCharacterData("b");
+
+      console.log("✅ Enviando dados para o popup:", {
+        charA: charAData,
+        charB: charBData,
+      });
 
       popup.postMessage({
         charA: charAData,
@@ -1684,6 +1823,12 @@ document.getElementById("rollalldice-b").addEventListener("click", () );
       }, "*");
     }, 500);
   }, 1000);
+});
+
+	  
+
+
+
 function safeText(id) {
   const el = document.getElementById(id);
   return el ? el.textContent.trim() : "❓";
@@ -1726,7 +1871,7 @@ const target = targetSelect?.options[targetSelect.selectedIndex]?.textContent.tr
   const breakdown = Array.from(document.querySelectorAll(`#roll_breakdown-${side} span[title]`)).map(span => ({
     label: span.getAttribute("title"),
     value: parseInt(span.textContent) || 0
-  );
+  }));
 	// Ndf
 	const ndfEl = document.getElementById(`char_ndf-${side}`);
   const ndf = ndfEl ? parseInt(ndfEl.textContent.trim()) || 0 : 0;
@@ -1766,21 +1911,31 @@ function sendLogPopupData() {
   const dataA = getCharacterData("a");
   const dataB = getCharacterData("b");
 
-  setTimeout(() , "*");
+  setTimeout(() => {
+    popup.postMessage({
+      charA: dataA,
+      charB: dataB,
+      action: dataA.action,
+      attribute: dataA.atr
+    }, "*");
   }, 500);
 }
 
 function getFormattedTimestamp() {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, "0");
-    const mon = now.toLocaleString("en", { month: "short" const year = String(now.getFullYear()).slice(-2);
+    const mon = now.toLocaleString("en", { month: "short" });
+    const year = String(now.getFullYear()).slice(-2);
     const hour = String(now.getHours()).padStart(2, "0");
     const min = String(now.getMinutes()).padStart(2, "0");
     return `${day}/${mon}/${year} ${hour}:${min}`;
   }
 
   // Recebe logs vindos do popup
-  window.addEventListener("message", (event) );
+  window.addEventListener("message", (event) => {
+    if (!event.data || !event.data.logs) return;
+    event.data.logs.forEach(log => addLogEntry(log));
+  });
 
   // 🧩 Adiciona uma entrada ao topo do log
   function addLogEntry(content, isManual = false) {
@@ -1811,7 +1966,10 @@ function getFormattedTimestamp() {
       contentDiv.innerHTML = content;
     }
 
-    contentDiv.onclick = () 
+    contentDiv.onclick = () => {
+      if (contentDiv.dataset.manual === "true") {
+        makeContentEditable(contentDiv, contentDiv.innerText.trim());
+      }
     };
 
     row.appendChild(checkbox);
@@ -1827,7 +1985,9 @@ function getFormattedTimestamp() {
     container.innerHTML = "";
     const textarea = document.createElement("textarea");
     textarea.value = value;
-    textarea.onblur = () ;
+    textarea.onblur = () => {
+      container.innerHTML = textarea.value;
+    };
     container.appendChild(textarea);
     textarea.focus();
   }
@@ -1845,37 +2005,78 @@ function getFormattedTimestamp() {
 
   // ⬇️ Parte 2: Reduzir turnos das condições
   ["a", "b"].forEach(side => {
-  // TODO: Add logic here
-});
+    const container = document.getElementById(`cond-tags-${side}`);
     if (!container) return;
 
     const tags = Array.from(container.querySelectorAll(".tag"));
 
-    tags.forEach(tag  else {
+    tags.forEach(tag => {
+      const text = tag.textContent.trim();
+      const match = text.match(/\((\d+)\)/); // Captura número entre parênteses
+
+      if (match) {
+        let num = parseInt(match[1]);
+        num--;
+
+        if (num <= 0) {
+          tag.remove(); // Remove a condição
+        } else {
           const conditionName = tag.dataset.value;
-          tag.childNodes[0].textContent = `${conditionName} (${num`;
+          tag.childNodes[0].textContent = `${conditionName} (${num})`;
         }
       }
-    }
+    });
+  });
+}
 
 
   function deleteSelectedLogs() {
-    document.querySelectorAll(".log-entry").forEach(entry 
-    }
+    document.querySelectorAll(".log-entry").forEach(entry => {
+      if (entry.querySelector("input[type='checkbox']").checked) {
+        entry.remove();
+      }
+    });
+  }
 
   function toggleVisibility() {
-    document.querySelectorAll(".log-entry").forEach(entry 
-    }
+    document.querySelectorAll(".log-entry").forEach(entry => {
+      if (entry.querySelector("input[type='checkbox']").checked) {
+        entry.classList.toggle("hidden-log");
+      }
+    });
+  }
 
   // 🧩 Filtro por status
   function filterStatusLogs() {
     const filter = document.getElementById("status-filter").value;
-    document.querySelectorAll(".log-entry").forEach(entry 
-    }
+    document.querySelectorAll(".log-entry").forEach(entry => {
+      const isHidden = entry.classList.contains("hidden-log");
+      const isDone = entry.querySelector(".log-status").checked;
+
+      switch (filter) {
+        case "all":
+          entry.style.display = "flex";
+          break;
+        case "visible":
+          entry.style.display = !isHidden ? "flex" : "none";
+          break;
+        case "hidden":
+          entry.style.display = isHidden ? "flex" : "none";
+          break;
+        case "done":
+          entry.style.display = isDone ? "flex" : "none";
+          break;
+        case "todo":
+          entry.style.display = !isDone ? "flex" : "none";
+          break;
+      }
+    });
+  }
 	
 	function styleSpellActions(side) {
   const fields = ["ins", "raz", "mal", "sim"];
-  fields.forEach(type -${side}`;
+  fields.forEach(type => {
+    const spanId = `spell_${type}-${side}`;
     const container = document.getElementById(spanId);
     if (!container) return;
 
@@ -1884,7 +2085,20 @@ function getFormattedTimestamp() {
 
     container.innerHTML = ""; // Clear previous content
 
-    actions.forEach(action `);
+    actions.forEach(action => {
+      const span = document.createElement("span");
+      span.classList.add("action-block", type, "spell-action-button");
+
+      // Armazena o valor completo como data-attribute
+      span.dataset.full = action;
+
+      // Exibe só até a primeira barra ou tudo, se não houver
+      const displayText = action.split("/")[0].trim();
+      span.textContent = displayText + (action.includes("/") ? " ..." : "");
+
+      // Ao clicar, seleciona a ação no dropdown correspondente
+      span.addEventListener("click", () => {
+        const dropdown = document.getElementById(`action-select-${side}`);
         const options = Array.from(dropdown.options);
         const index = options.findIndex(opt => opt.textContent.trim() === action.trim());
 
@@ -1894,8 +2108,12 @@ function getFormattedTimestamp() {
         } else {
           alert(`Ação "${action}" não encontrada no dropdown.`);
         }
+      });
+
       container.appendChild(span);
-    }
+    });
+  });
+}
 
 function addArenaCondition(side) {
   const condInput = document.getElementById(`char-cond-${side}`);
@@ -1920,7 +2138,7 @@ function addArenaCondition(side) {
   tag.className = "tag";
   tag.dataset.value = value;
   tag.title = tooltip;
-  tag.innerHTML = `${value} (${displayTurns<button onclick="this.parentElement.remove()">✕</button>`;
+  tag.innerHTML = `${value} (${displayTurns}) <button onclick="this.parentElement.remove()">✕</button>`;
   tagList.appendChild(tag);
 
   condInput.value = "";
@@ -1932,8 +2150,10 @@ function addArenaCondition(side) {
 function updateArenaConditionDescriptions(side) {
   const tagList = [...document.getElementById(`cond-tags-${side}`).children];
   const descDiv = document.getElementById(`cond-desc-${side}`);
-  descDiv.innerHTML = tagList.map(tag </b>: ${conditionDescriptions[name] || "sem descrição"}</div>`;
-  .join("");
+  descDiv.innerHTML = tagList.map(tag => {
+    const [name] = tag.dataset.value.split(" (");
+    return `<div>🔹 <b>${name}</b>: ${conditionDescriptions[name] || "sem descrição"}</div>`;
+  }).join("");
 }
 
 function addTag(side, type) {
@@ -1959,7 +2179,7 @@ function addTag(side, type) {
   let turnLabel = "";
   if (turns === 0) turnLabel = " (Indefinido)";
   else if (turns < 0) turnLabel = " (Concentração)";
-  else turnLabel = ` (${turns`;
+  else turnLabel = ` (${turns})`;
 
   span.textContent = `${value}${turnLabel}`;
 
@@ -1983,8 +2203,22 @@ function addTag(side, type) {
 
 
 <script type="module">
-window.addEventListener("DOMContentLoaded", async () );
-    }
+window.addEventListener("DOMContentLoaded", async () => {
+  const db = getFirestore();
+
+  async function populateDropdowns() {
+    const chars = await getFirebaseCollection("characters_range");
+    const dropdowns = [document.getElementById("char-select-a"), document.getElementById("char-select-b")];
+    dropdowns.forEach(dropdown => {
+      dropdown.innerHTML = "";
+      chars.forEach(char => {
+        const opt = document.createElement("option");
+        opt.value = char.char_name;
+        opt.textContent = char.char_name;
+        dropdown.appendChild(opt);
+      });
+    });
+  }
 
   function bindRealtimeCharSync(idSuffix) {
     const dropdown = document.getElementById("char-select-" + idSuffix);
@@ -1999,8 +2233,17 @@ window.addEventListener("DOMContentLoaded", async () );
     function watchCharacter(name) {
       if (unsubscribe) unsubscribe(); // remove previous listener
       const ref = doc(db, "campaigns", "alpha", "characters_range", name);
-      unsubscribe = onSnapshot(ref, snap 
-      }
+      unsubscribe = onSnapshot(ref, snap => {
+        const data = snap.data();
+        if (data) {
+          hp.value = data.char_hp ?? 0;
+          energy.value = data.char_energy ?? 0;
+          bonus.value = data.char_bonus1 ?? "-";
+          cond1.value = data.char_cond1 ?? "-";
+          cond2.value = data.char_cond2 ?? "-";
+        }
+      });
+    }
 
     dropdown.addEventListener("change", () => watchCharacter(dropdown.value));
 
@@ -2015,47 +2258,7 @@ window.addEventListener("DOMContentLoaded", async () );
   await populateDropdowns();
   bindRealtimeCharSync("a");
   bindRealtimeCharSync("b");
-</script>
-
-
-<script type="module">
-  import { getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  const db = window._db;
-  let spellsData = [];
-  let spellsList = [];
-
-  async function loadSpellsFromFirestore() {
-    const querySnapshot = await getDocs(collection(db, "campaigns", "alpha", "spells_range"));
-    spellsData = [];
-    querySnapshot.forEach(doc );
-    spellsList = spellsData.map(s => s.spell_name);
-    if (typeof buildSpellsTables === 'function') buildSpellsTables();
-  }
-
-  window.loadSpellsFromFirestore = loadSpellsFromFirestore;
-  loadSpellsFromFirestore(); // auto-load
-</script>
-
-
-<script>
-// Restores the 'addManualLog' function to manually trigger event log
-function addManualLog() {
-  const popup = window.open("event_log_window.html", "LogPopup", "width=1060,height=630");
-  setTimeout(() => {
-    popup.postMessage({
-      charA: getCharacterData("a"),
-      charB: getCharacterData("b"),
-    }, "*");
-  }, 500);
-}
-
-// Toggles visibility of spell section
-function toggleSpellSection() {
-  const section = document.getElementById("spell-section");
-  if (section) {
-    section.style.display = (section.style.display === "none" || section.style.display === "") ? "block" : "none";
-  }
-}
+});
 </script>
 
 </body>
