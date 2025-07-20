@@ -1881,6 +1881,11 @@ function addArenaCondition(side) {
   tag.innerHTML = `${value} (${displayTurns}) <button onclick="this.parentElement.remove()">✕</button>`;
   tagList.appendChild(tag);
 
+const match = conditionsData?.find(c => c.condition === value);
+tag.title = match
+  ? `${match.cond_category || ""}: ${match.cond_description || ""}\nEFEITO: ${match.cond_effects || ""}`
+  : "";
+
   condInput.value = "";
   turnsInput.value = "0";
 }
