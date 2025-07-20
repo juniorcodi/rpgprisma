@@ -790,7 +790,7 @@ const db = getFirestore(app);
 <div style="display: flex; gap: 6px; align-items: center;">
 <input id="cond-a" placeholder="Nome da condição" style="width: 140px; padding: 4px; font-size: 14px;" type="text"/>
 <input id="cond-turns-a" min="0" placeholder="Turnos" style="width: 60px; padding: 4px; font-size: 14px;" type="number"/>
-<button onclick="addArenaCondition('a')">+</button>
+<button onclick="addTag('a','cond')">+</button>
 </div>
 <div class="tag-list" id="cond-tags-a"></div>
 </div>
@@ -990,7 +990,7 @@ const db = getFirestore(app);
 <div style="display: flex; gap: 6px; align-items: center;">
 <input class="cond-obs" id="cond-b" placeholder="Nome da condição" style="width: 140px; padding: 4px; font-size: 14px;" type="text"/>
 <input id="cond-turns-b" min="0" placeholder="Turnos" style="width: 60px; padding: 4px; font-size: 14px;" type="number"/>
-<button onclick="addArenaCondition('b')">+</button>
+<button onclick="addTag('b','cond')">+</button>
 </div>
 <div class="tag-list" id="cond-tags-b"></div>
 </div>
@@ -1855,9 +1855,9 @@ function styleSpellActions(side) {
 }
 
 function addArenaCondition(side) {
-  const condInput = document.getElementById(`cond-${side}`);
-  const turnsInput = document.getElementById(`cond-turns-${side}`);
-  const tagList = document.getElementById(`cond-tags-${side}`);
+  const condInput = document.getElementById(`char-cond-${side}`);
+  const turnsInput = document.getElementById(`char-cond-turns-${side}`);
+  const tagList = document.getElementById(`char-cond-tags-${side}`);
   const value = condInput.value.trim();
   const turns = parseInt(turnsInput.value) || 0;
 
@@ -1883,7 +1883,6 @@ function addArenaCondition(side) {
   condInput.value = "";
   turnsInput.value = "0";
 }
-
 
 function updateArenaConditionDescriptions(side) {
   const tagList = [...document.getElementById(`cond-tags-${side}`).children];
