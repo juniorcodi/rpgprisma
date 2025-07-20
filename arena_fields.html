@@ -681,8 +681,7 @@ function safeNumber(id) {
     let spellsData = [];
     let spellsList = [];
 
-    // Fetch CSV
-     => {
+         => {
         spellsData = results.data;
         spellsList = spellsData.map(s => s.spell_name);
         buildSpellsTables(); // após carregar, constrói as tabelas
@@ -1274,7 +1273,6 @@ document.querySelector('.top-button[title="Calculadora de Dificuldade"]')
 
 </script>
 <script>
-// Define constants and CSV paths
 const charFields = [
   "char_avatar", "char_name", "char_player", "char_hp", "char_maxhp", "char_energy", "char_maxenergy",
   "char_ins", "char_sim", "char_raz", "char_mal", "char_por", "char_ndf", "char_agi",
@@ -2259,6 +2257,27 @@ window.addEventListener("DOMContentLoaded", async () => {
   bindRealtimeCharSync("a");
   bindRealtimeCharSync("b");
 });
+</script>
+
+
+<script type="module">
+  import { getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  const db = window._db;
+  let spellsData = [];
+  let spellsList = [];
+
+  async function loadSpellsFromFirestore() {
+    const querySnapshot = await getDocs(collection(db, "campaigns", "alpha", "spells_range"));
+    spellsData = [];
+    querySnapshot.forEach(doc => {
+      spellsData.push(doc.data());
+    });
+    spellsList = spellsData.map(s => s.spell_name);
+    if (typeof buildSpellsTables === 'function') buildSpellsTables();
+  }
+
+  window.loadSpellsFromFirestore = loadSpellsFromFirestore;
+  loadSpellsFromFirestore(); // auto-load
 </script>
 
 </body>
