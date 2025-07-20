@@ -622,17 +622,7 @@ body { background: #0F0F0F; color: whitesmoke;}
 	}
 	
 </style>
-<script src="papaparse.min.js">
-function safeText(id) {
-  const el = document.getElementById(id);
-  return el ? el.textContent.trim() : "❓";
-}
 
-function safeNumber(id) {
-  const el = document.getElementById(id);
-  return el ? parseInt(el.textContent.trim() || "0") : 0;
-}
-</script>
 </head>
 <body>
 <div id="save-indicator" style="
@@ -682,11 +672,7 @@ function safeNumber(id) {
     let spellsList = [];
 
     // Fetch CSV
-     => {
-        spellsData = results.data;
-        spellsList = spellsData.map(s => s.spell_name);
-        buildSpellsTables(); // após carregar, constrói as tabelas
-      }
+
     });
 
     // Constrói as tabelas mágicas A e B
@@ -1231,48 +1217,7 @@ function safeNumber(id) {
 
 <!-- END -->
 
-<script src="papaparse.min.js">
 
-
-function safeText(id) {
-  const el = document.getElementById(id);
-  return el ? el.textContent.trim() : "❓";
-}
-
-function safeNumber(id) {
-  const el = document.getElementById(id);
-  return el ? parseInt(el.textContent.trim() || "0") : 0;
-}
-
-
-function getActionData() {
-  return safeText("active_action-a");
-}
-
-function getAttributeData() {
-  return safeText("selected_att_name-a");
-}
-
-function sendLogPopupData() {
-  const popup = window.open("event_log_window.html", "LogPopup", "width=1060,height=630");
-  setTimeout(() => {
-      console.log("✅ Enviando dados para o popup:", {
-  charA: getCharacterData("a"),
-  charB: getCharacterData("b"),
-});
-	  popup.postMessage({
-      charA: getCharacterData("a"),
-      charB: getCharacterData("b"),
-    }, "*");
-  }, 500);
-}
-
-document.querySelector('.top-button[title="Calculadora de Dificuldade"]')
-    .addEventListener('click', function () {
-      window.open('difficulty_calculator.html', 'CalculadoraDeDificuldade', 'width=1000,height=700,resizable=yes,scrollbars=yes');
-    });
-
-</script>
 <script>
 // Define constants and CSV paths
 const charFields = [
@@ -1391,9 +1336,7 @@ let charData = [], actionData = [];
       if (sel?.tagName === "SELECT") {
         sel.innerHTML = results.data.map(row => `<option>${row.condition}</option>`).join("");
       }
-    });
-  }
-});
+    
 
 
 	
@@ -2258,6 +2201,66 @@ window.addEventListener("DOMContentLoaded", async () => {
   await populateDropdowns();
   bindRealtimeCharSync("a");
   bindRealtimeCharSync("b");
+});
+</script>
+
+
+<script type="module">
+// Firebase Firestore Setup
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCoO7sYTOcz_1JrW46VoRowvHYa5wUFSTk",
+  authDomain: "rpg-prisma-f5a11.firebaseapp.com",
+  projectId: "rpg-prisma-f5a11",
+  storageBucket: "rpg-prisma-f5a11.appspot.com",
+  messagingSenderId: "65278749627",
+  appId: "1:65278749627:web:804f5d41adbab5351e729e"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let currentCharA = "";
+
+document.getElementById("char-select-a").addEventListener("change", async (e) => {
+  const charName = e.target.value;
+  currentCharA = charName;
+  const docRef = doc(db, "campaigns", "alpha", "characters_range", charName);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    document.getElementById("char_hp-a").value = data.char_hp || 0;
+    document.getElementById("char_energy-a").value = data.char_energy || 0;
+    document.getElementById("char_hp_num-a").textContent = data.char_hp || 0;
+    document.getElementById("char_energy_num-a").textContent = data.char_energy || 0;
+  }
+  onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      document.getElementById("char_hp-a").value = data.char_hp || 0;
+      document.getElementById("char_energy-a").value = data.char_energy || 0;
+      document.getElementById("char_hp_num-a").textContent = data.char_hp || 0;
+      document.getElementById("char_energy_num-a").textContent = data.char_energy || 0;
+    }
+  });
+});
+
+document.getElementById("char_hp-a").addEventListener("input", async (e) => {
+  if (!currentCharA) return;
+  const val = parseInt(e.target.value);
+  await updateDoc(doc(db, "campaigns", "alpha", "characters_range", currentCharA), {
+    char_hp: val
+  });
+});
+document.getElementById("char_energy-a").addEventListener("input", async (e) => {
+  if (!currentCharA) return;
+  const val = parseInt(e.target.value);
+  await updateDoc(doc(db, "campaigns", "alpha", "characters_range", currentCharA), {
+    char_energy: val
+  });
 });
 </script>
 
