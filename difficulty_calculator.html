@@ -14,17 +14,14 @@
   </div>
   <div id="table-container"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  
   <script>
     let csvData = [];
 
-    fetch("difficulty_range.csv")
+    fetch()
       .then(res => res.text())
       .then(text => {
-        Papa.parse(text, {
-          header: false,
-          skipEmptyLines: true,
-          complete: function(results) {
+         {
             csvData = results.data.map(row => ({
               action: row[0],
               category: row[1],
