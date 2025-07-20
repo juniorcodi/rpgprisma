@@ -1889,13 +1889,7 @@ function updateArenaConditionDescriptions(side) {
   const descDiv = document.getElementById(`cond-desc-${side}`);
   descDiv.innerHTML = tagList.map(tag => {
     const [name] = tag.dataset.value.split(" (");
-    // Tooltip (optional for this UI element, but included if wanted)
-    const match = conditionsData?.find(c => c.condition === name);
-    const tooltip = match
-      ? `${match.cond_category || ''}: ${match.cond_description || ''}\nEFEITO: ${match.cond_effects || ''}`
-      : "";
-    return `<div title="${tooltip}">🔹 <b>${name}</b>: ${match?.cond_description || "sem descrição"}</div>`;
-  }).join("");
+    
 }
 function addTag(side, type) {
   const inputId = type === "cond" ? `cond-${side}` : `${type}-${side}`;
