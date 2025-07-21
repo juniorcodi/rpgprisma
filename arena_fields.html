@@ -666,16 +666,17 @@ import {
   getDoc,
   getDocs,
   updateDoc,
+  setDoc,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "...",
-  authDomain: "...",
-  projectId: "...",
-  storageBucket: "...",
-  messagingSenderId: "...",
-  appId: "..."
+  apiKey: "AIzaSyCoO7sYTOcz_1JrW46VoRowvHYa5wUFSTk",
+  authDomain: "rpg-prisma-f5a11.firebaseapp.com",
+  projectId: "rpg-prisma-f5a11",
+  storageBucket: "rpg-prisma-f5a11.firebasestorage.app",
+  messagingSenderId: "65278749627",
+  appId: "1:65278749627:web:804f5d41adbab5351e729e"
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -860,6 +861,77 @@ console.log("Setting tooltip for", cond.condition, "=", option.title);
 }
 
 
+function setupCharacterListeners() {
+  let charListenerA = null;
+  let charListenerB = null;
+
+  function setupCharListener(side) {
+    const charSelect = document.getElementById(`char-select-${side}`);
+    const charId = charSelect.value;
+    
+    if (!charId) return;
+
+    // Remove previous listener if exists
+    if (side === "a" && charListenerA) {
+      charListenerA();
+      charListenerA = null;
+    }
+    if (side === "b" && charListenerB) {
+      charListenerB();
+      charListenerB = null;
+    }
+
+    // Setup new listener
+    const charRef = doc(db, "campaigns", "alpha", "characters_range", charId);
+    const unsubscribe = onSnapshot(charRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        
+        // Update character fields that should sync in real-time
+        const syncFields = ["char_hp", "char_energy", "char_narrativepoints", "char_obs", "char_cond"];
+        syncFields.forEach(field => {
+          const el = document.getElementById(`${field}-${side}`);
+          if (el && data[field] !== undefined) {
+            if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+              el.value = data[field];
+            } else {
+              el.textContent = data[field];
+            }
+          }
+        });
+
+        // Update sliders
+        updateStatRanges(side);
+      }
+    });
+
+    // Store the unsubscribe function
+    if (side === "a") {
+      charListenerA = unsubscribe;
+    } else {
+      charListenerB = unsubscribe;
+    }
+  }
+
+  // Setup initial listeners
+  setupCharListener("a");
+  setupCharListener("b");
+
+  // Add listeners to dropdown changes
+  document.getElementById("char-select-a").addEventListener("change", () => setupCharListener("a"));
+  document.getElementById("char-select-b").addEventListener("change", () => setupCharListener("b"));
+}
+
+function showSaveIndicator(message) {
+  const indicator = document.getElementById("save-indicator");
+  if (indicator) {
+    indicator.textContent = message;
+    setTimeout(() => {
+      indicator.textContent = "☁️ Aguardando...";
+    }, 2000);
+  }
+}
+
 function setupDropdowns() {
   const charSelA = document.getElementById("char-select-a");
   const charSelB = document.getElementById("char-select-b");
@@ -871,6 +943,38 @@ charSelB.innerHTML = charData.map(row => `<option class="option" value="${row.id
 
   actSelA.innerHTML = actionData.map((row, i) => `<option class="option" value="${i}">${row.action}</option>`).join('');
   actSelB.innerHTML = actionData.map((row, i) => `<option class="option" value="${i}">${row.action}</option>`).join('');
+
+  async function updateSessionState() {
+    try {
+      const sessionStateRef = doc(db, "campaigns", "alpha", "session_state", "main");
+      await updateDoc(sessionStateRef, {
+        charA: charSelA.value,
+        charB: charSelB.value,
+        actionA: actSelA.value,
+        actionB: actSelB.value
+      });
+      showSaveIndicator("☁️ Sincronizado");
+    } catch (error) {
+      // If document doesn't exist, create it
+      if (error.code === 'not-found') {
+        try {
+          await setDoc(sessionStateRef, {
+            charA: charSelA.value,
+            charB: charSelB.value,
+            actionA: actSelA.value,
+            actionB: actSelB.value
+          });
+          showSaveIndicator("☁️ Sincronizado");
+        } catch (createError) {
+          console.error("Error creating session state:", createError);
+          showSaveIndicator("❌ Erro");
+        }
+      } else {
+        console.error("Error updating session state:", error);
+        showSaveIndicator("❌ Erro");
+      }
+    }
+  }
 
   function refreshA() {
     setFields(charData[charSelA.value], actionData[actSelA.value], "-a");
@@ -892,10 +996,22 @@ charSelB.innerHTML = charData.map(row => `<option class="option" value="${row.id
     }, 30);
   }
   
-  charSelA.onchange = refreshA;
-  actSelA.onchange = refreshA;
-  charSelB.onchange = refreshB;
-  actSelB.onchange = refreshB;
+  charSelA.onchange = () => {
+    refreshA();
+    updateSessionState();
+  };
+  actSelA.onchange = () => {
+    refreshA();
+    updateSessionState();
+  };
+  charSelB.onchange = () => {
+    refreshB();
+    updateSessionState();
+  };
+  actSelB.onchange = () => {
+    refreshB();
+    updateSessionState();
+  };
 
   refreshA();
   refreshB();
@@ -1042,8 +1158,9 @@ function updatePartialResult(side) {
 }
 
 function updateStatRanges(side) {
-  // HP
-  const hp = parseInt(document.getElementById('char_hp-' + side).textContent) || 0;
+  // HP - read from input field
+  const hpEl = document.getElementById('char_hp-' + side);
+  const hp = parseInt(hpEl.tagName === "INPUT" ? hpEl.value : hpEl.textContent) || 0;
   const maxhp = parseInt(document.getElementById('char_maxhp-' + side).textContent) || 1;
   const hpRange = document.getElementById('char_hp_range-' + side);
   hpRange.min = 0;
@@ -1053,12 +1170,18 @@ function updateStatRanges(side) {
   hpRange.classList.add("hp-slider-fill");
   updateSliderFill(hpRange, "crimson");
   hpRange.oninput = function () {
-    document.getElementById('char_hp-' + side).textContent = this.value;
+    const hpInput = document.getElementById('char_hp-' + side);
+    if (hpInput.tagName === "INPUT") {
+      hpInput.value = this.value;
+    } else {
+      hpInput.textContent = this.value;
+    }
     updateSliderFill(this, "crimson");
   };
 
-  // Energy
-  const energy = parseInt(document.getElementById('char_energy-' + side).textContent) || 0;
+  // Energy - read from input field
+  const energyEl = document.getElementById('char_energy-' + side);
+  const energy = parseInt(energyEl.tagName === "INPUT" ? energyEl.value : energyEl.textContent) || 0;
   const maxenergy = parseInt(document.getElementById('char_maxenergy-' + side).textContent) || 1;
   const energyRange = document.getElementById('char_energy_range-' + side);
   energyRange.min = 0;
@@ -1068,7 +1191,12 @@ function updateStatRanges(side) {
   energyRange.classList.add("energy-slider-fill");
   updateSliderFill(energyRange, "#FDA528");
   energyRange.oninput = function () {
-    document.getElementById('char_energy-' + side).textContent = this.value;
+    const energyInput = document.getElementById('char_energy-' + side);
+    if (energyInput.tagName === "INPUT") {
+      energyInput.value = this.value;
+    } else {
+      energyInput.textContent = this.value;
+    }
     updateSliderFill(this, "#FDA528");
   };
 }
@@ -1536,11 +1664,17 @@ function addTag(side, type) {
     // Early return if not loaded yet
     if (!charId) return;
     const value = parser(this.value);
-    // Use Firestore to update the correct doc!
-    await updateDoc(
-      doc(db, "campaigns", "alpha", "characters_range", charId),
-      { [field]: value }
-    );
+    try {
+      // Use Firestore to update the correct doc!
+      await updateDoc(
+        doc(db, "campaigns", "alpha", "characters_range", charId),
+        { [field]: value }
+      );
+      showSaveIndicator("☁️ Sincronizado");
+    } catch (error) {
+      console.error(`Error updating ${field} for character ${charId}:`, error);
+      showSaveIndicator("❌ Erro");
+    }
   });
 }
 	["char_hp", "char_energy", "char_narrativepoints"].forEach(field => {
@@ -1550,6 +1684,44 @@ function addTag(side, type) {
 ["char_obs", "char_cond"].forEach(field => {
   setupLiveCharField(field, "a", "input");
   setupLiveCharField(field, "b", "input");
+});
+
+// Setup Firebase sync for dice amount and bonus dice fields
+function setupSessionField(field, side, eventType = "input", parser = (x) => x) {
+  const el = document.getElementById(`${field}-${side}`);
+  if (!el) return;
+  el.addEventListener(eventType, async function() {
+    const value = parser(this.value);
+    try {
+      const sessionStateRef = doc(db, "campaigns", "alpha", "session_state", "main");
+      await updateDoc(sessionStateRef, {
+        [`${field}_${side}`]: value
+      });
+      showSaveIndicator("☁️ Sincronizado");
+    } catch (error) {
+      // If document doesn't exist, create it
+      if (error.code === 'not-found') {
+        try {
+          await setDoc(sessionStateRef, {
+            [`${field}_${side}`]: value
+          });
+          showSaveIndicator("☁️ Sincronizado");
+        } catch (createError) {
+          console.error(`Error creating session state for ${field}:`, createError);
+          showSaveIndicator("❌ Erro");
+        }
+      } else {
+        console.error(`Error updating ${field}:`, error);
+        showSaveIndicator("❌ Erro");
+      }
+    }
+  });
+}
+
+// Setup dice amount and bonus dice sync
+["diceamount", "fixedbonus"].forEach(field => {
+  setupSessionField(field, "a", "input", x => parseInt(x) || 0);
+  setupSessionField(field, "b", "input", x => parseInt(x) || 0);
 });
 
 
@@ -1673,9 +1845,49 @@ async function loadFirebaseData() {
 
     setupDropdowns();
     buildSpellsTables();
-    setupConditionsAutocomplete('a');
-    setupConditionsAutocomplete('b');
+    setupConditionsAutocomplete("a");
+    setupConditionsAutocomplete("b");
+    setupCharacterListeners();
     console.log("Firebase data loaded successfully");
+
+    // Listen for changes in the session state
+    const sessionStateRef = doc(db, "campaigns", "alpha", "session_state", "main");
+    onSnapshot(sessionStateRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        if (data.charA) {
+          document.getElementById("char-select-a").value = data.charA;
+        }
+        if (data.charB) {
+          document.getElementById("char-select-b").value = data.charB;
+        }
+        if (data.actionA) {
+          document.getElementById("action-select-a").value = data.actionA;
+        }
+        if (data.actionB) {
+          document.getElementById("action-select-b").value = data.actionB;
+        }
+        // Update dice amount and bonus dice fields
+        if (data.diceamount_a !== undefined) {
+          document.getElementById("diceamount-a").value = data.diceamount_a;
+        }
+        if (data.diceamount_b !== undefined) {
+          document.getElementById("diceamount-b").value = data.diceamount_b;
+        }
+        if (data.fixedbonus_a !== undefined) {
+          document.getElementById("fixedbonus-a").value = data.fixedbonus_a;
+        }
+        if (data.fixedbonus_b !== undefined) {
+          document.getElementById("fixedbonus-b").value = data.fixedbonus_b;
+        }
+        // Trigger the change events to update the UI
+        document.getElementById("char-select-a").dispatchEvent(new Event('change'));
+        document.getElementById("char-select-b").dispatchEvent(new Event('change'));
+        document.getElementById("action-select-a").dispatchEvent(new Event('change'));
+        document.getElementById("action-select-b").dispatchEvent(new Event('change'));
+      }
+    });
+
   } catch (error) {
     console.error("Error loading Firebase data:", error);
   }
@@ -1709,7 +1921,7 @@ window.onload = loadFirebaseData;
 <div style="width: 155px;">
 <div>
 <div style="text-align: right; width: 134px;">
-        🩸<span class="text-hp" id="char_hp-a"></span> /
+        🩸<input class="cond-obs" id="char_hp-a" style="width:30px; font-size:15px; padding:2px; text-align:center;" type="number" min="0"/> /
         <span class="text-hp" id="char_maxhp-a"></span>
 </div>
 </div>
@@ -1719,8 +1931,8 @@ window.onload = loadFirebaseData;
 <div style="width: 155px;">
 <div>
 <div style="text-align: right; width: 134px;">
-        ⚡<span class="text-energy" id="char_energy-a"></span> /
-        <span class="text-energy" id="char_maxenergy-a"></span>
+                  ⚡<input class="cond-obs" id="char_energy-a" style="width:30px; font-size:15px; padding:2px; text-align:center;" type="number" min="0"/> /
+                  <span class="text-energy" id="char_maxenergy-a"></span>
 </div>
 </div>
 <input class="slider-top" id="char_energy_range-a" style="width: 135px; display: block;" type="range"/>
@@ -1909,7 +2121,7 @@ window.onload = loadFirebaseData;
 <div style="width: 155px;">
 <div>
 <div style="text-align: right; width: 134px;">
-                  🩸<span class="text-hp" id="char_hp-b"></span> /
+                  🩸<input class="cond-obs" id="char_hp-b" style="width:30px; font-size:15px; padding:2px; text-align:center;" type="number" min="0"/> /
                   <span class="text-hp" id="char_maxhp-b"></span>
 </div>
 </div>
@@ -1918,7 +2130,7 @@ window.onload = loadFirebaseData;
 <div style="width: 155px;">
 <div>
 <div style="text-align: right; width: 134px;">
-                  ⚡<span class="text-energy" id="char_energy-b"></span> /
+                  ⚡<input class="cond-obs" id="char_energy-b" style="width:30px; font-size:15px; padding:2px; text-align:center;" type="number" min="0"/> /
                   <span class="text-energy" id="char_maxenergy-b"></span>
 </div>
 </div>
