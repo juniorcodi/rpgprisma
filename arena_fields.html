@@ -1884,13 +1884,7 @@ function addArenaCondition(side) {
   condInput.value = "";
   turnsInput.value = "0";
 }
-function updateArenaConditionDescriptions(side) {
-  const tagList = [...document.getElementById(`cond-tags-${side}`).children];
-  const descDiv = document.getElementById(`cond-desc-${side}`);
-  descDiv.innerHTML = tagList.map(tag => {
-    const [name] = tag.dataset.value.split(" (");
-    
-}
+	
 function addTag(side, type) {
   const inputId = type === "cond" ? `cond-${side}` : `${type}-${side}`;
   const turnsId = type === "cond" ? `cond-turns-${side}` : `${type}-turns-${side}`;
