@@ -1531,7 +1531,7 @@ function addTurnChange() {
 
     tags.forEach(tag => {
       const text = tag.textContent.replace(" ✕", "").trim(); // Remove the X button text
-      const match = text.match(/(.+?)\s*\((\d+)\s*turno\(s\)\)/); // Match condition name and turns
+      const match = text.match(/(.+?)\s*\((\d+)\)/); // Match condition name and turns (new format)
 
       if (match) {
         const conditionName = match[1].trim();
@@ -1542,9 +1542,9 @@ function addTurnChange() {
           tag.remove(); // Remove a condição
           conditionsChanged = true;
         } else {
-          // Update the tag content with new turn count
-          tag.innerHTML = `${conditionName} (${turns} turno(s)) <button onclick="removeTag(this, '${side}', 'cond')">✕</button>`;
-          tag.dataset.value = `${conditionName} (${turns} turno(s))`;
+          // Update the tag content with new turn count (new format)
+          tag.innerHTML = `${conditionName} (${turns}) <button onclick="removeTag(this, '${side}', 'cond')">✕</button>`;
+          tag.dataset.value = `${conditionName} (${turns})`;
           conditionsChanged = true;
         }
       }
@@ -1652,10 +1652,15 @@ function addArenaCondition(side) {
   if (!value || [...tagList.children].some(tag => tag.dataset.value === value)) return;
 
   const displayTurns = turns < 0 ? "Enquanto houver concentração" :
-                      turns === 0 ? "Indefinidamente" :
-                      `${turns} turno(s)`;
+                      turns === 0 ? "Indefinido" :
+                      `${turns}`;
 
- 
+  // Tooltip from Firebase
+  const match = window.conditionsData?.find(c => 
+    c.condition && c.condition.toLowerCase() === value.toLowerCase()
+  );
+  const tooltip = match ? `${match.cond_category || ""}: ${match.cond_description || ""}\nEFEITO: ${match.cond_effects || ""}` : "";
+  
   const tag = document.createElement("span");
   tag.className = "tag";
   tag.dataset.value = value;
