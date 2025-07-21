@@ -1216,18 +1216,6 @@ for (let i = 1; i <= 3; ++i) {
   if (attValEl) attValEl.textContent = statVal;
 }
 
-function setupLiveCharField(field, side, eventType = "input", parser = (x) => x) {
-  const el = document.getElementById(`${field}-${side}`);
-  if (!el) return;
-  el.addEventListener(eventType, async function() {
-    const charId = document.getElementById(`char-select-${side}`).value;
-    await updateDoc(
-      doc(db, "campaigns", "alpha", "characters_range", charId),
-      { [field]: parser(this.value) }
-    );
-  });
-}
-	
 function renderCounterSpans(rawText) {
   if (!rawText) return "";
   return rawText
@@ -1305,9 +1293,8 @@ function setupDropdowns() {
   const actSelA = document.getElementById("action-select-a");
   const actSelB = document.getElementById("action-select-b");
 
-  charSelA.innerHTML = charData.map((row) => `<option class="option" value="${row.id}">${row.char_name}</option>`).join('');
-  charSelB.innerHTML = charData.map((row) => `<option class="option" value="${row.id}">${row.char_name}</option>`).join('');
-
+  charSelA.innerHTML = charData.map((row, i) => `<option class="option" value="${i}">${row.char_name}</option>`).join('');
+  charSelB.innerHTML = charData.map((row, i) => `<option class="option" value="${i}">${row.char_name}</option>`).join('');
   actSelA.innerHTML = actionData.map((row, i) => `<option class="option" value="${i}">${row.action}</option>`).join('');
   actSelB.innerHTML = actionData.map((row, i) => `<option class="option" value="${i}">${row.action}</option>`).join('');
 
@@ -2117,32 +2104,6 @@ setupConditionsAutocomplete('b');
   }
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  // ...populateDropdowns, subscribeToCharacter, etc...
-
-  // Paste the setup block here:
-  // For number fields (like HP, energy, narrativepoints)
-  ["char_hp", "char_energy", "char_narrativepoints", "diceamount", "bonusdice"].forEach(field => {
-    setupLiveCharField(field, "a", "input", x => parseInt(x) || 0);
-    setupLiveCharField(field, "b", "input", x => parseInt(x) || 0);
-  });
-
-  // For text/textarea fields (like obs, cond)
-  ["char_obs", "char_cond"].forEach(field => {
-    setupLiveCharField(field, "a", "input");
-    setupLiveCharField(field, "b", "input");
-  });
-
-  // For dropdowns (character select, action select)
-  ["action-select"].forEach(field => {
-    setupLiveCharField(field, "a", "change");
-    setupLiveCharField(field, "b", "change");
-  });
-
-  // ...rest of your startup code (maybe subscribeToCharacter)
-});
-
-	
 // Initialize when page loads
 window.onload = loadData;
 
