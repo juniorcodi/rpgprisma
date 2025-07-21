@@ -1655,11 +1655,7 @@ function addArenaCondition(side) {
                       turns === 0 ? "Indefinidamente" :
                       `${turns} turno(s)`;
 
-  // Tooltip from Firebase
-  const match = window.conditionsData?.find(c =>  const displayTurns = turns === 0 ? "Indefinido" : 
-                      turns < 0 ? "Enquanto houver concentração" : 
-                      `${turns}`;
-  
+ 
   const tag = document.createElement("span");
   tag.className = "tag";
   tag.dataset.value = value;
