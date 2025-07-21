@@ -1146,10 +1146,27 @@ function setFields(charRow, actionRow, suffix) {
     selectedAttNameEl.textContent = actionRow && actionRow.att ? actionRow.att.trim() : "";
   }
 
-  charFields.forEach(f => {
-    const el = document.getElementById(f + suffix);
-    if (el) el.textContent = charRow && charRow[f] ? charRow[f] : "";
-  });
+charFields.forEach(f => {
+  const el = document.getElementById(f + suffix);
+  if (el) el.textContent = charRow && charRow[f] ? charRow[f] : "";
+});
+
+// Immediately after populating charFields, update the class for bonuses and deductions
+for (let i = 1; i <= 6; ++i) {
+  const el = document.getElementById(`char_bonus${i}${suffix}`);
+  if (!el) continue;
+  const val = el.textContent.trim().toUpperCase();
+  el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
+  el.classList.add(keywordToAttr[val] || 'none');
+}
+for (let i = 1; i <= 3; ++i) {
+  const el = document.getElementById(`char_deduc${i}${suffix}`);
+  if (!el) continue;
+  const val = el.textContent.trim().toUpperCase();
+  el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
+  el.classList.add(keywordToAttr[val] || 'none');
+}
+
   actionFields.forEach(f => {
     const el = document.getElementById(f + suffix);
     if (el) el.textContent = actionRow && actionRow[f] ? actionRow[f] : "";
