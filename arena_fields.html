@@ -1305,8 +1305,9 @@ function setupDropdowns() {
   const actSelA = document.getElementById("action-select-a");
   const actSelB = document.getElementById("action-select-b");
 
-  charSelA.innerHTML = charData.map((row, i) => `<option class="option" value="${i}">${row.char_name}</option>`).join('');
-  charSelB.innerHTML = charData.map((row, i) => `<option class="option" value="${i}">${row.char_name}</option>`).join('');
+  charSelA.innerHTML = charData.map((row) => `<option class="option" value="${row.id}">${row.char_name}</option>`).join('');
+  charSelB.innerHTML = charData.map((row) => `<option class="option" value="${row.id}">${row.char_name}</option>`).join('');
+
   actSelA.innerHTML = actionData.map((row, i) => `<option class="option" value="${i}">${row.action}</option>`).join('');
   actSelB.innerHTML = actionData.map((row, i) => `<option class="option" value="${i}">${row.action}</option>`).join('');
 
