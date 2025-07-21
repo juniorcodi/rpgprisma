@@ -684,6 +684,13 @@ const db = getFirestore(app);
 let charData = [], actionData = [], spellsData = [], conditionsData = [];
 let spellsList = [];
 
+// Make variables globally accessible
+window.charData = charData;
+window.actionData = actionData;
+window.spellsData = spellsData;
+window.conditionsData = conditionsData;
+window.spellsList = spellsList;
+
 // Define constants and field mappings
 const charFields = [
   "char_avatar", "char_name", "char_player", "char_hp", "char_maxhp", "char_energy", "char_maxenergy",
@@ -720,27 +727,36 @@ function setFields(charRow, actionRow, suffix) {
     selectedAttNameEl.textContent = actionRow && actionRow.att ? actionRow.att.trim() : "";
   }
 
-charFields.forEach(f => {
-  const el = document.getElementById(f + suffix);
-  if (el) el.textContent = charRow && charRow[f] ? charRow[f] : "";
-});
+  // Populate character fields
+  charFields.forEach(f => {
+    const el = document.getElementById(f + suffix);
+    if (el) {
+      const value = charRow && charRow[f] ? charRow[f] : "";
+      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+        el.value = value;
+      } else {
+        el.textContent = value;
+      }
+    }
+  });
 
-// Immediately after populating charFields, update the class for bonuses and deductions
-for (let i = 1; i <= 6; ++i) {
-  const el = document.getElementById(`char_bonus${i}${suffix}`);
-  if (!el) continue;
-  const val = el.textContent.trim().toUpperCase();
-  el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
-  el.classList.add(keywordToAttr[val] || 'none');
-}
-for (let i = 1; i <= 3; ++i) {
-  const el = document.getElementById(`char_deduc${i}${suffix}`);
-  if (!el) continue;
-  const val = el.textContent.trim().toUpperCase();
-  el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
-  el.classList.add(keywordToAttr[val] || 'none');
-}
+  // Immediately after populating charFields, update the class for bonuses and deductions
+  for (let i = 1; i <= 6; ++i) {
+    const el = document.getElementById(`char_bonus${i}${suffix}`);
+    if (!el) continue;
+    const val = el.textContent.trim().toUpperCase();
+    el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
+    el.classList.add(keywordToAttr[val] || 'none');
+  }
+  for (let i = 1; i <= 3; ++i) {
+    const el = document.getElementById(`char_deduc${i}${suffix}`);
+    if (!el) continue;
+    const val = el.textContent.trim().toUpperCase();
+    el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
+    el.classList.add(keywordToAttr[val] || 'none');
+  }
 
+  // Populate action fields
   actionFields.forEach(f => {
     const el = document.getElementById(f + suffix);
     if (el) el.textContent = actionRow && actionRow[f] ? actionRow[f] : "";
@@ -812,9 +828,9 @@ function setupConditionsAutocomplete(side) {
     if (old) old.remove();
 
     const val = input.value.toLowerCase();
-    if (!val || !conditionsData) return;
+    if (!val || !window.conditionsData) return;
 
-    const matches = conditionsData.filter(c =>
+    const matches = window.conditionsData.filter(c =>
       c.condition && c.condition.toLowerCase().includes(val)
     );
 
@@ -860,6 +876,9 @@ console.log("Setting tooltip for", cond.condition, "=", option.title);
   });
 }
 
+// Make function globally accessible
+window.setupConditionsAutocomplete = setupConditionsAutocomplete;
+
 
 function setupCharacterListeners() {
   let charListenerA = null;
@@ -887,9 +906,8 @@ function setupCharacterListeners() {
       if (doc.exists()) {
         const data = doc.data();
         
-        // Update character fields that should sync in real-time
-        const syncFields = ["char_hp", "char_energy", "char_narrativepoints", "char_obs", "char_cond"];
-        syncFields.forEach(field => {
+        // Update all character fields
+        charFields.forEach(field => {
           const el = document.getElementById(`${field}-${side}`);
           if (el && data[field] !== undefined) {
             if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
@@ -902,6 +920,14 @@ function setupCharacterListeners() {
 
         // Update sliders
         updateStatRanges(side);
+        
+        // Update condition tags from char_cond field
+        if (data.char_cond) {
+          updateConditionTags(side, data.char_cond);
+        }
+        
+        // Apply bonus/deduction styling
+        applyBonusDeductionStyling(side);
       }
     });
 
@@ -920,6 +946,28 @@ function setupCharacterListeners() {
   // Add listeners to dropdown changes
   document.getElementById("char-select-a").addEventListener("change", () => setupCharListener("a"));
   document.getElementById("char-select-b").addEventListener("change", () => setupCharListener("b"));
+}
+
+function applyBonusDeductionStyling(side) {
+  const suffix = side === 'a' ? '-a' : '-b';
+  
+  // Apply styling to bonus fields
+  for (let i = 1; i <= 6; ++i) {
+    const el = document.getElementById(`char_bonus${i}${suffix}`);
+    if (!el) continue;
+    const val = el.textContent.trim().toUpperCase();
+    el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
+    el.classList.add(keywordToAttr[val] || 'none');
+  }
+  
+  // Apply styling to deduction fields
+  for (let i = 1; i <= 3; ++i) {
+    const el = document.getElementById(`char_deduc${i}${suffix}`);
+    if (!el) continue;
+    const val = el.textContent.trim().toUpperCase();
+    el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
+    el.classList.add(keywordToAttr[val] || 'none');
+  }
 }
 
 function showSaveIndicator(message) {
@@ -1023,7 +1071,7 @@ charSelB.innerHTML = charData.map(row => `<option class="option" value="${row.id
   setupLiveCharField(field, "a", "input", x => parseInt(x) || 0);
   setupLiveCharField(field, "b", "input", x => parseInt(x) || 0);
 });
-["char_obs", "char_cond"].forEach(field => {
+["char_obs"].forEach(field => {
   setupLiveCharField(field, "a", "input");
   setupLiveCharField(field, "b", "input");
 });
@@ -1479,23 +1527,33 @@ function addTurnChange() {
     if (!container) return;
 
     const tags = Array.from(container.querySelectorAll(".tag"));
+    let conditionsChanged = false;
 
     tags.forEach(tag => {
-      const text = tag.textContent.trim();
-      const match = text.match(/\((\d+)\)/); // Captura número entre parênteses
+      const text = tag.textContent.replace(" ✕", "").trim(); // Remove the X button text
+      const match = text.match(/(.+?)\s*\((\d+)\s*turno\(s\)\)/); // Match condition name and turns
 
       if (match) {
-        let num = parseInt(match[1]);
-        num--;
+        const conditionName = match[1].trim();
+        let turns = parseInt(match[2]);
+        turns--;
 
-        if (num <= 0) {
+        if (turns <= 0) {
           tag.remove(); // Remove a condição
+          conditionsChanged = true;
         } else {
-          const conditionName = tag.dataset.value;
-          tag.childNodes[0].textContent = `${conditionName} (${num})`;
+          // Update the tag content with new turn count
+          tag.innerHTML = `${conditionName} (${turns} turno(s)) <button onclick="removeTag(this, '${side}', 'cond')">✕</button>`;
+          tag.dataset.value = `${conditionName} (${turns} turno(s))`;
+          conditionsChanged = true;
         }
       }
     });
+    
+    // Sync to Firebase if conditions changed
+    if (conditionsChanged) {
+      syncConditionsToFirebase(side);
+    }
   });
 }
 
@@ -1598,21 +1656,26 @@ function addArenaCondition(side) {
                       `${turns} turno(s)`;
 
   // Tooltip from Firebase
-  const match = conditionsData?.find(c => c.condition === value);
-  const tooltip = match
-    ? `${match.cond_category || ''}: ${match.cond_description || ''}\nEFEITO: ${match.cond_effects || ''}`
-    : "";
-
+  const match = window.conditionsData?.find(c =>  const displayTurns = turns === 0 ? "Indefinido" : 
+                      turns < 0 ? "Enquanto houver concentração" : 
+                      `${turns}`;
+  
   const tag = document.createElement("span");
   tag.className = "tag";
   tag.dataset.value = value;
   tag.title = tooltip;
-  tag.innerHTML = `${value} (${displayTurns}) <button onclick="this.parentElement.remove()">✕</button>`;
+  tag.innerHTML = `${value} (${displayTurns}) <button onclick="removeTag(this, '${side}', 'cond')">✕</button>`;
   tagList.appendChild(tag);
 
   condInput.value = "";
   turnsInput.value = "0";
+  
+  // Sync char_cond to Firebase
+  syncConditionsToFirebase(side);
 }
+
+// Make function globally accessible
+window.addArenaCondition = addArenaCondition;
 	
 function addTag(side, type) {
   const inputId = type === "cond" ? `cond-${side}` : `${type}-${side}`;
@@ -1649,11 +1712,63 @@ function addTag(side, type) {
   else if (turns < 0) turnLabel = " (Concentração)";
   else turnLabel = ` (${turns})`;
 
-  span.innerHTML = `${value}${turnLabel} <button onclick="this.parentElement.remove()">✕</button>`;
+  span.innerHTML = `${value}${turnLabel} <button onclick="removeTag(this, '${side}', '${type}')">✕</button>`;
 
   tagContainer.appendChild(span);
   input.value = "";
   input.removeAttribute("data-tooltip");
+  
+  // Sync char_cond to Firebase if this is a condition tag
+  if (type === "cond") {
+    syncConditionsToFirebase(side);
+  }
+}
+
+window.removeTag = function(button, side, type) {
+  button.parentElement.remove();
+  
+  // Sync char_cond to Firebase if this is a condition tag
+  if (type === "cond") {
+    syncConditionsToFirebase(side);
+  }
+}
+
+function syncConditionsToFirebase(side) {
+  const charId = document.getElementById(`char-select-${side}`).value;
+  if (!charId) return;
+  
+  const tagContainer = document.getElementById(`cond-tags-${side}`);
+  const tags = Array.from(tagContainer.querySelectorAll("span.tag"));
+  const conditionsText = tags.map(tag => tag.textContent.replace(" ✕", "")).join(", ");
+  
+  // Update Firebase with the conditions text
+  const charRef = doc(db, "campaigns", "alpha", "characters_range", charId);
+  updateDoc(charRef, {
+    char_cond: conditionsText
+  }).then(() => {
+    showSaveIndicator("☁️ Sincronizado");
+  }).catch(error => {
+    console.error("Error updating char_cond:", error);
+    showSaveIndicator("❌ Erro");
+  });
+}
+
+function updateConditionTags(side, conditionsText) {
+  if (!conditionsText) return;
+  
+  const tagContainer = document.getElementById(`cond-tags-${side}`);
+  // Clear existing tags
+  tagContainer.innerHTML = "";
+  
+  // Parse conditions text and recreate tags
+  const conditions = conditionsText.split(", ").filter(c => c.trim());
+  conditions.forEach(condText => {
+    const span = document.createElement("span");
+    span.className = "tag";
+    span.dataset.value = condText;
+    span.innerHTML = `${condText} <button onclick="removeTag(this, '${side}', 'cond')">✕</button>`;
+    tagContainer.appendChild(span);
+  });
 }
 
 	function setupLiveCharField(field, side, eventType = "input", parser = (x) => x) {
@@ -1677,14 +1792,6 @@ function addTag(side, type) {
     }
   });
 }
-	["char_hp", "char_energy", "char_narrativepoints"].forEach(field => {
-  setupLiveCharField(field, "a", "input", x => parseInt(x) || 0);
-  setupLiveCharField(field, "b", "input", x => parseInt(x) || 0);
-});
-["char_obs", "char_cond"].forEach(field => {
-  setupLiveCharField(field, "a", "input");
-  setupLiveCharField(field, "b", "input");
-});
 
 // Setup Firebase sync for dice amount and bonus dice fields
 function setupSessionField(field, side, eventType = "input", parser = (x) => x) {
@@ -1827,16 +1934,21 @@ async function loadFirebaseData() {
     // Fetch your collections:
     const charactersSnapshot = await getDocs(collection(db, "campaigns", "alpha", "characters_range"));
     charData = charactersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    window.charData = charData;
 
     const actionsSnapshot = await getDocs(collection(db, "campaigns", "alpha", "actions_range"));
     actionData = actionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    window.actionData = actionData;
 
     const spellsSnapshot = await getDocs(collection(db, "campaigns", "alpha", "spells_range"));
     spellsData = spellsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     spellsList = spellsData.map(s => s.spell_name);
+    window.spellsData = spellsData;
+    window.spellsList = spellsList;
 
-    const conditionsSnapshot = await getDocs(collection(db, "campaigns", "alpha", "conditions"));
+    const conditionsSnapshot = await getDocs(collection(db, "campaigns", "alpha", "conditions_range"));
     conditionsData = conditionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    window.conditionsData = conditionsData;
 
     // If using conditions_range, load that instead
     // const querySnap = await getDocs(collection(db, "campaigns", "alpha", "conditions_range"));
@@ -2003,7 +2115,7 @@ window.onload = loadFirebaseData;
 <div style="display: flex; gap: 6px; align-items: center;">
 <input id="cond-a" placeholder="Nome da condição" style="width: 140px; padding: 4px; font-size: 14px;" type="text"/>
 <input id="cond-turns-a" placeholder="Turnos" style="width: 60px; padding: 4px; font-size: 14px;" type="number"/>
-<button onclick="addTag('a','cond')">+</button>
+<button onclick="addArenaCondition('a')">+</button>
 </div>
 <div class="tag-list" id="cond-tags-a"></div>
 </div>
@@ -2203,7 +2315,7 @@ window.onload = loadFirebaseData;
 <div style="display: flex; gap: 6px; align-items: center;">
 <input class="cond-obs" id="cond-b" placeholder="Nome da condição" style="width: 140px; padding: 4px; font-size: 14px;" type="text"/>
 <input id="cond-turns-b" placeholder="Turnos" style="width: 60px; padding: 4px; font-size: 14px;" type="number"/>
-<button onclick="addTag('b','cond')">+</button>
+<button onclick="addArenaCondition('b')">+</button>
 </div>
 <div class="tag-list" id="cond-tags-b"></div>
 </div>
