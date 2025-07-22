@@ -1455,49 +1455,6 @@ window.addEventListener("message", (event) => {
   event.data.logs.forEach(log => addLogEntry(log));
 });
 
-// 🧩 Adiciona uma entrada ao topo do log
-function addLogEntry(content, isManual = false) {
-  const container = document.getElementById("event-log-container");
-  const row = document.createElement("div");
-  row.className = "log-entry";
-
-  const checkbox = document.createElement("input");
-  checkbox.type = "checkbox";
-
-  const timestamp = document.createElement("div");
-  timestamp.className = "log-timestamp";
-  timestamp.style = "width: 120px; font-size: 11px; color: #666; margin-top: 6px;";
-  timestamp.textContent = getFormattedTimestamp();
-
-  const contentDiv = document.createElement("div");
-  contentDiv.className = "log-content";
-  contentDiv.dataset.manual = isManual;
-
-  const statusCheckbox = document.createElement("input");
-  statusCheckbox.type = "checkbox";
-  statusCheckbox.className = "log-status";
-  statusCheckbox.title = "Feito";
-
-  if (isManual) {
-    makeContentEditable(contentDiv, content);
-  } else {
-    contentDiv.innerHTML = content;
-  }
-
-  contentDiv.onclick = () => {
-    if (contentDiv.dataset.manual === "true") {
-      makeContentEditable(contentDiv, contentDiv.innerText.trim());
-    }
-  };
-
-  row.appendChild(checkbox);
-  row.appendChild(timestamp);
-  row.appendChild(contentDiv);
-  row.appendChild(statusCheckbox);
-
-  container.prepend(row);
-}
-
 // 🧩 Torna editável novamente
 function makeContentEditable(container, value) {
   container.innerHTML = "";
@@ -1510,124 +1467,180 @@ function makeContentEditable(container, value) {
   textarea.focus();
 }
 
-function addManualLog() {
-  addLogEntry("Clique aqui e digite seu log...", true);
+// ---- FIREBASE EVENT LOG SYSTEM ----
+// Assumes: db is initialized Firestore instance, collection at campaigns/alpha/event_log
+
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  orderBy,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+const eventLogColl = collection(db, "campaigns", "alpha", "event_log");
+
+// Util: Generate unique ID (could use push from firebase, but here's a fallback)
+function logId() {
+  return String(Date.now()) + '-' + Math.floor(Math.random() * 10000);
 }
 
-function handleTurnChangeForConditions(side) {
-  const tagContainer = document.getElementById(`cond-tags-${side}`);
-  let changed = false;
-  Array.from(tagContainer.querySelectorAll("span.tag")).forEach(tag => {
-    const match = tag.textContent.match(/\((\d+)\)/);
-    if (match) {
-      let num = parseInt(match[1], 10) - 1;
-      if (num <= 0) {
-        tag.remove();
-        changed = true;
-      } else {
-        const name = tag.textContent.split("(")[0].trim();
-        tag.innerHTML = `${name} (${num}) <button type="button" onclick="removeTag(this, '${side}', 'cond')">✕</button>`;
-        changed = true;
-      }
-    }
-  });
-  if (changed) syncConditionsToFirebase(side);
-}
-	
-async function addTurnChange() {
-  // Part 1: Advance turn and log
-  const turnInput = document.getElementById("current-turn");
-  const turno = parseInt(turnInput.value) || 1;
-  addLogEntry(`📢 Mudança para o turno ${turno}`);
-  turnInput.value = turno + 1;
+// Render the log from a sorted array of entries
+function renderEventLog(logArray) {
+  const container = document.getElementById("event-log-container");
+  container.innerHTML = "";
+  logArray.forEach(log => {
+    const row = document.createElement("div");
+    row.className = "log-entry";
+    if (log.hidden) row.classList.add("hidden-log");
 
-  // Part 2: Reduce condition turns for both sides
-  for (const side of ["a", "b"]) {
-    const charId = document.getElementById(`char-select-${side}`).value;
-    if (!charId) continue;
-    const char = charData.find(c => c.id === charId);
-    if (!char) continue;
+    // Checkbox for selection
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "log-select";
+    checkbox.dataset.id = log.id;
 
-    // Split condition tags (as text)
-    let tags = (char.char_cond || "").split(",").map(t => t.trim()).filter(Boolean);
-    let newTags = [];
+    // Timestamp
+    const timestampDiv = document.createElement("div");
+    timestampDiv.className = "log-timestamp";
+    timestampDiv.style = "width: 120px; font-size: 11px; color: #666; margin-top: 6px;";
+    timestampDiv.textContent = new Date(log.timestamp).toLocaleString();
 
-    tags.forEach(tagText => {
-      const match = tagText.match(/^(.+?)\s*\((\d+)\)$/); // e.g. "Focado (2)"
-      if (match) {
-        const conditionName = match[1].trim();
-        let num = parseInt(match[2], 10) - 1;
-        if (num > 0) {
-          newTags.push(`${conditionName} (${num})`);
-        }
-        // else: omit the tag (was removed)
-      } else {
-        // No number, keep as is (e.g. "Indefinido", "Concentração")
-        newTags.push(tagText);
-      }
+    // Content (editable for manual logs)
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "log-content";
+    contentDiv.innerHTML = log.content;
+    contentDiv.dataset.id = log.id;
+    contentDiv.contentEditable = !!log.manual;
+    contentDiv.style.background = log.manual ? "#262626" : "none";
+    contentDiv.addEventListener("blur", async (e) => {
+      if (!log.manual) return;
+      const newText = contentDiv.innerText.trim();
+      await updateDoc(doc(eventLogColl, log.id), { content: newText });
     });
 
-    // Join back to string for storage
-    const newCondString = newTags.join(", ");
+    // Status "done"
+    const statusCheckbox = document.createElement("input");
+    statusCheckbox.type = "checkbox";
+    statusCheckbox.className = "log-status";
+    statusCheckbox.checked = !!log.done;
+    statusCheckbox.title = "Feito";
+    statusCheckbox.addEventListener("change", () => {
+      updateDoc(doc(eventLogColl, log.id), { done: statusCheckbox.checked });
+    });
 
-    // Update Firestore
-    try {
-      const dbCharRef = doc(db, "campaigns", "alpha", "characters_range", charId);
-      await updateDoc(dbCharRef, { char_cond: newCondString });
-      // Update local data (optional, for instant feedback)
-      char.char_cond = newCondString;
-    } catch (err) {
-      console.error("Erro ao atualizar condições no Firestore:", err);
-    }
+    row.appendChild(checkbox);
+    row.appendChild(timestampDiv);
+    row.appendChild(contentDiv);
+    row.appendChild(statusCheckbox);
 
-    // Update UI
-    updateConditionTags(side, newCondString);
+    container.prepend(row); // newest on top
+  });
+}
+
+// Global: keep the log array in memory
+let currentLogArray = [];
+
+// ---- REALTIME FIREBASE LISTENER ----
+function setupLogRealtimeListener() {
+  const q = query(eventLogColl, orderBy("timestamp", "desc"));
+  onSnapshot(q, (snap) => {
+    currentLogArray = [];
+    snap.forEach(doc => currentLogArray.push({ id: doc.id, ...doc.data() }));
+    renderEventLog(currentLogArray);
+  });
+}
+setupLogRealtimeListener();
+
+// ---- BUTTON/CONTROL HOOKS ----
+document.querySelector("#event-log-toolbar .button[onclick*='addManualLog']").onclick = addManualLog;
+document.querySelector("#event-log-toolbar .button[onclick*='addTurnChange']").onclick = addTurnChangeLog;
+document.querySelector("#event-log-toolbar .button[onclick*='deleteSelectedLogs']").onclick = deleteSelectedLogs;
+document.querySelector("#event-log-toolbar .button[onclick*='toggleVisibility']").onclick = toggleVisibility;
+document.getElementById("status-filter").onchange = filterStatusLogs;
+
+// ---- FUNCTIONS ----
+async function addManualLog() {
+  const entry = {
+    content: "Clique aqui e digite seu log...",
+    manual: true,
+    hidden: false,
+    done: false,
+    timestamp: Date.now(),
+  };
+  await addDoc(eventLogColl, entry);
+}
+
+async function addTurnChangeLog() {
+  // Use current turn from the input
+  const turnInput = document.getElementById("current-turn");
+  const turno = parseInt(turnInput.value) || 1;
+  await addDoc(eventLogColl, {
+    content: `📢 Mudança para o turno ${turno}`,
+    manual: false,
+    hidden: false,
+    done: false,
+    timestamp: Date.now(),
+  });
+  turnInput.value = turno + 1;
+}
+
+async function deleteSelectedLogs() {
+  const checkboxes = document.querySelectorAll(".log-select:checked");
+  for (const cb of checkboxes) {
+    await deleteDoc(doc(eventLogColl, cb.dataset.id));
   }
 }
 
-
-
-
-function deleteSelectedLogs() {
-  document.querySelectorAll(".log-entry").forEach(entry => {
-    if (entry.querySelector("input[type='checkbox']").checked) {
-      entry.remove();
+async function toggleVisibility() {
+  const checkboxes = document.querySelectorAll(".log-select:checked");
+  for (const cb of checkboxes) {
+    const entry = currentLogArray.find(l => l.id === cb.dataset.id);
+    if (entry) {
+      await updateDoc(doc(eventLogColl, cb.dataset.id), { hidden: !entry.hidden });
     }
-  });
+  }
 }
 
-function toggleVisibility() {
-  document.querySelectorAll(".log-entry").forEach(entry => {
-    if (entry.querySelector("input[type='checkbox']").checked) {
-      entry.classList.toggle("hidden-log");
-    }
-  });
-}
-
-// 🧩 Filtro por status
 function filterStatusLogs() {
   const filter = document.getElementById("status-filter").value;
   document.querySelectorAll(".log-entry").forEach(entry => {
-    const isHidden = entry.classList.contains("hidden-log");
-    const isDone = entry.querySelector(".log-status").checked;
-
+    const id = entry.querySelector(".log-select").dataset.id;
+    const log = currentLogArray.find(l => l.id === id);
+    if (!log) return;
     switch (filter) {
       case "all":
         entry.style.display = "flex";
         break;
       case "visible":
-        entry.style.display = !isHidden ? "flex" : "none";
+        entry.style.display = !log.hidden ? "flex" : "none";
         break;
       case "hidden":
-        entry.style.display = isHidden ? "flex" : "none";
+        entry.style.display = log.hidden ? "flex" : "none";
         break;
       case "done":
-        entry.style.display = isDone ? "flex" : "none";
+        entry.style.display = log.done ? "flex" : "none";
         break;
       case "todo":
-        entry.style.display = !isDone ? "flex" : "none";
+        entry.style.display = !log.done ? "flex" : "none";
         break;
     }
+  });
+}
+
+// ---- EXPORTABLE: ADD EVENT FROM GAME SYSTEM ----
+// Usage: call this from your dice system when you want to add a log entry
+export async function addGameLogEntry(htmlString) {
+  await addDoc(eventLogColl, {
+    content: htmlString,
+    manual: false,
+    hidden: false,
+    done: false,
+    timestamp: Date.now(),
   });
 }
 
