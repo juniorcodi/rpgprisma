@@ -667,7 +667,12 @@ import {
   getDocs,
   updateDoc,
   setDoc,
-  onSnapshot
+  onSnapshot,
+  addDoc,
+  deleteDoc,
+  query,
+  orderBy,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -1466,21 +1471,6 @@ function makeContentEditable(container, value) {
   container.appendChild(textarea);
   textarea.focus();
 }
-
-// ---- FIREBASE EVENT LOG SYSTEM ----
-// Assumes: db is initialized Firestore instance, collection at campaigns/alpha/event_log
-
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  query,
-  orderBy,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
 const eventLogColl = collection(db, "campaigns", "alpha", "event_log");
 
