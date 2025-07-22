@@ -1515,47 +1515,46 @@ function addManualLog() {
 }
 
 function addTurnChange() {
-  // ⬆️ Parte 1: Avançar o turno
+  // Advance the turn counter in UI and log
   const turnInput = document.getElementById("current-turn");
   const turno = parseInt(turnInput.value) || 1;
   addLogEntry(`📢 Mudança para o turno ${turno}`);
   turnInput.value = turno + 1;
 
-  // ⬇️ Parte 2: Reduzir turnos das condições
   ["a", "b"].forEach(side => {
-    const container = document.getElementById(`cond-tags-${side}`);
-    if (!container) return;
+    const tagContainer = document.getElementById(`cond-tags-${side}`);
+    if (!tagContainer) return;
 
-    const tags = Array.from(container.querySelectorAll(".tag"));
-    let conditionsChanged = false;
+    // Array to rebuild new char_cond after decrementing
+    const newTags = [];
+    const tags = Array.from(tagContainer.querySelectorAll(".tag"));
 
     tags.forEach(tag => {
-      const text = tag.textContent.replace(" ✕", "").trim(); // Remove the X button text
-      const match = text.match(/(.+?)\s*\((\d+)\)/); // Match condition name and turns (new format)
-
+      // e.g., "Ferido (2) "
+      const tagText = tag.textContent.replace("✕", "").trim();
+      const match = tagText.match(/^(.+)\s*\((\d+)\)$/);
       if (match) {
         const conditionName = match[1].trim();
-        let turns = parseInt(match[2]);
-        turns--;
-
-        if (turns <= 0) {
-          tag.remove(); // Remove a condição
-          conditionsChanged = true;
+        let num = parseInt(match[2]);
+        num--;
+        if (num > 0) {
+          // Update the tag in the DOM
+          tag.childNodes[0].textContent = `${conditionName} (${num}) `;
+          newTags.push(`${conditionName} (${num})`);
         } else {
-          // Update the tag content with new turn count (new format)
-          tag.innerHTML = `${conditionName} (${turns}) <button onclick="removeTag(this, '${side}', 'cond')">✕</button>`;
-          tag.dataset.value = `${conditionName} (${turns})`;
-          conditionsChanged = true;
+          tag.remove(); // Remove expired condition
         }
+      } else {
+        // For tags without turn counter (e.g., "Focado (Indefinido)")
+        newTags.push(tagText);
       }
     });
-    
-    // Sync to Firebase if conditions changed
-    if (conditionsChanged) {
-      syncConditionsToFirebase(side);
-    }
+
+    // After updating DOM, write back to Firebase
+    syncConditionsToFirebase(side, newTags.join(", "));
   });
 }
+
 
 function deleteSelectedLogs() {
   document.querySelectorAll(".log-entry").forEach(entry => {
@@ -1754,23 +1753,45 @@ function syncConditionsToFirebase(side) {
   });
 }
 
-function updateConditionTags(side, conditionsText) {
-  if (!conditionsText) return;
-  
+function updateConditionTags(side) {
   const tagContainer = document.getElementById(`cond-tags-${side}`);
-  // Clear existing tags
   tagContainer.innerHTML = "";
-  
-  // Parse conditions text and recreate tags
-  const conditions = conditionsText.split(", ").filter(c => c.trim());
-  conditions.forEach(condText => {
-    const span = document.createElement("span");
-    span.className = "tag";
-    span.dataset.value = condText;
-    span.innerHTML = `${condText} <button onclick="removeTag(this, '${side}', 'cond')">✕</button>`;
-    tagContainer.appendChild(span);
+  const charId = document.getElementById(`char-select-${side}`).value;
+  const char = charData.find(c => c.id === charId);
+  if (!char || !char.char_cond) return;
+
+  // char.char_cond should be a comma-separated string of conditions ("Ferido (2), Cansado (1)")
+  const tags = char.char_cond.split(",").map(t => t.trim()).filter(Boolean);
+  tags.forEach(tagText => {
+    // Extract condition name (before parenthesis)
+    const conditionName = tagText.replace(/\(.*\)$/, "").trim();
+    // Find info in conditionsData
+    const conditionInfo = conditionsData?.find(c => c.condition === conditionName);
+
+    // Build tooltip
+    let tooltip = "";
+    if (conditionInfo) {
+      tooltip = `${conditionInfo.cond_category || ""}: ${conditionInfo.cond_description || ""}\nEFEITO: ${conditionInfo.cond_effects || ""}`;
+    }
+
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.title = tooltip; // Tooltip for hover
+    tag.dataset.value = conditionName; // For reference
+
+    // Add the text (keep the original, with turns)
+    tag.textContent = tagText + " ";
+
+    // Add the remove ("x") button
+    const btn = document.createElement("button");
+    btn.textContent = "✕";
+    btn.onclick = () => removeTag(btn, side, "cond");
+    tag.appendChild(btn);
+
+    tagContainer.appendChild(tag);
   });
 }
+
 
 	function setupLiveCharField(field, side, eventType = "input", parser = (x) => x) {
   const el = document.getElementById(`${field}-${side}`);
