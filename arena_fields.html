@@ -1515,45 +1515,48 @@ function addManualLog() {
 }
 
 function addTurnChange() {
-  // Advance the turn counter in UI and log
+  // ⬆️ Parte 1: Avançar o turno
   const turnInput = document.getElementById("current-turn");
   const turno = parseInt(turnInput.value) || 1;
   addLogEntry(`📢 Mudança para o turno ${turno}`);
   turnInput.value = turno + 1;
 
+  // ⬇️ Parte 2: Reduzir turnos das condições
   ["a", "b"].forEach(side => {
-    const tagContainer = document.getElementById(`cond-tags-${side}`);
-    if (!tagContainer) return;
+    const charId = document.getElementById(`char-select-${side}`).value;
+    const char = charData.find(c => c.id === charId);
+    if (!char || !char.char_cond) return;
 
-    // Array to rebuild new char_cond after decrementing
-    const newTags = [];
-    const tags = Array.from(tagContainer.querySelectorAll(".tag"));
-
-    tags.forEach(tag => {
-      // e.g., "Ferido (2) "
-      const tagText = tag.textContent.replace("✕", "").trim();
+    let tags = char.char_cond.split(",").map(t => t.trim()).filter(Boolean);
+    let newTags = [];
+    tags.forEach(tagText => {
       const match = tagText.match(/^(.+)\s*\((\d+)\)$/);
       if (match) {
         const conditionName = match[1].trim();
         let num = parseInt(match[2]);
         num--;
         if (num > 0) {
-          // Update the tag in the DOM
-          tag.childNodes[0].textContent = `${conditionName} (${num}) `;
           newTags.push(`${conditionName} (${num})`);
-        } else {
-          tag.remove(); // Remove expired condition
         }
+        // else: do not push (condition is removed)
       } else {
-        // For tags without turn counter (e.g., "Focado (Indefinido)")
+        // No (N) pattern, just keep as is
         newTags.push(tagText);
       }
     });
 
-    // After updating DOM, write back to Firebase
-    syncConditionsToFirebase(side, newTags.join(", "));
+    // Save back as string to Firestore
+    const newCondString = newTags.join(", ");
+    const dbCharRef = doc(db, "campaigns", "alpha", "characters_range", charId);
+    updateDoc(dbCharRef, { char_cond: newCondString });
+
+    // Update in memory for immediate UI update
+    char.char_cond = newCondString;
+    updateConditionTags(side);
   });
 }
+
+
 
 
 function deleteSelectedLogs() {
@@ -1736,61 +1739,65 @@ window.removeTag = function(button, side, type) {
 function syncConditionsToFirebase(side) {
   const charId = document.getElementById(`char-select-${side}`).value;
   if (!charId) return;
-  
+
   const tagContainer = document.getElementById(`cond-tags-${side}`);
+  // Only select tags with the class "tag"
   const tags = Array.from(tagContainer.querySelectorAll("span.tag"));
-  const conditionsText = tags.map(tag => tag.textContent.replace(" ✕", "")).join(", ");
-  
-  // Update Firebase with the conditions text
+
+  // Each tag’s text, minus " ✕"
+  const conditionsText = tags
+    .map(tag => tag.textContent.replace(/\s*✕$/, ""))
+    .filter(Boolean)
+    .join(", ");
+
+  // Update Firestore
   const charRef = doc(db, "campaigns", "alpha", "characters_range", charId);
-  updateDoc(charRef, {
-    char_cond: conditionsText
-  }).then(() => {
-    showSaveIndicator("☁️ Sincronizado");
-  }).catch(error => {
-    console.error("Error updating char_cond:", error);
-    showSaveIndicator("❌ Erro");
-  });
+  updateDoc(charRef, { char_cond: conditionsText })
+    .then(() => showSaveIndicator("☁️ Sincronizado"))
+    .catch(error => {
+      console.error("Error updating char_cond:", error);
+      showSaveIndicator("❌ Erro");
+    });
 }
+
+
 
 function updateConditionTags(side) {
   const tagContainer = document.getElementById(`cond-tags-${side}`);
   tagContainer.innerHTML = "";
+
   const charId = document.getElementById(`char-select-${side}`).value;
   const char = charData.find(c => c.id === charId);
   if (!char || !char.char_cond) return;
 
-  // char.char_cond should be a comma-separated string of conditions ("Ferido (2), Cansado (1)")
-  const tags = char.char_cond.split(",").map(t => t.trim()).filter(Boolean);
-  tags.forEach(tagText => {
-    // Extract condition name (before parenthesis)
-    const conditionName = tagText.replace(/\(.*\)$/, "").trim();
-    // Find info in conditionsData
-    const conditionInfo = conditionsData?.find(c => c.condition === conditionName);
+  // Split the string into individual tags
+  let tags = char.char_cond.split(",").map(t => t.trim()).filter(Boolean);
 
-    // Build tooltip
+  tags.forEach(tagText => {
+    // Extract the condition name before parentheses
+    const conditionName = tagText.replace(/\(.*\)$/, "").trim();
+    // Find tooltip info from conditionsData
+    const conditionInfo = conditionsData?.find(c => c.condition === conditionName);
     let tooltip = "";
     if (conditionInfo) {
       tooltip = `${conditionInfo.cond_category || ""}: ${conditionInfo.cond_description || ""}\nEFEITO: ${conditionInfo.cond_effects || ""}`;
     }
 
+    // Create tag element
     const tag = document.createElement("span");
     tag.className = "tag";
-    tag.title = tooltip; // Tooltip for hover
-    tag.dataset.value = conditionName; // For reference
-
-    // Add the text (keep the original, with turns)
+    tag.title = tooltip;
+    tag.dataset.value = conditionName;
     tag.textContent = tagText + " ";
-
-    // Add the remove ("x") button
+    // Create remove button
     const btn = document.createElement("button");
     btn.textContent = "✕";
     btn.onclick = () => removeTag(btn, side, "cond");
     tag.appendChild(btn);
-
     tagContainer.appendChild(tag);
   });
 }
+
 
 
 	function setupLiveCharField(field, side, eventType = "input", parser = (x) => x) {
