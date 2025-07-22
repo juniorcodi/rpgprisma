@@ -1032,25 +1032,27 @@ charSelB.innerHTML = charData.map(row => `<option class="option" value="${row.id
     }
   }
 
-  function refreshA() {
-    setFields(charData[charSelA.value], actionData[actSelA.value], "-a");
-    updatePartialResult("a");
-    updateStatRanges("a");
-    setTimeout(() => {
-      applyActionVariableClasses("a");
-      applySimpleVariableClassesFromField("a");
-    }, 30);
-  }
-  
-  function refreshB() {
-    setFields(charData[charSelB.value], actionData[actSelB.value], "-b");
-    updatePartialResult("b");
-    updateStatRanges("b");
-    setTimeout(() => {
-      applyActionVariableClasses("b");
-      applySimpleVariableClassesFromField("b");
-    }, 30);
-  }
+function refreshA() {
+  setFields(charData[charSelA.value], actionData[actSelA.value], "-a");
+  updatePartialResult("a");
+  updateStatRanges("a");
+  setTimeout(() => {
+    applyActionVariableClasses("a");
+    applySimpleVariableClassesFromField("a");
+    setupDiceSection("a");
+  }, 30);
+}
+function refreshB() {
+  setFields(charData[charSelB.value], actionData[actSelB.value], "-b");
+  updatePartialResult("b");
+  updateStatRanges("b");
+  setTimeout(() => {
+    applyActionVariableClasses("b");
+    applySimpleVariableClassesFromField("b");
+    setupDiceSection("b");
+  }, 30);
+}
+
   
   charSelA.onchange = () => {
     refreshA();
@@ -1071,8 +1073,6 @@ charSelB.innerHTML = charData.map(row => `<option class="option" value="${row.id
 
   refreshA();
   refreshB();
-  setupDiceSection("a");
-  setupDiceSection("b");
 }
 
 ["char_hp", "char_energy", "char_narrativepoints"].forEach(field => {
