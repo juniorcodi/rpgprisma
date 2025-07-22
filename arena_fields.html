@@ -807,8 +807,18 @@ function setFields(charRow, actionRow, suffix) {
       statVal = charRow["char_" + statCode];
     }
   }
-  const attValEl = document.getElementById("selected_att" + suffix);
-  if (attValEl) attValEl.textContent = statVal;
+  let statVal = "-";
+if (actionRow && actionRow.att) {
+  const statCode = actionRow.att.trim().toLowerCase();
+  const charSel = document.getElementById(`char-select${suffix}`);
+  const charId = charSel.value;
+  const charRow = charData.find(c => c.id === charId);
+  if (charRow && charRow["char_" + statCode] !== undefined) {
+    statVal = charRow["char_" + statCode];
+  }
+}
+const attValEl = document.getElementById("selected_att" + suffix);
+if (attValEl) attValEl.textContent = statVal;
 }
 
 function renderCounterSpans(rawText) {
@@ -1116,52 +1126,9 @@ function getActionAttrKey(actionRow) {
 
 // --- DICE LOGIC PATCH ---
 function setupDiceSection(side) {
-  // Special dice add/remove
-  const area = document.getElementById('specialdice_area-' + side);
-  const btn = document.getElementById('add-special-' + side);
-  if (!area || !btn) return;
-  if (area.dataset.initialized) return;
-  area.dataset.initialized = "true";
-  area.innerHTML = '';
-  btn.innerHTML = '✦';
-  btn.title = 'Novo Dado';
+  // ... existing setup code for dice, etc. ...
 
-  btn.onclick = function () {
-    const group = document.createElement('span');
-    group.className = "dice-group special-dice-box";
-    group.innerHTML = `
-      <input type="number" min="1" value="1" style="width:32px;" class="special-amount">
-      <span style="font-size:13px;">d</span>
-      <input type="number" min="0" value="0" style="width:32px;" class="special-min">
-      <span style="font-size:13px;">–</span>
-      <input type="number" min="1" value="6" style="width:32px;" class="special-max">
-      <button type="button" class="button">×</button>
-    `;
-    group.querySelector("button").onclick = () => group.remove();
-    area.appendChild(group);
-  };
-
-  // Partial Result + Roll logic
-  function getSelectedAttVal() {
-    const el = document.getElementById('selected_att-' + side);
-    const val = parseInt(el && el.textContent ? el.textContent : "0", 10);
-    return isNaN(val) ? 0 : val;
-  }
-
-  function updatePartial() {
-    const att = getSelectedAttVal();
-    const bonus = parseInt(document.getElementById('fixedbonus-' + side).value) || 0;
-    const partial = att + bonus;
-    document.getElementById('partialresult-' + side).textContent = partial;
-    document.getElementById('partialresult_log-' + side).textContent = partial;
-  }
-
-  document.getElementById('diceamount-' + side).oninput = updatePartial;
-  document.getElementById('fixedbonus-' + side).oninput = updatePartial;
-  updatePartial();
-
-  // Roll dice logic
-  document.getElementById('rollalldice-' + side).onclick = function () {
+  document.getElementById('rollalldice-' + side).onclick = async function () {
     const mainDice = Math.max(1, parseInt(document.getElementById('diceamount-' + side).value) || 1);
     const mainBonus = parseInt(document.getElementById('fixedbonus-' + side).value) || 0;
     const attVal = parseInt(document.getElementById('selected_att-' + side).textContent) || 0;
@@ -1173,7 +1140,7 @@ function setupDiceSection(side) {
     let sum = rolls.reduce((a, b) => a + b, 0);
     let total = attVal + mainBonus + sum;
 
-    // Create breakdown list
+    // Create breakdown list (HTML)
     let breakdown = [
       `<span class="partial-result" title="Atributo Base"><b>${attVal}</b></span>`,
       `<span class="partial-result" title="Bônus Fixo"><b>${mainBonus}</b></span>`,
@@ -1195,10 +1162,33 @@ function setupDiceSection(side) {
     });
 
     const finalSum = total + specialTotal;
+    const breakdownHTML = breakdown.join(" + ");
 
-    // Output
-    document.getElementById('roll_breakdown-' + side).innerHTML = breakdown.join(" + ");
+    // Output to UI
+    document.getElementById('roll_breakdown-' + side).innerHTML = breakdownHTML;
     document.getElementById('roll_result-' + side).innerHTML = `<br><span class="individual-result"><b>${finalSum}</b></span>`;
+
+    // --- NEW: Sync to Firebase session_state/main ---
+    try {
+      const sessionStateRef = doc(db, "campaigns", "alpha", "session_state", "main");
+      const updateData = {};
+      if (side === 'a') {
+        updateData['aBreakdown'] = breakdownHTML;
+        updateData['aResult'] = finalSum;
+      } else {
+        updateData['bBreakdown'] = breakdownHTML;
+        updateData['bResult'] = finalSum;
+      }
+      await updateDoc(sessionStateRef, updateData);
+      showSaveIndicator("☁ Resultado sincronizado");
+    } catch (error) {
+      // If the doc doesn't exist, try to create it
+      if (error.code === "not-found") {
+        await setDoc(sessionStateRef, updateData);
+      } else {
+        console.error("Erro ao sincronizar resultado no Firestore:", error);
+      }
+    }
   };
 }
 
@@ -1232,6 +1222,19 @@ function updateStatRanges(side) {
     updateSliderFill(this, "crimson");
   };
 
+onSnapshot(doc(db, "campaigns", "alpha", "session_state", "main"), (docSnap) => {
+  if (!docSnap.exists()) return;
+  const data = docSnap.data();
+  if (data.aBreakdown !== undefined)
+    document.getElementById("roll_breakdown-a").innerHTML = data.aBreakdown;
+  if (data.bBreakdown !== undefined)
+    document.getElementById("roll_breakdown-b").innerHTML = data.bBreakdown;
+  if (data.aResult !== undefined)
+    document.getElementById("roll_result-a").innerHTML = `<br><span class="individual-result"><b>${data.aResult}</b></span>`;
+  if (data.bResult !== undefined)
+    document.getElementById("roll_result-b").innerHTML = `<br><span class="individual-result"><b>${data.bResult}</b></span>`;
+});
+	
   // Energy - read from input field
   const energyEl = document.getElementById('char_energy-' + side);
   const energy = parseInt(energyEl.tagName === "INPUT" ? energyEl.value : energyEl.textContent) || 0;
@@ -1472,7 +1475,7 @@ function makeContentEditable(container, value) {
   textarea.focus();
 }
 
-const eventLogColl = collection(db, "campaigns", "alpha", "event_log");
+const eventLogColl = collection(db, "campaigns", "alpha", "event_log_range");
 
 // Util: Generate unique ID (could use push from firebase, but here's a fallback)
 function logId() {
