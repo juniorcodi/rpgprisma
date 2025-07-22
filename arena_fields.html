@@ -816,15 +816,29 @@ if (attValEl) attValEl.textContent = statVal;
 
 function renderCounterSpans(rawText) {
   if (!rawText) return "";
-  return rawText
-    .split(/\s*,\s*/) // Split only on commas, with optional spaces
+
+  // 1. Detecta todas ações compostas do keywordToAttr
+  const composedActions = Object.keys(keywordToAttr).filter(k => k.includes(","));
+
+  // 2. Substitui vírgulas internas dessas ações por pipe
+  let fixedText = rawText;
+  composedActions.forEach(str => {
+    // Regex para evitar substituir se já estiver com pipe
+    const regex = new RegExp(str.replace(",", "\\,"), "g");
+    fixedText = fixedText.replace(regex, str.replace(",", "|"));
+  });
+
+  // 3. Split normal, depois volta o pipe para vírgula
+  return fixedText
+    .split(/\s*,\s*/)
     .map(kw => {
-      const clean = kw.trim();
+      const clean = kw.replace('|', ',').trim();
       const attr = keywordToAttr[clean.toUpperCase()] || "none";
       return `<span class="action-block ${attr}">${clean}</span>`;
     })
     .join(" ");
 }
+
 
 function setupConditionsAutocomplete(side) {
   const input = document.getElementById(`cond-${side}`);
