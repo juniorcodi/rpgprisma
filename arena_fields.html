@@ -817,26 +817,41 @@ if (attValEl) attValEl.textContent = statVal;
 function renderCounterSpans(rawText) {
   if (!rawText) return "";
 
-  // 1. Detecta todas ações compostas do keywordToAttr
-  const composedActions = Object.keys(keywordToAttr).filter(k => k.includes(","));
+  // Pega todas as ações compostas do keywordToAttr, ordenadas por tamanho descrescente
+  const composedActions = Object.keys(keywordToAttr)
+    .filter(k => k.includes(","))
+    .sort((a, b) => b.length - a.length);
 
-  // 2. Substitui vírgulas internas dessas ações por pipe
-  let fixedText = rawText;
-  composedActions.forEach(str => {
-    // Regex para evitar substituir se já estiver com pipe
-    const regex = new RegExp(str.replace(",", "\\,"), "g");
-    fixedText = fixedText.replace(regex, str.replace(",", "|"));
+  let rest = rawText;
+  let detected = [];
+
+  // Vai capturando as compostas do texto antes do split por vírgula
+  composedActions.forEach(comp => {
+    const regex = new RegExp(`\\b${comp}\\b`, "gi");
+    rest = rest.replace(regex, match => {
+      detected.push(match);
+      return `§§${detected.length - 1}§§`; // marcador temporário
+    });
   });
 
-  // 3. Split normal, depois volta o pipe para vírgula
-  return fixedText
-    .split(/\s*,\s*/)
-    .map(kw => {
-      const clean = kw.replace('|', ',').trim();
-      const attr = keywordToAttr[clean.toUpperCase()] || "none";
-      return `<span class="action-block ${attr}">${clean}</span>`;
-    })
-    .join(" ");
+  // Agora faz split das ações simples
+  let splitArr = rest.split(/\s*,\s*/).filter(Boolean);
+
+  // Restaura as compostas nos lugares certos
+  splitArr = splitArr.map(item => {
+    if (item.startsWith("§§") && item.endsWith("§§")) {
+      const idx = parseInt(item.replace(/§§/g, ""));
+      return detected[idx];
+    }
+    return item;
+  });
+
+  // Gera os spans normalmente
+  return splitArr.map(kw => {
+    const clean = kw.trim();
+    const attr = keywordToAttr[clean.toUpperCase()] || "none";
+    return `<span class="action-block ${attr}">${clean}</span>`;
+  }).join(" ");
 }
 
 
@@ -1652,39 +1667,60 @@ function styleSpellActions(side) {
     if (!container) return;
 
     const rawText = container.textContent || "";
-    const actions = rawText.split(",").map(a => a.trim()).filter(Boolean);
+    // Use a mesma lógica de compostos
+    const composedActions = Object.keys(keywordToAttr)
+      .filter(k => k.includes(","))
+      .sort((a, b) => b.length - a.length);
 
-    container.innerHTML = ""; // Clear previous content
+    let rest = rawText;
+    let detected = [];
 
-    actions.forEach(action => {
+    composedActions.forEach(comp => {
+      const regex = new RegExp(`\\b${comp}\\b`, "gi");
+      rest = rest.replace(regex, match => {
+        detected.push(match);
+        return `§§${detected.length - 1}§§`;
+      });
+    });
+
+    let splitArr = rest.split(/\s*,\s*/).filter(Boolean);
+
+    splitArr = splitArr.map(item => {
+      if (item.startsWith("§§") && item.endsWith("§§")) {
+        const idx = parseInt(item.replace(/§§/g, ""));
+        return detected[idx];
+      }
+      return item;
+    });
+
+    container.innerHTML = "";
+
+    splitArr.forEach(action => {
+      const typeClass = keywordToAttr[action.toUpperCase()] || type;
       const span = document.createElement("span");
-      span.classList.add("action-block", type, "spell-action-button");
-
-      // Armazena o valor completo como data-attribute
+      span.classList.add("action-block", typeClass, "spell-action-button");
       span.dataset.full = action;
 
-      // Exibe só até a primeira barra ou tudo, se não houver
-      const displayText = action.split("/")[0].trim();
-      span.textContent = displayText + (action.includes("/") ? " ..." : "");
+      // Exibe tudo mesmo que tenha barra/virgula
+      span.textContent = action;
 
-      // Ao clicar, seleciona a ação no dropdown correspondente
+      // Seleciona dropdown no clique
       span.addEventListener("click", () => {
         const dropdown = document.getElementById(`action-select-${side}`);
         const options = Array.from(dropdown.options);
         const index = options.findIndex(opt => opt.textContent.trim() === action.trim());
-
         if (index >= 0) {
           dropdown.selectedIndex = index;
-          dropdown.dispatchEvent(new Event("change")); // ativa refreshA/refreshB
+          dropdown.dispatchEvent(new Event("change"));
         } else {
           alert(`Ação "${action}" não encontrada no dropdown.`);
         }
       });
-
       container.appendChild(span);
     });
   });
 }
+
 
 function addArenaCondition(side) {
   const condInput = document.getElementById(`cond-${side}`);
