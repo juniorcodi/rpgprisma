@@ -1792,32 +1792,6 @@ window.removeTag = function(button, side, type) {
   }
 }
 
-function syncConditionsToFirebase(side) {
-  const charId = document.getElementById(`char-select-${side}`).value;
-  if (!charId) return;
-
-  const tagContainer = document.getElementById(`cond-tags-${side}`);
-  // Only select tags with the class "tag"
-  const tags = Array.from(tagContainer.querySelectorAll("span.tag"));
-
-  // Each tag’s text, minus " ✕"
-  const conditionsText = tags
-    .map(tag => tag.textContent.replace(/\s*✕$/, ""))
-    .filter(Boolean)
-    .join(", ");
-
-  // Update Firestore
-  const charRef = doc(db, "campaigns", "alpha", "characters_range", charId);
-  updateDoc(charRef, { char_cond: conditionsText })
-    .then(() => showSaveIndicator("☁️ Sincronizado"))
-    .catch(error => {
-      console.error("Error updating char_cond:", error);
-      showSaveIndicator("❌ Erro");
-    });
-}
-
-
-
 function updateConditionTags(side, condString) {
   const tagContainer = document.getElementById(`cond-tags-${side}`);
   tagContainer.innerHTML = "";
