@@ -770,7 +770,8 @@ function setFields(charRow, actionRow, suffix) {
   // Override and format counter separately
   const counterEl = document.getElementById("counter" + suffix);
   if (counterEl && actionRow && actionRow.counter) {
-  counterEl.innerHTML = renderCounterSpans(actionRow.counter, suffix);
+    const raw = actionRow.counter;
+    const keywords = raw.split(/\s*,\s*/).map(str => str.trim());
 
     const keywordToAttr = {
       INS: [ "ATACAR", "BLOQUEAR, CONTRA-ATACAR", "INTERROMPER", "RESISTIR IMPACTO", "ARREMESSAR", "CARREGAR, FORÇA", "ESCALAR", "INICIATIVA, ALCANÇAR", "INTIMIDAR", "DESAFIAR", "FORÇA DE VONTADE", "ORIENTAÇÃO, SOBREVIVÊNCIA", "CLARIVIDÊNCIA" ],
@@ -813,15 +814,10 @@ const attValEl = document.getElementById("selected_att" + suffix);
 if (attValEl) attValEl.textContent = statVal;
 }
 
-function renderCounterSpans(rawText, side) {
+function renderCounterSpans(rawText) {
   if (!rawText) return "";
 
-  const keywordToAttr = window.keywordToAttr || {}; // Garante que está usando seu mapeamento
-
-  // Descobre o lado oposto
-  const oppSide = side === "-a" ? "b" : "a";
-
-  // Pega ações compostas, ordenadas por tamanho
+  // Pega todas as ações compostas do keywordToAttr, ordenadas por tamanho descrescente
   const composedActions = Object.keys(keywordToAttr)
     .filter(k => k.includes(","))
     .sort((a, b) => b.length - a.length);
@@ -829,16 +825,19 @@ function renderCounterSpans(rawText, side) {
   let rest = rawText;
   let detected = [];
 
+  // Vai capturando as compostas do texto antes do split por vírgula
   composedActions.forEach(comp => {
     const regex = new RegExp(`\\b${comp}\\b`, "gi");
     rest = rest.replace(regex, match => {
       detected.push(match);
-      return `§§${detected.length - 1}§§`;
+      return `§§${detected.length - 1}§§`; // marcador temporário
     });
   });
 
+  // Agora faz split das ações simples
   let splitArr = rest.split(/\s*,\s*/).filter(Boolean);
 
+  // Restaura as compostas nos lugares certos
   splitArr = splitArr.map(item => {
     if (item.startsWith("§§") && item.endsWith("§§")) {
       const idx = parseInt(item.replace(/§§/g, ""));
@@ -847,35 +846,13 @@ function renderCounterSpans(rawText, side) {
     return item;
   });
 
-  // Gera spans com botão
+  // Gera os spans normalmente
   return splitArr.map(kw => {
     const clean = kw.trim();
     const attr = keywordToAttr[clean.toUpperCase()] || "none";
-    // Cria o span com data-action e data-side
-    return `<span class="action-block ${attr} counter-action-btn" data-action="${clean}" data-side="${oppSide}">${clean}</span>`;
+    return `<span class="action-block ${attr}">${clean}</span>`;
   }).join(" ");
 }
-
-	// Delegação de eventos para spans do counter
-document.addEventListener("click", function(e) {
-  if (e.target.classList.contains("counter-action-btn")) {
-    const action = e.target.dataset.action;
-    const side = e.target.dataset.side;
-    const dropdown = document.getElementById(`action-select-${side}`);
-
-    if (!dropdown) return;
-
-    const options = Array.from(dropdown.options);
-    const index = options.findIndex(opt => opt.textContent.trim() === action.trim());
-    if (index >= 0) {
-      dropdown.selectedIndex = index;
-      dropdown.dispatchEvent(new Event("change"));
-    } else {
-      alert(`Selecione o tipo de ação de "${action}" manualmente.`);
-    }
-  }
-});
-
 
 
 function setupConditionsAutocomplete(side) {
@@ -1736,7 +1713,7 @@ function styleSpellActions(side) {
           dropdown.selectedIndex = index;
           dropdown.dispatchEvent(new Event("change"));
         } else {
-          alert(`Selecione o tipo de ação de "${action}" manualmente.`);
+          alert(`Ação "${action}" não encontrada no dropdown.`);
         }
       });
       container.appendChild(span);
@@ -2120,25 +2097,6 @@ async function loadFirebaseData() {
   }
 }
 
-document.addEventListener("click", function(e) {
-  if (e.target.classList.contains("counter-action-btn")) {
-    const action = e.target.dataset.action;
-    const side = e.target.dataset.side;
-    const dropdown = document.getElementById(`action-select-${side}`);
-
-    if (!dropdown) return;
-
-    const options = Array.from(dropdown.options);
-    const index = options.findIndex(opt => opt.textContent.trim() === action.trim());
-    if (index >= 0) {
-      dropdown.selectedIndex = index;
-      dropdown.dispatchEvent(new Event("change"));
-    } else {
-      alert(`Selecione o tipo de ação de "${action}" manualmente.`);
-    }
-  }
-});
-	
 window.onload = loadFirebaseData;
 
 </script>
