@@ -800,14 +800,7 @@ function setFields(charRow, actionRow, suffix) {
   const attLabelEl = document.getElementById("selected_att_label" + suffix);
   if (attLabelEl) attLabelEl.textContent = actionRow && actionRow.att ? actionRow.att.trim() : "";
 
-  let statVal = "-";
-  if (actionRow && actionRow.att) {
-    const statCode = actionRow.att.trim().toLowerCase();
-    if (charRow && charRow["char_" + statCode] !== undefined) {
-      statVal = charRow["char_" + statCode];
-    }
-  }
-  let statVal = "-";
+ let statVal = "-";
 if (actionRow && actionRow.att) {
   const statCode = actionRow.att.trim().toLowerCase();
   const charSel = document.getElementById(`char-select${suffix}`);
