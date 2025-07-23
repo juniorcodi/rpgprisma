@@ -727,105 +727,46 @@ const keywordToAttr = {
 };
 
 function setFields(charRow, actionRow, suffix) {
-  const selectedAttNameEl = document.getElementById("selected_att_name" + suffix);
-  if (selectedAttNameEl) {
-    selectedAttNameEl.textContent = actionRow && actionRow.att ? actionRow.att.trim() : "";
-  }
-
-  // Populate character fields
-  charFields.forEach(f => {
-    const el = document.getElementById(f + suffix);
-    if (el) {
-      const value = charRow && charRow[f] ? charRow[f] : "";
-      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-        el.value = value;
-      } else {
-        el.textContent = value;
-      }
-    }
-  });
-
-  // Immediately after populating charFields, update the class for bonuses and deductions
-  for (let i = 1; i <= 6; ++i) {
-    const el = document.getElementById(`char_bonus${i}${suffix}`);
-    if (!el) continue;
-    const val = el.textContent.trim().toUpperCase();
-    el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
-    el.classList.add(keywordToAttr[val] || 'none');
-  }
-  for (let i = 1; i <= 3; ++i) {
-    const el = document.getElementById(`char_deduc${i}${suffix}`);
-    if (!el) continue;
-    const val = el.textContent.trim().toUpperCase();
-    el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
-    el.classList.add(keywordToAttr[val] || 'none');
-  }
+  // ... your previous code ...
 
   // Populate action fields
   actionFields.forEach(f => {
     const el = document.getElementById(f + suffix);
     if (el) el.textContent = actionRow && actionRow[f] ? actionRow[f] : "";
   });
-  
-// Override and format counter separately (now that it's always an array)
-const counterEl = document.getElementById("counter" + suffix);
-if (counterEl && actionRow && actionRow.counter) {
-  counterEl.innerHTML = renderCounterSpans(actionRow.counter, suffix);
-}
 
-    const keywordToAttr = {
-      INS: [ "ATACAR", "BLOQUEAR, CONTRA-ATACAR", "INTERROMPER", "RESISTIR IMPACTO", "ARREMESSAR", "CARREGAR, FORÇA", "ESCALAR", "INICIATIVA, ALCANÇAR", "INTIMIDAR", "DESAFIAR", "FORÇA DE VONTADE", "ORIENTAÇÃO, SOBREVIVÊNCIA", "CLARIVIDÊNCIA" ],
-      SIM: [ "PROTEGER OUTREM", "CURAR", "PERSUADIR", "BARGANHAR", "SEDUZIR", "INSPIRAR", "IMPLORAR", "ACALMAR", "DOMAR, TREINAR", "CONTATOS", "RELAÇÃO", "SENSIBILIDADE", "LIDERAR, COORDENAR" ],
-      RAZ: [ "MIRAR", "PROTEGER-SE", "FOCAR", "ENFEITIÇAR, DESENFEITIÇAR", "TRANSFORMAR", "CONFECCIONAR, REPARAR", "PERCEPÇÃO", "INVESTIGAÇÃO", "OCLUMÊNCIA", "BUSCAR", "APRENDER", "CONHECIMENTO", "RESOLVER ENIGMA" ],
-      MAL: [ "MALDIÇÃO, INFLIGIR DOR", "AZARAR", "DESVIAR", "EMBOSCAR", "SURPREENDER", "DISTRAIR", "FUGIR", "ENGANAR", "MANIPULAR", "RESISTIR SÚPLICA", "FURTIVIDADE", "ROUBAR, PLANTAR", "MANUSEAR" ]
-    };
-
-    const getAttrClass = (word) => {
-      const upper = word.toUpperCase();
-      if (keywordToAttr.INS.includes(upper)) return 'ins';
-      if (keywordToAttr.SIM.includes(upper)) return 'sim';
-      if (keywordToAttr.RAZ.includes(upper)) return 'raz';
-      if (keywordToAttr.MAL.includes(upper)) return 'mal';
-      return 'none';
-    };
-
-    const spansHTML = keywords.map(word => {
-      const cssClass = getAttrClass(word);
-      return `<span class="action-block ${cssClass}">${word}</span>`;
-    }).join(" ");
-
-    counterEl.innerHTML = spansHTML;
+  // Override and format counter separately (now that it's always an array)
+  const counterEl = document.getElementById("counter" + suffix);
+  if (counterEl && actionRow && actionRow.counter) {
+    counterEl.innerHTML = renderCounterSpans(actionRow.counter, suffix);
   }
 
+  // ... the rest ...
   const attLabelEl = document.getElementById("selected_att_label" + suffix);
   if (attLabelEl) attLabelEl.textContent = actionRow && actionRow.att ? actionRow.att.trim() : "";
 
- let statVal = "-";
-if (actionRow && actionRow.att) {
-  const statCode = actionRow.att.trim().toLowerCase();
-  const charSel = document.getElementById(`char-select${suffix}`);
-  const charId = charSel.value;
-  const charRow = charData.find(c => c.id === charId);
-  if (charRow && charRow["char_" + statCode] !== undefined) {
-    statVal = charRow["char_" + statCode];
+  let statVal = "-";
+  if (actionRow && actionRow.att) {
+    const statCode = actionRow.att.trim().toLowerCase();
+    const charSel = document.getElementById(`char-select${suffix}`);
+    const charId = charSel.value;
+    const charRow = charData.find(c => c.id === charId);
+    if (charRow && charRow["char_" + statCode] !== undefined) {
+      statVal = charRow["char_" + statCode];
+    }
   }
-}
-const attValEl = document.getElementById("selected_att" + suffix);
-if (attValEl) attValEl.textContent = statVal;
+  const attValEl = document.getElementById("selected_att" + suffix);
+  if (attValEl) attValEl.textContent = statVal;
 }
 
-function renderCounterSpans(counterArr, side) {
+function renderCounterSpans(counterArr, suffix) {
   if (!counterArr || !counterArr.length) return "";
-  // Each item in counterArr is a full action string (even with commas inside)
   return counterArr.map(actionName => {
     const clean = actionName.trim();
-    // Lookup attribute class from the dictionary, falling back to 'none'
     const attr = keywordToAttr[clean.toUpperCase()] || "none";
-    // Each span is clickable for the counter action
-    return `<span class="action-block ${attr} counter-action-btn" data-action="${clean}" data-side="${side === '-a' ? 'b' : 'a'}">${clean}</span>`;
+    return `<span class="action-block ${attr} counter-action-btn" data-action="${clean}" data-side="${suffix === '-a' ? 'b' : 'a'}">${clean}</span>`;
   }).join(" ");
 }
-
 
 function setupConditionsAutocomplete(side) {
   const input = document.getElementById(`cond-${side}`);
