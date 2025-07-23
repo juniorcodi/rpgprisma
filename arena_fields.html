@@ -1427,6 +1427,7 @@ function getFormattedTimestamp() {
 
 // Recebe logs vindos do popup
 window.addEventListener("message", (event) => {
+  console.log("Recebido log do popup:", event.data);
   if (!event.data || !event.data.logs) return;
   event.data.logs.forEach(log => addLogEntry(log));
 });
