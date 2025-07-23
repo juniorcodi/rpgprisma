@@ -816,38 +816,38 @@ if (attValEl) attValEl.textContent = statVal;
 
 function renderCounterSpans(rawText, side) {
   if (!rawText) return "";
+  // Split the counter string into all possible actions,
+  // but only those that are exact matches in keywordToAttr (no partial splitting!)
+  // So: find all keys in keywordToAttr that are present in rawText, in order.
 
-  let str = rawText.trim();
-  let result = [];
-  // Get all action keys from your dictionary, sorted by length descending (so longer matches happen first)
+  // Get all action keys, sorted by length descending to prefer longer matches
   const actionKeys = Object.keys(keywordToAttr).sort((a, b) => b.length - a.length);
+  let result = [];
+  let temp = rawText.trim();
 
-  while (str.length > 0) {
+  // For each key, look for it at the start, loop until all keys are consumed
+  while (temp.length > 0) {
     let matched = false;
     for (const key of actionKeys) {
-      // Try to match key at start (case-insensitive, with/without spaces)
-      if (str.toUpperCase().startsWith(key.toUpperCase())) {
+      if (temp.toUpperCase().startsWith(key.toUpperCase())) {
         const attr = keywordToAttr[key];
         result.push(
           `<span class="action-block ${attr} counter-action-btn" data-action="${key}" data-side="${side === '-a' ? 'b' : 'a'}">${key}</span>`
         );
-        // Remove this key from the beginning plus any following comma and spaces
-        str = str.slice(key.length).replace(/^\s*,?\s*/, "");
+        temp = temp.slice(key.length).replace(/^\s*,?\s*/, ""); // advance cursor by key length, not by comma!
         matched = true;
         break;
       }
     }
     if (!matched) {
-      // If nothing matches, skip to next comma (to avoid infinite loop)
-      const nextComma = str.indexOf(",");
+      // If nothing matched, just skip to the next comma (shouldn't happen with clean data)
+      const nextComma = temp.indexOf(",");
       if (nextComma === -1) break;
-      str = str.slice(nextComma + 1).trim();
+      temp = temp.slice(nextComma + 1).trim();
     }
   }
-
   return result.join(" ");
 }
-
 
 function setupConditionsAutocomplete(side) {
   const input = document.getElementById(`cond-${side}`);
