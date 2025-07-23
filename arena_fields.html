@@ -769,9 +769,9 @@ function setFields(charRow, actionRow, suffix) {
   
   // Override and format counter separately
   const counterEl = document.getElementById("counter" + suffix);
-if (counterEl && actionRow && actionRow.counter) {
-  counterEl.innerHTML = renderCounterSpans(actionRow.counter, suffix);
-}
+  if (counterEl && actionRow && actionRow.counter) {
+    const raw = actionRow.counter;
+    const keywords = raw.split(/\s*,\s*/).map(str => str.trim());
 
     const keywordToAttr = {
       INS: [ "ATACAR", "BLOQUEAR, CONTRA-ATACAR", "INTERROMPER", "RESISTIR IMPACTO", "ARREMESSAR", "CARREGAR, FORÇA", "ESCALAR", "INICIATIVA, ALCANÇAR", "INTIMIDAR", "DESAFIAR", "FORÇA DE VONTADE", "ORIENTAÇÃO, SOBREVIVÊNCIA", "CLARIVIDÊNCIA" ],
@@ -814,37 +814,25 @@ const attValEl = document.getElementById("selected_att" + suffix);
 if (attValEl) attValEl.textContent = statVal;
 }
 
-function renderCounterSpans(rawText, side) {
+function renderCounterSpans(rawText) {
   if (!rawText) return "";
-  let str = rawText.trim();
-  let result = [];
-  // Get all action keys, sorted by length descending so "ENFEITIÇAR, DESENFEITIÇAR" comes before "ENFEITIÇAR"
-  const actionKeys = Object.keys(keywordToAttr).sort((a, b) => b.length - a.length);
 
-  while (str.length > 0) {
-    let matched = false;
-    for (const key of actionKeys) {
-      // match at the start, case-insensitive, ignoring spaces
-      if (str.toUpperCase().startsWith(key.toUpperCase())) {
-        const attr = keywordToAttr[key];
-        result.push(`<span class="action-block ${attr} counter-action-btn" data-action="${key}" data-side="${side === '-a' ? 'b' : 'a'}">${key}</span>`);
-        // Remove this key + any comma/space right after
-        str = str.slice(key.length).replace(/^\s*,?\s*/, '');
-        matched = true;
-        break;
-      }
-    }
-    if (!matched) {
-      // Fallback: just move forward to avoid infinite loop
-      const nextComma = str.indexOf(",");
-      if (nextComma === -1) break;
-      str = str.slice(nextComma + 1).trimStart();
-    }
-  }
+  // Pega todas as ações compostas do keywordToAttr, ordenadas por tamanho descrescente
+  const composedActions = Object.keys(keywordToAttr)
+    .filter(k => k.includes(","))
+    .sort((a, b) => b.length - a.length);
 
-  return result.join(" ");
-}
+  let rest = rawText;
+  let detected = [];
 
+  // Vai capturando as compostas do texto antes do split por vírgula
+  composedActions.forEach(comp => {
+    const regex = new RegExp(`\\b${comp}\\b`, "gi");
+    rest = rest.replace(regex, match => {
+      detected.push(match);
+      return `§§${detected.length - 1}§§`; // marcador temporário
+    });
+  });
 
   // Agora faz split das ações simples
   let splitArr = rest.split(/\s*,\s*/).filter(Boolean);
