@@ -727,7 +727,40 @@ const keywordToAttr = {
 };
 
 function setFields(charRow, actionRow, suffix) {
-  // ... your previous code ...
+  // Set attribute name
+  const selectedAttNameEl = document.getElementById("selected_att_name" + suffix);
+  if (selectedAttNameEl) {
+    selectedAttNameEl.textContent = actionRow && actionRow.att ? actionRow.att.trim() : "";
+  }
+
+  // Populate character fields
+  charFields.forEach(f => {
+    const el = document.getElementById(f + suffix);
+    if (el) {
+      const value = charRow && charRow[f] ? charRow[f] : "";
+      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+        el.value = value;
+      } else {
+        el.textContent = value;
+      }
+    }
+  });
+
+  // Immediately after populating charFields, update the class for bonuses and deductions
+  for (let i = 1; i <= 6; ++i) {
+    const el = document.getElementById(`char_bonus${i}${suffix}`);
+    if (!el) continue;
+    const val = el.textContent.trim().toUpperCase();
+    el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
+    el.classList.add(keywordToAttr[val] || 'none');
+  }
+  for (let i = 1; i <= 3; ++i) {
+    const el = document.getElementById(`char_deduc${i}${suffix}`);
+    if (!el) continue;
+    const val = el.textContent.trim().toUpperCase();
+    el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
+    el.classList.add(keywordToAttr[val] || 'none');
+  }
 
   // Populate action fields
   actionFields.forEach(f => {
@@ -741,7 +774,7 @@ function setFields(charRow, actionRow, suffix) {
     counterEl.innerHTML = renderCounterSpans(actionRow.counter, suffix);
   }
 
-  // ... the rest ...
+  // Set attribute label and value
   const attLabelEl = document.getElementById("selected_att_label" + suffix);
   if (attLabelEl) attLabelEl.textContent = actionRow && actionRow.att ? actionRow.att.trim() : "";
 
