@@ -767,11 +767,11 @@ function setFields(charRow, actionRow, suffix) {
     if (el) el.textContent = actionRow && actionRow[f] ? actionRow[f] : "";
   });
   
-  // Override and format counter separately
-  const counterEl = document.getElementById("counter" + suffix);
-  if (counterEl && actionRow && actionRow.counter) {
-    const raw = actionRow.counter;
-    const keywords = raw.split(/\s*,\s*/).map(str => str.trim());
+// Override and format counter separately (now that it's always an array)
+const counterEl = document.getElementById("counter" + suffix);
+if (counterEl && actionRow && actionRow.counter) {
+  counterEl.innerHTML = renderCounterSpans(actionRow.counter, suffix);
+}
 
     const keywordToAttr = {
       INS: [ "ATACAR", "BLOQUEAR, CONTRA-ATACAR", "INTERROMPER", "RESISTIR IMPACTO", "ARREMESSAR", "CARREGAR, FORÇA", "ESCALAR", "INICIATIVA, ALCANÇAR", "INTIMIDAR", "DESAFIAR", "FORÇA DE VONTADE", "ORIENTAÇÃO, SOBREVIVÊNCIA", "CLARIVIDÊNCIA" ],
@@ -814,40 +814,18 @@ const attValEl = document.getElementById("selected_att" + suffix);
 if (attValEl) attValEl.textContent = statVal;
 }
 
-function renderCounterSpans(rawText, side) {
-  if (!rawText) return "";
-  // Split the counter string into all possible actions,
-  // but only those that are exact matches in keywordToAttr (no partial splitting!)
-  // So: find all keys in keywordToAttr that are present in rawText, in order.
-
-  // Get all action keys, sorted by length descending to prefer longer matches
-  const actionKeys = Object.keys(keywordToAttr).sort((a, b) => b.length - a.length);
-  let result = [];
-  let temp = rawText.trim();
-
-  // For each key, look for it at the start, loop until all keys are consumed
-  while (temp.length > 0) {
-    let matched = false;
-    for (const key of actionKeys) {
-      if (temp.toUpperCase().startsWith(key.toUpperCase())) {
-        const attr = keywordToAttr[key];
-        result.push(
-          `<span class="action-block ${attr} counter-action-btn" data-action="${key}" data-side="${side === '-a' ? 'b' : 'a'}">${key}</span>`
-        );
-        temp = temp.slice(key.length).replace(/^\s*,?\s*/, ""); // advance cursor by key length, not by comma!
-        matched = true;
-        break;
-      }
-    }
-    if (!matched) {
-      // If nothing matched, just skip to the next comma (shouldn't happen with clean data)
-      const nextComma = temp.indexOf(",");
-      if (nextComma === -1) break;
-      temp = temp.slice(nextComma + 1).trim();
-    }
-  }
-  return result.join(" ");
+function renderCounterSpans(counterArr, side) {
+  if (!counterArr || !counterArr.length) return "";
+  // Each item in counterArr is a full action string (even with commas inside)
+  return counterArr.map(actionName => {
+    const clean = actionName.trim();
+    // Lookup attribute class from the dictionary, falling back to 'none'
+    const attr = keywordToAttr[clean.toUpperCase()] || "none";
+    // Each span is clickable for the counter action
+    return `<span class="action-block ${attr} counter-action-btn" data-action="${clean}" data-side="${side === '-a' ? 'b' : 'a'}">${clean}</span>`;
+  }).join(" ");
 }
+
 
 function setupConditionsAutocomplete(side) {
   const input = document.getElementById(`cond-${side}`);
