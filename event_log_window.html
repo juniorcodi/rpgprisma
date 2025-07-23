@@ -4,7 +4,124 @@
   <meta charset="UTF-8" />
   <title>Log de Evento (A vs B)</title>
   <style>
-    /* ... (seu CSS original, igual ao fornecido) ... */
+    body {
+      background: #111;
+      color: white;
+      font-family: 'Nova Flat', sans-serif;
+      margin: 10px;
+    }
+    .wrapper {
+      display: flex;
+      justify-content: center;
+    }
+    .main-container {
+      display: grid;
+      grid-template-columns: 450px 100px 450px;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .char-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #1b1b1b;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #444;
+    }
+    .header-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .roll-line {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .result-large {
+      font-size: 20px;
+      text-align: center;
+      margin-top: 4px;
+      color: #FFD700;
+    }
+    .mid-column {
+      font-size: 14px;
+      text-align: center;
+      color: #FDA528;
+      font-weight: bold;
+      margin-top: 120px;
+    }
+    .mid-column .value {
+      font-size: 28px;
+      display: block;
+      margin-top: 6px;
+    }
+    input, select, textarea {
+      background: #191919;
+      color: white;
+      border: 1px solid #555;
+      padding: 4px;
+      font-size: 13px;
+      border-radius: 4px;
+    }
+    .row-inline {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .two-column {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .tag {
+      background: #444;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .tag button {
+      background: none;
+      border: none;
+      color: red;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+    .effect-edit {
+      font-size: 14px;
+      width: 100%;
+    }
+    .icon-label {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .preview-box {
+      background: #222;
+      color: #ddd;
+      padding: 10px;
+      border-radius: 6px;
+      white-space: normal;
+      margin-top: 16px;
+      font-size: 13px;
+    }
+    .field-label {
+      font-size: 12px;
+      color: #aaa;
+      margin: 4px 0 2px;
+    }
   </style>
 </head>
 <body>
@@ -177,6 +294,7 @@ function addTag(side, type) {
   list.appendChild(tag);
   updatePreviews();
 }
+  window.addTag = addTag;
 
 function updatePreviews() {
   const resA = parseInt(document.getElementById("res-a").value);
@@ -235,7 +353,8 @@ function updatePreviews() {
     document.getElementById(`preview-${side}`).innerHTML = log;
   });
 }
-
+window.updatePreviews = updatePreviews;
+  
 window.sendLogsToArena = function () {
   const logA = document.getElementById("preview-a")?.innerHTML || "";
   const logB = document.getElementById("preview-b")?.innerHTML || "";
