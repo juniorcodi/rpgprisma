@@ -770,7 +770,7 @@ function setFields(charRow, actionRow, suffix) {
   // Override and format counter separately
   const counterEl = document.getElementById("counter" + suffix);
 if (counterEl && actionRow && actionRow.counter) {
-  counterEl.innerHTML = renderCounterSpans(actionRow.counter, suffix);
+  counterEl.innerHTML = renderCounterSpans(actionRow.counter, side);
 }
 
     const keywordToAttr = {
