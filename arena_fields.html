@@ -770,7 +770,7 @@ function setFields(charRow, actionRow, suffix) {
   // Override and format counter separately
   const counterEl = document.getElementById("counter" + suffix);
 if (counterEl && actionRow && actionRow.counter) {
-  counterEl.innerHTML = renderCounterSpans(actionRow.counter, side);
+  counterEl.innerHTML = renderCounterSpans(actionRow.counter, suffix);
 }
 
     const keywordToAttr = {
@@ -812,6 +812,7 @@ if (actionRow && actionRow.att) {
 }
 const attValEl = document.getElementById("selected_att" + suffix);
 if (attValEl) attValEl.textContent = statVal;
+}
 
 function renderCounterSpans(rawText, side) {
   if (!rawText) return "";
@@ -844,6 +845,26 @@ function renderCounterSpans(rawText, side) {
   return result.join(" ");
 }
 
+
+  // Agora faz split das ações simples
+  let splitArr = rest.split(/\s*,\s*/).filter(Boolean);
+
+  // Restaura as compostas nos lugares certos
+  splitArr = splitArr.map(item => {
+    if (item.startsWith("§§") && item.endsWith("§§")) {
+      const idx = parseInt(item.replace(/§§/g, ""));
+      return detected[idx];
+    }
+    return item;
+  });
+
+  // Gera os spans normalmente
+  return splitArr.map(kw => {
+    const clean = kw.trim();
+    const attr = keywordToAttr[clean.toUpperCase()] || "none";
+    return `<span class="action-block ${attr}">${clean}</span>`;
+  }).join(" ");
+}
 
 
 function setupConditionsAutocomplete(side) {
