@@ -1494,20 +1494,17 @@ const logQuery = query(eventLogColl, orderBy("timestamp", "desc")); // newest fi
 
 onSnapshot(logQuery, (snapshot) => {
   const container = document.getElementById("event-log-container");
-  if (!container) return;
   container.innerHTML = ""; // Clear log display
 
-  // Put the logs in the order we want (newest first)
   snapshot.forEach(docSnap => {
-    renderFirebaseLogEntry(docSnap.data(), docSnap.id);
+    renderFirebaseLogEntry(docSnap.data());
   });
 });
-	
+
 	
 // Drop-in function to add log entries both to the UI and Firebase
 async function addLogEntry(entry, isManual = false) {
   try {
-    const eventLogColl = collection(db, "campaigns", "alpha", "event_log_range");
     // Use timestamp + random for document ID
     const now = new Date();
     const timestamp = now.getTime();
@@ -1522,9 +1519,9 @@ async function addLogEntry(entry, isManual = false) {
     console.error("Erro ao salvar log no Firebase:", error);
   }
 }
-
-	// Make sure global (for window.addLogEntry)
+// Make sure global (for window.addLogEntry)
 window.addLogEntry = addLogEntry;
+
 
 // Recebe logs vindos do popup
 window.addEventListener("message", (event) => {
