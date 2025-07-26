@@ -542,7 +542,7 @@ body { background: #0F0F0F; color: whitesmoke;}
 .top-button:hover {
   background-color: #333;
 }
-	
+
  #event-log-toolbar {
     margin-bottom: 8px;
     background: #222;
@@ -556,14 +556,14 @@ body { background: #0F0F0F; color: whitesmoke;}
   }
 
   #event-log-container {
-    max-height: 500px;
+    max-height: 400px;
     overflow-y: auto;
     background: #222;
     border-radius: 6px;
     padding: 10px;
     font-family: sans-serif;
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
   }
 
   .log-entry {
@@ -576,7 +576,6 @@ body { background: #0F0F0F; color: whitesmoke;}
     margin-bottom: 6px;
     border-left: 5px solid #ddd;
   }
-
   .log-entry .log-content {
     flex-grow: 1;
     font-size: 14px;
@@ -1417,15 +1416,93 @@ function sendLogPopupData() {
   }, 500);
 }
 
-function getFormattedTimestamp() {
-  const now = new Date();
-  const day = String(now.getDate()).padStart(2, "0");
-  const mon = now.toLocaleString("en", { month: "short" });
-  const year = String(now.getFullYear()).slice(-2);
-  const hour = String(now.getHours()).padStart(2, "0");
-  const min = String(now.getMinutes()).padStart(2, "0");
-  return `${day}/${mon}/${year} ${hour}:${min}`;
-}	
+// --- Event Log Live Sync (copy-paste this at end of your script) ---
+
+function getFormattedTimestamp(date = new Date()) {
+  // Ensures consistent timestamp formatting (dd/MMM/yy HH:mm:ss)
+  if (!(date instanceof Date)) date = new Date(date);
+  const day = String(date.getDate()).padStart(2, "0");
+  const mon = date.toLocaleString("en", { month: "short" });
+  const year = String(date.getFullYear()).slice(-2);
+  const hour = String(date.getHours()).padStart(2, "0");
+  const min = String(date.getMinutes()).padStart(2, "0");
+  const sec = String(date.getSeconds()).padStart(2, "0");
+  return `${day}/${mon}/${year} ${hour}:${min}:${sec}`;
+}
+
+// Renders ONE log entry, with all checkboxes, and manual-done-hidden handling
+function renderFirebaseLogEntry(logData, logId) {
+  const container = document.getElementById("event-log-container");
+  if (!container) return;
+
+  // Build row
+  const row = document.createElement("div");
+  row.className = "log-entry";
+  row.dataset.logId = logId || "";
+
+  // Selection checkbox (for hide/delete)
+  const selectBox = document.createElement("input");
+  selectBox.type = "checkbox";
+  selectBox.className = "log-select";
+
+  // Timestamp
+  const timestamp = logData.timestamp 
+    ? getFormattedTimestamp(logData.timestamp.toDate ? logData.timestamp.toDate() : logData.timestamp)
+    : getFormattedTimestamp();
+  const timeDiv = document.createElement("div");
+  timeDiv.className = "log-timestamp";
+  timeDiv.style = "width:120px; font-size:11px; color:#666; margin-top:6px;";
+  timeDiv.textContent = timestamp;
+
+  // Content
+  const contentDiv = document.createElement("div");
+  contentDiv.className = "log-content";
+  contentDiv.innerHTML = logData.content || "";
+
+  // Done/Not done checkbox
+  const statusBox = document.createElement("input");
+  statusBox.type = "checkbox";
+  statusBox.className = "log-status";
+  statusBox.title = "Feito";
+  statusBox.checked = !!logData.done;
+
+  // Restore hidden status
+  if (logData.hidden) row.classList.add("hidden-log");
+
+  // Toggle done status
+  statusBox.addEventListener("change", async () => {
+    const db = window.db || getFirestore();
+    const logRef = doc(db, "campaigns", "alpha", "event_log_range", logId);
+    await updateDoc(logRef, { done: statusBox.checked });
+  });
+
+  // Hidden/visible handled by button elsewhere
+
+  // Compose row
+  row.appendChild(selectBox);
+  row.appendChild(timeDiv);
+  row.appendChild(contentDiv);
+  row.appendChild(statusBox);
+
+  // Prepend to ensure newest-on-top
+  container.appendChild(row);
+}
+
+// --- Event Log Live Sync (listener, don't duplicate imports/collections) ---
+const eventLogColl = collection(db, "campaigns", "alpha", "event_log_range");
+const logQuery = query(eventLogColl, orderBy("timestamp", "desc")); // newest first
+
+onSnapshot(logQuery, (snapshot) => {
+  const container = document.getElementById("event-log-container");
+  if (!container) return;
+  container.innerHTML = ""; // Clear log display
+
+  // Put the logs in the order we want (newest first)
+  snapshot.forEach(docSnap => {
+    renderFirebaseLogEntry(docSnap.data(), docSnap.id);
+  });
+});
+	
 	
 // Drop-in function to add log entries both to the UI and Firebase
 async function addLogEntry(entry, isManual = false) {
@@ -1446,38 +1523,7 @@ async function addLogEntry(entry, isManual = false) {
   }
 }
 
-
-function renderFirebaseLogEntry(log) {
-  const container = document.getElementById("event-log-container");
-  if (!container) return;
-
-  // Format timestamp from log (try to use the same style as getFormattedTimestamp)
-  let date = log.timestamp;
-  // If using Firestore Timestamp, convert to JS Date
-  if (date && typeof date.toDate === "function") date = date.toDate();
-  if (!(date instanceof Date)) date = new Date(date);
-
-  // Format as dd/MMM/yy HH:mm:ss (e.g. 21/Jul/25 20:30:05)
-  const d = date;
-  const day = String(d.getDate()).padStart(2, "0");
-  const mon = d.toLocaleString("en", { month: "short" });
-  const year = String(d.getFullYear()).slice(-2);
-  const hour = String(d.getHours()).padStart(2, "0");
-  const min = String(d.getMinutes()).padStart(2, "0");
-  const sec = String(d.getSeconds()).padStart(2, "0");
-  const formatted = `${day}/${mon}/${year} ${hour}:${min}:${sec}`;
-
-  const row = document.createElement("div");
-  row.className = "log-entry";
-  row.innerHTML = `
-    <div class="log-timestamp" style="width:120px; font-size:11px; color:#666; margin-top:6px;">${formatted}</div>
-    <div class="log-content">${log.content}</div>
-  `;
-  container.appendChild(row); // Will be reversed later, see next step
-}
-
-
-// Make sure global (for window.addLogEntry)
+	// Make sure global (for window.addLogEntry)
 window.addLogEntry = addLogEntry;
 
 // Recebe logs vindos do popup
