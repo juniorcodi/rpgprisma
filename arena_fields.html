@@ -2110,7 +2110,6 @@ async function loadFirebaseData() {
     console.error("Error loading Firebase data:", error);
   }
 }
-import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
 // --- Event Log Live Sync ---
 const eventLogColl = collection(db, "campaigns", "alpha", "event_log_range");
@@ -2124,7 +2123,6 @@ onSnapshot(logQuery, (snapshot) => {
     renderFirebaseLogEntry(docSnap.data());
   });
 });
-
 
 window.onload = loadFirebaseData;
 
