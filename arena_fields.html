@@ -1542,8 +1542,6 @@ function makeContentEditable(container, value) {
   textarea.focus();
 }
 
-const eventLogColl = collection(db, "campaigns", "alpha", "event_log_range");
-
 // Util: Generate unique ID (could use push from firebase, but here's a fallback)
 function logId() {
   return String(Date.now()) + '-' + Math.floor(Math.random() * 10000);
