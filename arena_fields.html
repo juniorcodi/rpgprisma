@@ -1429,35 +1429,23 @@ function getFormattedTimestamp() {
 	
 // Drop-in function to add log entries both to the UI and Firebase
 async function addLogEntry(entry, isManual = false) {
-  // 1. Add to UI
-  const container = document.getElementById("event-log-container");
-  if (!container) return;
-
-  const row = document.createElement("div");
-  row.className = "log-entry";
-
-  // Simple timestamp
-  const timestamp = getFormattedTimestamp();
-
-  row.innerHTML = `
-    <div class="log-timestamp" style="width:120px; font-size:11px; color:#666; margin-top:6px;">${timestamp}</div>
-    <div class="log-content">${entry}</div>
-  `;
-
-  container.prepend(row);
-
-  // 2. Add to Firebase (/campaigns/alpha/event_log_range)
   try {
     const eventLogColl = collection(db, "campaigns", "alpha", "event_log_range");
-    await addDoc(eventLogColl, {
+    // Use timestamp + random for document ID
+    const now = new Date();
+    const timestamp = now.getTime();
+    const random = Math.random().toString(36).substring(2, 7);
+    const docId = `${timestamp}_${random}`;
+    await setDoc(doc(eventLogColl, docId), {
       content: entry,
-      timestamp: new Date(),
+      timestamp: now,
       manual: isManual
     });
   } catch (error) {
     console.error("Erro ao salvar log no Firebase:", error);
   }
 }
+
 
 function renderFirebaseLogEntry(log) {
   const container = document.getElementById("event-log-container");
