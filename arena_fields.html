@@ -562,6 +562,8 @@ body { background: #0F0F0F; color: whitesmoke;}
     border-radius: 6px;
     padding: 10px;
     font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
   }
 
   .log-entry {
@@ -1457,6 +1459,36 @@ async function addLogEntry(entry, isManual = false) {
   }
 }
 
+function renderFirebaseLogEntry(log) {
+  const container = document.getElementById("event-log-container");
+  if (!container) return;
+
+  // Format timestamp from log (try to use the same style as getFormattedTimestamp)
+  let date = log.timestamp;
+  // If using Firestore Timestamp, convert to JS Date
+  if (date && typeof date.toDate === "function") date = date.toDate();
+  if (!(date instanceof Date)) date = new Date(date);
+
+  // Format as dd/MMM/yy HH:mm:ss (e.g. 21/Jul/25 20:30:05)
+  const d = date;
+  const day = String(d.getDate()).padStart(2, "0");
+  const mon = d.toLocaleString("en", { month: "short" });
+  const year = String(d.getFullYear()).slice(-2);
+  const hour = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  const sec = String(d.getSeconds()).padStart(2, "0");
+  const formatted = `${day}/${mon}/${year} ${hour}:${min}:${sec}`;
+
+  const row = document.createElement("div");
+  row.className = "log-entry";
+  row.innerHTML = `
+    <div class="log-timestamp" style="width:120px; font-size:11px; color:#666; margin-top:6px;">${formatted}</div>
+    <div class="log-content">${log.content}</div>
+  `;
+  container.appendChild(row); // Will be reversed later, see next step
+}
+
+
 // Make sure global (for window.addLogEntry)
 window.addLogEntry = addLogEntry;
 
@@ -2078,6 +2110,21 @@ async function loadFirebaseData() {
     console.error("Error loading Firebase data:", error);
   }
 }
+import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+// --- Event Log Live Sync ---
+const eventLogColl = collection(db, "campaigns", "alpha", "event_log_range");
+const logQuery = query(eventLogColl, orderBy("timestamp", "desc")); // newest first
+
+onSnapshot(logQuery, (snapshot) => {
+  const container = document.getElementById("event-log-container");
+  container.innerHTML = ""; // Clear log display
+
+  snapshot.forEach(docSnap => {
+    renderFirebaseLogEntry(docSnap.data());
+  });
+});
+
 
 window.onload = loadFirebaseData;
 
