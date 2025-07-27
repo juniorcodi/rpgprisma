@@ -676,6 +676,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
+// --- FIREBASE INIT ---
 const firebaseConfig = {
   apiKey: "AIzaSyCoO7sYTOcz_1JrW46VoRowvHYa5wUFSTk",
   authDomain: "rpg-prisma-f5a11.firebaseapp.com",
@@ -690,14 +691,12 @@ const db = getFirestore(app);
 let charData = [], actionData = [], spellsData = [], conditionsData = [];
 let spellsList = [];
 
-// Make variables globally accessible
 window.charData = charData;
 window.actionData = actionData;
 window.spellsData = spellsData;
 window.conditionsData = conditionsData;
 window.spellsList = spellsList;
 
-// Define constants and field mappings
 const charFields = [
   "char_avatar", "char_name", "char_player", "char_hp", "char_maxhp", "char_energy", "char_maxenergy",
   "char_ins", "char_sim", "char_raz", "char_mal", "char_por", "char_ndf", "char_agi",
@@ -710,19 +709,14 @@ const actionFields = [
   "att_img", "counter", "has_bonus", "opp_has_bonus", "action_description", "action_condition"
 ];
 
-// Keyword-to-attribute mapping
 const keywordToAttr = {
-  // INS
   "ATACAR": "ins", "BLOQUEAR, CONTRA-ATACAR": "ins", "INTERROMPER": "ins", "RESISTIR IMPACTO": "ins",
   "ARREMESSAR": "ins", "CARREGAR, FORÇA": "ins", "ESCALAR": "ins", "INICIATIVA, ALCANÇAR": "ins",
   "INTIMIDAR": "ins", "DESAFIAR": "ins", "FORÇA DE VONTADE": "ins", "ORIENTAÇÃO, SOBREVIVÊNCIA": "ins", "CLARIVIDÊNCIA": "ins",
-  // SIM
   "PROTEGER OUTREM": "sim", "CURAR": "sim", "PERSUADIR": "sim", "BARGANHAR": "sim", "SEDUZIR": "sim", "INSPIRAR": "sim",
   "IMPLORAR": "sim", "ACALMAR": "sim", "DOMAR, TREINAR": "sim", "CONTATOS": "sim", "RELAÇÃO": "sim", "SENSIBILIDADE": "sim", "LIDERAR, COORDENAR": "sim",
-  // RAZ
   "MIRAR": "raz", "PROTEGER-SE": "raz", "FOCAR": "raz", "ENFEITIÇAR, DESENFEITIÇAR": "raz", "TRANSFORMAR": "raz", "CONFECCIONAR, REPARAR": "raz",
   "PERCEPÇÃO": "raz", "INVESTIGAÇÃO": "raz", "OCLUMÊNCIA": "raz", "BUSCAR": "raz", "APRENDER": "raz", "CONHECIMENTO": "raz", "RESOLVER ENIGMA": "raz",
-  // MAL
   "MALDIÇÃO, INFLIGIR DOR": "mal", "AZARAR": "mal", "DESVIAR": "mal", "EMBOSCAR": "mal", "SURPREENDER": "mal", "DISTRAIR": "mal",
   "FUGIR": "mal", "ENGANAR": "mal", "MANIPULAR": "mal", "RESISTIR SÚPLICA": "mal", "FURTIVIDADE": "mal", "ROUBAR, PLANTAR": "mal", "MANUSEAR": "mal"
 };
@@ -1416,93 +1410,8 @@ function sendLogPopupData() {
   }, 500);
 }
 
-// --- Event Log Live Sync (copy-paste this at end of your script) ---
-
-function getFormattedTimestamp(date = new Date()) {
-  // Ensures consistent timestamp formatting (dd/MMM/yy HH:mm:ss)
-  if (!(date instanceof Date)) date = new Date(date);
-  const day = String(date.getDate()).padStart(2, "0");
-  const mon = date.toLocaleString("en", { month: "short" });
-  const year = String(date.getFullYear()).slice(-2);
-  const hour = String(date.getHours()).padStart(2, "0");
-  const min = String(date.getMinutes()).padStart(2, "0");
-  const sec = String(date.getSeconds()).padStart(2, "0");
-  return `${day}/${mon}/${year} ${hour}:${min}:${sec}`;
-}
-
-// Renders ONE log entry, with all checkboxes, and manual-done-hidden handling
-function renderFirebaseLogEntry(logData, logId) {
-  const container = document.getElementById("event-log-container");
-  if (!container) return;
-
-  // Build row
-  const row = document.createElement("div");
-  row.className = "log-entry";
-  row.dataset.logId = logId || "";
-
-  // Selection checkbox (for hide/delete)
-  const selectBox = document.createElement("input");
-  selectBox.type = "checkbox";
-  selectBox.className = "log-select";
-
-  // Timestamp
-  const timestamp = logData.timestamp 
-    ? getFormattedTimestamp(logData.timestamp.toDate ? logData.timestamp.toDate() : logData.timestamp)
-    : getFormattedTimestamp();
-  const timeDiv = document.createElement("div");
-  timeDiv.className = "log-timestamp";
-  timeDiv.style = "width:120px; font-size:11px; color:#666; margin-top:6px;";
-  timeDiv.textContent = timestamp;
-
-  // Content
-  const contentDiv = document.createElement("div");
-  contentDiv.className = "log-content";
-  contentDiv.innerHTML = logData.content || "";
-
-  // Done/Not done checkbox
-  const statusBox = document.createElement("input");
-  statusBox.type = "checkbox";
-  statusBox.className = "log-status";
-  statusBox.title = "Feito";
-  statusBox.checked = !!logData.done;
-
-  // Restore hidden status
-  if (logData.hidden) row.classList.add("hidden-log");
-
-  // Toggle done status
-  statusBox.addEventListener("change", async () => {
-    const db = window.db || getFirestore();
-    const logRef = doc(db, "campaigns", "alpha", "event_log_range", logId);
-    await updateDoc(logRef, { done: statusBox.checked });
-  });
-
-  // Hidden/visible handled by button elsewhere
-
-  // Compose row
-  row.appendChild(selectBox);
-  row.appendChild(timeDiv);
-  row.appendChild(contentDiv);
-  row.appendChild(statusBox);
-
-  // Prepend to ensure newest-on-top
-  container.appendChild(row);
-}
-
-// --- Event Log Live Sync (listener, don't duplicate imports/collections) ---
-const eventLogColl = collection(db, "campaigns", "alpha", "event_log_range");
-const logQuery = query(eventLogColl, orderBy("timestamp", "desc")); // newest first
-
-onSnapshot(logQuery, (snapshot) => {
-  const container = document.getElementById("event-log-container");
-  container.innerHTML = ""; // Clear log display
-
-  snapshot.forEach(docSnap => {
-    renderFirebaseLogEntry(docSnap.data());
-  });
-});
-
 	
-// Drop-in function to add log entries both to the UI and Firebase
+// Function to add log entries both to the UI and Firebase
 async function addLogEntry(entry, isManual = false) {
   try {
     // Use timestamp + random for document ID
@@ -1523,31 +1432,32 @@ async function addLogEntry(entry, isManual = false) {
 window.addLogEntry = addLogEntry;
 
 
-// Recebe logs vindos do popup
-window.addEventListener("message", (event) => {
-  console.log("Recebido log do popup:", event.data);
-  if (!event.data || !event.data.logs) return;
-  event.data.logs.forEach(log => addLogEntry(log));
-});
-
-// 🧩 Torna editável novamente
-function makeContentEditable(container, value) {
-  container.innerHTML = "";
-  const textarea = document.createElement("textarea");
-  textarea.value = value;
-  textarea.onblur = () => {
-    container.innerHTML = textarea.value;
-  };
-  container.appendChild(textarea);
-  textarea.focus();
-}
-
 // Util: Generate unique ID (could use push from firebase, but here's a fallback)
 function logId() {
   return String(Date.now()) + '-' + Math.floor(Math.random() * 10000);
 }
 
-// Render the log from a sorted array of entries
+// ------------------------------------------------------------------------
+// ----------------- EVENT LOG SYSTEM: CLEAN AND COMPLETE -----------------
+// ------------------------------------------------------------------------
+
+const eventLogColl = collection(db, "campaigns", "alpha", "event_log_range");
+const logQuery = query(eventLogColl, orderBy("timestamp", "desc"));
+let currentLogArray = [];
+
+// Utility: Consistent timestamp
+function getFormattedTimestamp(date = new Date()) {
+  if (!(date instanceof Date)) date = new Date(date);
+  const day = String(date.getDate()).padStart(2, "0");
+  const mon = date.toLocaleString("en", { month: "short" });
+  const year = String(date.getFullYear()).slice(-2);
+  const hour = String(date.getHours()).padStart(2, "0");
+  const min = String(date.getMinutes()).padStart(2, "0");
+  const sec = String(date.getSeconds()).padStart(2, "0");
+  return `${day}/${mon}/${year} ${hour}:${min}:${sec}`;
+}
+
+// Master log renderer (handles ALL entries, new first, all sources)
 function renderEventLog(logArray) {
   const container = document.getElementById("event-log-container");
   container.innerHTML = "";
@@ -1566,7 +1476,10 @@ function renderEventLog(logArray) {
     const timestampDiv = document.createElement("div");
     timestampDiv.className = "log-timestamp";
     timestampDiv.style = "width: 120px; font-size: 11px; color: #666; margin-top: 6px;";
-    timestampDiv.textContent = new Date(log.timestamp).toLocaleString();
+    let date = log.timestamp;
+    if (date && typeof date.toDate === "function") date = date.toDate();
+    if (!(date instanceof Date)) date = new Date(date);
+    timestampDiv.textContent = getFormattedTimestamp(date);
 
     // Content (editable for manual logs)
     const contentDiv = document.createElement("div");
@@ -1596,23 +1509,18 @@ function renderEventLog(logArray) {
     row.appendChild(contentDiv);
     row.appendChild(statusCheckbox);
 
-    container.prepend(row); // newest on top
+    container.appendChild(row); // keep snapshot order (descending)
   });
+  container.style.maxHeight = "600px";
+  container.style.overflowY = "auto";
 }
 
-// Global: keep the log array in memory
-let currentLogArray = [];
-
-// ---- REALTIME FIREBASE LISTENER ----
-function setupLogRealtimeListener() {
-  const q = query(eventLogColl, orderBy("timestamp", "desc"));
-  onSnapshot(q, (snap) => {
-    currentLogArray = [];
-    snap.forEach(doc => currentLogArray.push({ id: doc.id, ...doc.data() }));
-    renderEventLog(currentLogArray);
-  });
-}
-setupLogRealtimeListener();
+// Real-time sync with Firestore (single source of truth)
+onSnapshot(logQuery, (snap) => {
+  currentLogArray = [];
+  snap.forEach(doc => currentLogArray.push({ id: doc.id, ...doc.data() }));
+  renderEventLog(currentLogArray);
+});
 
 // ---- BUTTON/CONTROL HOOKS ----
 document.querySelector("#event-log-toolbar .button[onclick*='addManualLog']").onclick = addManualLog;
@@ -1621,7 +1529,7 @@ document.querySelector("#event-log-toolbar .button[onclick*='deleteSelectedLogs'
 document.querySelector("#event-log-toolbar .button[onclick*='toggleVisibility']").onclick = toggleVisibility;
 document.getElementById("status-filter").onchange = filterStatusLogs;
 
-// ---- FUNCTIONS ----
+// ---- LOG ENTRY ADD/DELETE/CONTROL ----
 async function addManualLog() {
   const entry = {
     content: "Clique aqui e digite seu log...",
@@ -1634,7 +1542,6 @@ async function addManualLog() {
 }
 
 async function addTurnChangeLog() {
-  // Use current turn from the input
   const turnInput = document.getElementById("current-turn");
   const turno = parseInt(turnInput.value) || 1;
   await addDoc(eventLogColl, {
@@ -1690,17 +1597,21 @@ function filterStatusLogs() {
   });
 }
 
-// ---- EXPORTABLE: ADD EVENT FROM GAME SYSTEM ----
-// Usage: call this from your dice system when you want to add a log entry
-export async function addGameLogEntry(htmlString) {
+// ---- EXPORTABLE: ADD EVENT FROM GAME SYSTEM / POPUP ----
+window.addLogEntry = async function(entry, isManual = false) {
   await addDoc(eventLogColl, {
-    content: htmlString,
-    manual: false,
+    content: entry,
+    manual: isManual,
     hidden: false,
     done: false,
-    timestamp: Date.now(),
+    timestamp: Date.now()
   });
-}
+};
+
+window.addEventListener("message", (event) => {
+  if (!event.data || !event.data.logs) return;
+  event.data.logs.forEach(log => window.addLogEntry(log));
+});
 
 function styleSpellActions(side) {
   const fields = ["ins", "raz", "mal", "sim"];
