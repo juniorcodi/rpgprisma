@@ -1614,7 +1614,72 @@ function styleSpellActions(side) {
     });
   });
 }
+async function loadFirebaseData() {
+  try {
+    // NO import or firebaseConfig/init here!
+    // Fetch your collections:
 
+    // CHARACTERS
+    const charactersSnapshot = await getDocs(collection(db, "campaigns", "alpha", "characters_range"));
+    charData = charactersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    window.charData = charData;
+
+    // ACTIONS
+    const actionsSnapshot = await getDocs(collection(db, "campaigns", "alpha", "actions_range"));
+    actionData = actionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    window.actionData = actionData;
+
+    // SPELLS
+    const spellsSnapshot = await getDocs(collection(db, "campaigns", "alpha", "spells_range"));
+    spellsData = spellsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    spellsList = spellsData.map(s => s.spell_name);
+    window.spellsData = spellsData;
+    window.spellsList = spellsList;
+
+    // CONDITIONS
+    const conditionsSnapshot = await getDocs(collection(db, "campaigns", "alpha", "conditions_range"));
+    conditionsData = conditionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    window.conditionsData = conditionsData;
+
+    // Setup dropdowns, spells table, autocompletes, and listeners
+    setupDropdowns();
+    buildSpellsTables();
+    setupConditionsAutocomplete("a");
+    setupConditionsAutocomplete("b");
+    setupCharacterListeners();
+
+    console.log("Firebase data loaded successfully");
+
+    // Listen for changes in the session state
+    const sessionStateRef = doc(db, "campaigns", "alpha", "session_state", "main");
+    onSnapshot(sessionStateRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        if (data.charA) document.getElementById("char-select-a").value = data.charA;
+        if (data.charB) document.getElementById("char-select-b").value = data.charB;
+        if (data.actionA) document.getElementById("action-select-a").value = data.actionA;
+        if (data.actionB) document.getElementById("action-select-b").value = data.actionB;
+        if (data.diceamount_a !== undefined)
+          document.getElementById("diceamount-a").value = data.diceamount_a;
+        if (data.diceamount_b !== undefined)
+          document.getElementById("diceamount-b").value = data.diceamount_b;
+        if (data.fixedbonus_a !== undefined)
+          document.getElementById("fixedbonus-a").value = data.fixedbonus_a;
+        if (data.fixedbonus_b !== undefined)
+          document.getElementById("fixedbonus-b").value = data.fixedbonus_b;
+        // Trigger the change events to update the UI
+        document.getElementById("char-select-a").dispatchEvent(new Event('change'));
+        document.getElementById("char-select-b").dispatchEvent(new Event('change'));
+        document.getElementById("action-select-a").dispatchEvent(new Event('change'));
+        document.getElementById("action-select-b").dispatchEvent(new Event('change'));
+      }
+    });
+
+  } catch (error) {
+    console.error("Error loading Firebase data:", error);
+  }
+}
+	
 // --------- FINAL: LAZY EXPORT FOR GAME SYSTEM TO CALL -----------
 export async function addGameLogEntry(htmlString) {
   await addDoc(eventLogColl, {
