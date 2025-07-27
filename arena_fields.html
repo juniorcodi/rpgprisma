@@ -1087,6 +1087,28 @@ function setupSessionField(field, side, eventType = "input", parser = (x) => x) 
   });
 }
 
+	document.getElementById("rollalldice-b").addEventListener("click", () => {
+  setTimeout(() => {
+    const popup = window.open("event_log_window.html", "LogPopup", "width=1060,height=630");
+
+    setTimeout(() => {
+      const charAData = getCharacterData("a");
+      const charBData = getCharacterData("b");
+
+      console.log("✅ Enviando dados para o popup:", {
+        charA: charAData,
+        charB: charBData,
+      });
+
+      popup.postMessage({
+        charA: charAData,
+        charB: charBData,
+      }, "*");
+    }, 500);
+  }, 1000);
+});
+
+
 // Utility to update range slider fill color
 function updateSliderFill(slider, color) {
   const value = (slider.value - slider.min) / (slider.max - slider.min);
@@ -1456,7 +1478,7 @@ function renderEventLog(logArray) {
     row.appendChild(contentDiv);
     row.appendChild(statusCheckbox);
 
-    container.appendChild(row); // order already handled by logArray
+    container.prepend(row); // order already handled by logArray
   });
 }
 
