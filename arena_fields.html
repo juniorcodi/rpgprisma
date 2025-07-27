@@ -658,6 +658,7 @@ body { background: #0F0F0F; color: whitesmoke;}
 </div>
 </div></center>
 <!-- Script para autocomplete e preenchimento -->
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import {
@@ -676,7 +677,6 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-// --- FIREBASE INIT ---
 const firebaseConfig = {
   apiKey: "AIzaSyCoO7sYTOcz_1JrW46VoRowvHYa5wUFSTk",
   authDomain: "rpg-prisma-f5a11.firebaseapp.com",
@@ -691,12 +691,14 @@ const db = getFirestore(app);
 let charData = [], actionData = [], spellsData = [], conditionsData = [];
 let spellsList = [];
 
+// Make variables globally accessible
 window.charData = charData;
 window.actionData = actionData;
 window.spellsData = spellsData;
 window.conditionsData = conditionsData;
 window.spellsList = spellsList;
 
+// Define constants and field mappings
 const charFields = [
   "char_avatar", "char_name", "char_player", "char_hp", "char_maxhp", "char_energy", "char_maxenergy",
   "char_ins", "char_sim", "char_raz", "char_mal", "char_por", "char_ndf", "char_agi",
@@ -709,14 +711,19 @@ const actionFields = [
   "att_img", "counter", "has_bonus", "opp_has_bonus", "action_description", "action_condition"
 ];
 
+// Keyword-to-attribute mapping
 const keywordToAttr = {
+  // INS
   "ATACAR": "ins", "BLOQUEAR, CONTRA-ATACAR": "ins", "INTERROMPER": "ins", "RESISTIR IMPACTO": "ins",
   "ARREMESSAR": "ins", "CARREGAR, FORÇA": "ins", "ESCALAR": "ins", "INICIATIVA, ALCANÇAR": "ins",
   "INTIMIDAR": "ins", "DESAFIAR": "ins", "FORÇA DE VONTADE": "ins", "ORIENTAÇÃO, SOBREVIVÊNCIA": "ins", "CLARIVIDÊNCIA": "ins",
+  // SIM
   "PROTEGER OUTREM": "sim", "CURAR": "sim", "PERSUADIR": "sim", "BARGANHAR": "sim", "SEDUZIR": "sim", "INSPIRAR": "sim",
   "IMPLORAR": "sim", "ACALMAR": "sim", "DOMAR, TREINAR": "sim", "CONTATOS": "sim", "RELAÇÃO": "sim", "SENSIBILIDADE": "sim", "LIDERAR, COORDENAR": "sim",
+  // RAZ
   "MIRAR": "raz", "PROTEGER-SE": "raz", "FOCAR": "raz", "ENFEITIÇAR, DESENFEITIÇAR": "raz", "TRANSFORMAR": "raz", "CONFECCIONAR, REPARAR": "raz",
   "PERCEPÇÃO": "raz", "INVESTIGAÇÃO": "raz", "OCLUMÊNCIA": "raz", "BUSCAR": "raz", "APRENDER": "raz", "CONHECIMENTO": "raz", "RESOLVER ENIGMA": "raz",
+  // MAL
   "MALDIÇÃO, INFLIGIR DOR": "mal", "AZARAR": "mal", "DESVIAR": "mal", "EMBOSCAR": "mal", "SURPREENDER": "mal", "DISTRAIR": "mal",
   "FUGIR": "mal", "ENGANAR": "mal", "MANIPULAR": "mal", "RESISTIR SÚPLICA": "mal", "FURTIVIDADE": "mal", "ROUBAR, PLANTAR": "mal", "MANUSEAR": "mal"
 };
@@ -796,12 +803,13 @@ function renderCounterSpans(counterArr, suffix) {
   }).join(" ");
 }
 
+
+// --- AUTOCOMPLETE CONDITIONS ---
 function setupConditionsAutocomplete(side) {
   const input = document.getElementById(`cond-${side}`);
   const listId = `cond-autocomplete-list-${side}`;
 
   input.addEventListener("input", function() {
-    // Remove any old autocomplete
     let old = document.getElementById(listId);
     if (old) old.remove();
 
@@ -831,10 +839,8 @@ function setupConditionsAutocomplete(side) {
       option.textContent = cond.condition;
       option.style.padding = "4px 8px";
       option.style.cursor = "pointer";
-     option.title = `${cond.cond_category || ""}: ${cond.cond_description || ""}\nEFEITO: ${cond.cond_effects || ""}`;
-console.log("Setting tooltip for", cond.condition, "=", option.title);
+      option.title = `${cond.cond_category || ""}: ${cond.cond_description || ""}\nEFEITO: ${cond.cond_effects || ""}`;
 
-      
       option.onclick = () => {
         input.value = cond.condition;
         list.remove();
@@ -844,7 +850,6 @@ console.log("Setting tooltip for", cond.condition, "=", option.title);
 
     document.body.appendChild(list);
 
-    // Remove autocomplete when clicking outside
     document.addEventListener("click", function onDocClick(e) {
       if (e.target !== input) {
         if (document.getElementById(listId)) document.getElementById(listId).remove();
@@ -853,11 +858,9 @@ console.log("Setting tooltip for", cond.condition, "=", option.title);
     });
   });
 }
-
-// Make function globally accessible
 window.setupConditionsAutocomplete = setupConditionsAutocomplete;
 
-
+// --- CHARACTER LISTENERS (LIVE SYNC) ---
 function setupCharacterListeners() {
   let charListenerA = null;
   let charListenerB = null;
@@ -865,26 +868,16 @@ function setupCharacterListeners() {
   function setupCharListener(side) {
     const charSelect = document.getElementById(`char-select-${side}`);
     const charId = charSelect.value;
-    
+
     if (!charId) return;
 
-    // Remove previous listener if exists
-    if (side === "a" && charListenerA) {
-      charListenerA();
-      charListenerA = null;
-    }
-    if (side === "b" && charListenerB) {
-      charListenerB();
-      charListenerB = null;
-    }
+    if (side === "a" && charListenerA) { charListenerA(); charListenerA = null; }
+    if (side === "b" && charListenerB) { charListenerB(); charListenerB = null; }
 
-    // Setup new listener
     const charRef = doc(db, "campaigns", "alpha", "characters_range", charId);
     const unsubscribe = onSnapshot(charRef, (doc) => {
       if (doc.exists()) {
         const data = doc.data();
-        
-        // Update all character fields
         charFields.forEach(field => {
           const el = document.getElementById(`${field}-${side}`);
           if (el && data[field] !== undefined) {
@@ -895,41 +888,26 @@ function setupCharacterListeners() {
             }
           }
         });
-
-        // Update sliders
         updateStatRanges(side);
-        
-        // Update condition tags from char_cond field
-        if (data.char_cond) {
-          updateConditionTags(side, data.char_cond);
-        }
-        
-        // Apply bonus/deduction styling
+        if (data.char_cond) updateConditionTags(side, data.char_cond);
         applyBonusDeductionStyling(side);
       }
     });
 
-    // Store the unsubscribe function
-    if (side === "a") {
-      charListenerA = unsubscribe;
-    } else {
-      charListenerB = unsubscribe;
-    }
+    if (side === "a") { charListenerA = unsubscribe; }
+    else { charListenerB = unsubscribe; }
   }
 
-  // Setup initial listeners
   setupCharListener("a");
   setupCharListener("b");
 
-  // Add listeners to dropdown changes
   document.getElementById("char-select-a").addEventListener("change", () => setupCharListener("a"));
   document.getElementById("char-select-b").addEventListener("change", () => setupCharListener("b"));
 }
 
+// --- COLORING/STYLE HELPERS ---
 function applyBonusDeductionStyling(side) {
   const suffix = side === 'a' ? '-a' : '-b';
-  
-  // Apply styling to bonus fields
   for (let i = 1; i <= 6; ++i) {
     const el = document.getElementById(`char_bonus${i}${suffix}`);
     if (!el) continue;
@@ -937,8 +915,6 @@ function applyBonusDeductionStyling(side) {
     el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
     el.classList.add(keywordToAttr[val] || 'none');
   }
-  
-  // Apply styling to deduction fields
   for (let i = 1; i <= 3; ++i) {
     const el = document.getElementById(`char_deduc${i}${suffix}`);
     if (!el) continue;
@@ -948,25 +924,24 @@ function applyBonusDeductionStyling(side) {
   }
 }
 
+// --- SAVE INDICATOR ---
 function showSaveIndicator(message) {
   const indicator = document.getElementById("save-indicator");
   if (indicator) {
     indicator.textContent = message;
-    setTimeout(() => {
-      indicator.textContent = "☁️ Aguardando...";
-    }, 2000);
+    setTimeout(() => { indicator.textContent = "☁️ Aguardando..."; }, 2000);
   }
 }
 
+// --- DROPDOWNS ---
 function setupDropdowns() {
   const charSelA = document.getElementById("char-select-a");
   const charSelB = document.getElementById("char-select-b");
   const actSelA = document.getElementById("action-select-a");
   const actSelB = document.getElementById("action-select-b");
 
-charSelA.innerHTML = charData.map(row => `<option class="option" value="${row.id}">${row.char_name}</option>`).join('');
-charSelB.innerHTML = charData.map(row => `<option class="option" value="${row.id}">${row.char_name}</option>`).join('');
-
+  charSelA.innerHTML = charData.map(row => `<option class="option" value="${row.id}">${row.char_name}</option>`).join('');
+  charSelB.innerHTML = charData.map(row => `<option class="option" value="${row.id}">${row.char_name}</option>`).join('');
   actSelA.innerHTML = actionData.map((row, i) => `<option class="option" value="${i}">${row.action}</option>`).join('');
   actSelB.innerHTML = actionData.map((row, i) => `<option class="option" value="${i}">${row.action}</option>`).join('');
 
@@ -981,7 +956,6 @@ charSelB.innerHTML = charData.map(row => `<option class="option" value="${row.id
       });
       showSaveIndicator("☁️ Sincronizado");
     } catch (error) {
-      // If document doesn't exist, create it
       if (error.code === 'not-found') {
         try {
           await setDoc(sessionStateRef, {
@@ -1002,49 +976,37 @@ charSelB.innerHTML = charData.map(row => `<option class="option" value="${row.id
     }
   }
 
-function refreshA() {
-  setFields(charData[charSelA.value], actionData[actSelA.value], "-a");
-  updatePartialResult("a");
-  updateStatRanges("a");
-  setTimeout(() => {
-    applyActionVariableClasses("a");
-    applySimpleVariableClassesFromField("a");
-    setupDiceSection("a");
-  }, 30);
-}
-function refreshB() {
-  setFields(charData[charSelB.value], actionData[actSelB.value], "-b");
-  updatePartialResult("b");
-  updateStatRanges("b");
-  setTimeout(() => {
-    applyActionVariableClasses("b");
-    applySimpleVariableClassesFromField("b");
-    setupDiceSection("b");
-  }, 30);
-}
+  function refreshA() {
+    setFields(charData.find(row => row.id === charSelA.value), actionData[actSelA.value], "-a");
+    updatePartialResult("a");
+    updateStatRanges("a");
+    setTimeout(() => {
+      applyActionVariableClasses("a");
+      applySimpleVariableClassesFromField("a");
+      setupDiceSection("a");
+    }, 30);
+  }
+  function refreshB() {
+    setFields(charData.find(row => row.id === charSelB.value), actionData[actSelB.value], "-b");
+    updatePartialResult("b");
+    updateStatRanges("b");
+    setTimeout(() => {
+      applyActionVariableClasses("b");
+      applySimpleVariableClassesFromField("b");
+      setupDiceSection("b");
+    }, 30);
+  }
 
-  
-  charSelA.onchange = () => {
-    refreshA();
-    updateSessionState();
-  };
-  actSelA.onchange = () => {
-    refreshA();
-    updateSessionState();
-  };
-  charSelB.onchange = () => {
-    refreshB();
-    updateSessionState();
-  };
-  actSelB.onchange = () => {
-    refreshB();
-    updateSessionState();
-  };
+  charSelA.onchange = () => { refreshA(); updateSessionState(); };
+  actSelA.onchange = () => { refreshA(); updateSessionState(); };
+  charSelB.onchange = () => { refreshB(); updateSessionState(); };
+  actSelB.onchange = () => { refreshB(); updateSessionState(); };
 
   refreshA();
   refreshB();
 }
 
+// --- REMAINING EXISTING HOOKUPS ---
 ["char_hp", "char_energy", "char_narrativepoints"].forEach(field => {
   setupLiveCharField(field, "a", "input", x => parseInt(x) || 0);
   setupLiveCharField(field, "b", "input", x => parseInt(x) || 0);
@@ -1054,42 +1016,49 @@ function refreshB() {
   setupLiveCharField(field, "b", "input");
 });
 
-	
-function applyActionVariableClasses(groupSuffix = 'a') {
-  // This function would need the action data to determine classes
-  // For now, keeping it as a placeholder
-}
-
-function applySimpleVariableClassesFromField(groupSuffix = 'a') {
-  const attrEl = document.getElementById(`selected_att_name-${groupSuffix}`);
-  if (!attrEl) return;
-
-  const attrRaw = attrEl.textContent.trim().toUpperCase();
-  const att = ['INS', 'SIM', 'RAZ', 'MAL'].includes(attrRaw) ? attrRaw : 'NONE';
-
-  const classTypes = [
-    'title-variable', 'sub-variable',
-    'descr-variable', 'strong-variable',
-    'back-variable', 'light-div', 'dark-div', 'text-variable', 'text-variable-emoji'
-  ];
-
-  classTypes.forEach(classType => {
-    const elements = document.querySelectorAll(`.${classType}[id$="-${groupSuffix}"]`);
-    elements.forEach(el => {
-      el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
-      el.classList.add(att.toLowerCase());
-    });
-  });
-}
-
-function getActionAttrKey(actionRow) {
-  if (!actionRow) return "";
-  return (actionRow.att || "").toLowerCase();
-}
-
 // --- DICE LOGIC PATCH ---
 function setupDiceSection(side) {
-  // ... existing setup code for dice, etc. ...
+  const area = document.getElementById('specialdice_area-' + side);
+  const btn = document.getElementById('add-special-' + side);
+  if (!area || !btn) return;
+  if (area.dataset.initialized) return;
+  area.dataset.initialized = "true";
+  area.innerHTML = '';
+  btn.innerHTML = '✦';
+  btn.title = 'Novo Dado';
+
+  btn.onclick = function () {
+    const group = document.createElement('span');
+    group.className = "dice-group special-dice-box";
+    group.innerHTML = `
+      <input type="number" min="1" value="1" style="width:32px;" class="special-amount">
+      <span style="font-size:13px;">d</span>
+      <input type="number" min="0" value="0" style="width:32px;" class="special-min">
+      <span style="font-size:13px;">–</span>
+      <input type="number" min="1" value="6" style="width:32px;" class="special-max">
+      <button type="button" class="button">×</button>
+    `;
+    group.querySelector("button").onclick = () => group.remove();
+    area.appendChild(group);
+  };
+
+  function getSelectedAttVal() {
+    const el = document.getElementById('selected_att-' + side);
+    const val = parseInt(el && el.textContent ? el.textContent : "0", 10);
+    return isNaN(val) ? 0 : val;
+  }
+
+  function updatePartial() {
+    const att = getSelectedAttVal();
+    const bonus = parseInt(document.getElementById('fixedbonus-' + side).value) || 0;
+    const partial = att + bonus;
+    document.getElementById('partialresult-' + side).textContent = partial;
+    document.getElementById('partialresult_log-' + side).textContent = partial;
+  }
+
+  document.getElementById('diceamount-' + side).oninput = updatePartial;
+  document.getElementById('fixedbonus-' + side).oninput = updatePartial;
+  updatePartial();
 
   document.getElementById('rollalldice-' + side).onclick = async function () {
     const mainDice = Math.max(1, parseInt(document.getElementById('diceamount-' + side).value) || 1);
@@ -1145,7 +1114,6 @@ function setupDiceSection(side) {
       await updateDoc(sessionStateRef, updateData);
       showSaveIndicator("☁ Resultado sincronizado");
     } catch (error) {
-      // If the doc doesn't exist, try to create it
       if (error.code === "not-found") {
         await setDoc(sessionStateRef, updateData);
       } else {
@@ -1185,19 +1153,6 @@ function updateStatRanges(side) {
     updateSliderFill(this, "crimson");
   };
 
-onSnapshot(doc(db, "campaigns", "alpha", "session_state", "main"), (docSnap) => {
-  if (!docSnap.exists()) return;
-  const data = docSnap.data();
-  if (data.aBreakdown !== undefined)
-    document.getElementById("roll_breakdown-a").innerHTML = data.aBreakdown;
-  if (data.bBreakdown !== undefined)
-    document.getElementById("roll_breakdown-b").innerHTML = data.bBreakdown;
-  if (data.aResult !== undefined)
-    document.getElementById("roll_result-a").innerHTML = `<br><span class="individual-result"><b>${data.aResult}</b></span>`;
-  if (data.bResult !== undefined)
-    document.getElementById("roll_result-b").innerHTML = `<br><span class="individual-result"><b>${data.bResult}</b></span>`;
-});
-	
   // Energy - read from input field
   const energyEl = document.getElementById('char_energy-' + side);
   const energy = parseInt(energyEl.tagName === "INPUT" ? energyEl.value : energyEl.textContent) || 0;
@@ -1220,232 +1175,102 @@ onSnapshot(doc(db, "campaigns", "alpha", "session_state", "main"), (docSnap) => 
   };
 }
 
-// PRESERVE FUNCTION FOR RANGE FIELDS //
-function setCenteredGradient(slider, colorLeft, colorRight) {
-  const value = parseInt(slider.value, 10);
-  const percent = (Math.abs(value) / 3) * 50;
+// ------------------ SPELLS AND AUTOCOMPLETE ---------------------
+function buildSpellsTables() {
+  ["a", "b"].forEach(side => {
+    const container = document.getElementById(`spells-${side}`);
+    container.innerHTML = `
+      <table style="width: 100%; font-size: 13px;">
+        <tr style="vertical-align: top;">
+          <td width="35px">NdF: <span id="spell_ndf-${side}"></span><br>Raro: <span id="spell_rare-${side}"></span></td>
+          <td width="110px">
+            Feitiço: <input id="spell-name-${side}" style="width: 90%;">
+            <br>Obs.: <span id="spell_obs-${side}"></span>
+          </td>
+          <td width="43px">
+            Dano: <span id="spell_dmg-${side}"></span><br>
+            Dur.: <span id="spell_duration-${side}"></span><br>
+            Con.: <span id="spell_concentration-${side}"></span>
+          </td>
+          <td width="50px">
+            Efeito:<br> <span id="spell_effect-${side}"></span><br>
+            Condições:<br> <span id="spell_effect_condition-${side}"></span>
+          </td>
+          <td width="50px">
+            Efeito Extra:<br> <span id="spell_extra-${side}"></span><br>
+            Condições:<br> <span id="spell_extra_condition-${side}"></span>
+          </td>
+          <td id="action-links-section" width="70px" class="spells-action-container">
+            Ações:<br>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;"><span id="spell_ins-${side}"></span><span id="spell_raz-${side}"></span><span id="spell_mal-${side}"></span><span id="spell_sim-${side}"></span></div><br>
+            Counter: <span id="spell_counteraction-${side}"></span>
+          </td>
+        </tr>
+      </table>
+    `;
 
-  let backgroundFill;
-
-  if (value > 0) {
-    backgroundFill = `linear-gradient(to right, 
-      transparent 50%, 
-      ${colorRight} 50%, 
-      ${colorRight} ${50 + percent}%, 
-      transparent ${50 + percent}%)`;
-  } else if (value < 0) {
-    backgroundFill = `linear-gradient(to right, 
-      transparent ${50 - percent}%, 
-      ${colorLeft} ${50 - percent}%, 
-      ${colorLeft} 50%, 
-      transparent 50%)`;
-  } else {
-    backgroundFill = `transparent`;
-  }
-
-  const base = `repeating-linear-gradient(
-    to right,
-    #222,
-    #222 calc((100% / 6) - 3px),
-    transparent calc((100% / 6) - 3px),
-    transparent calc(100% / 6)
-  )`;
-
-  slider.style.background = backgroundFill !== 'transparent'
-    ? `${backgroundFill}, ${base}`
-    : base;
-}
-
-const sliders = [
-  { id: 'char_fear_anger-a', left: '#08626D', right: '#B73D11' },
-  { id: 'char_distrust_trust-a', left: '#423682', right: '#aa1e57' },
-  { id: 'char_stress_calm-a', left: '#B73D11', right: '#423682' },
-  { id: 'char_guilt_satisf-a', left: '#aa1e57', right: '#08626D' },
-  { id: 'char_fear_anger-b', left: '#08626D', right: '#B73D11' },
-  { id: 'char_distrust_trust-b', left: '#423682', right: '#aa1e57' },
-  { id: 'char_stress_calm-b', left: '#B73D11', right: '#423682' },
-  { id: 'char_guilt_satisf-b', left: '#aa1e57', right: '#08626D' }
-];
-
-sliders.forEach(({ id, left, right }) => {
-  const slider = document.getElementById(id);
-  setCenteredGradient(slider, left, right);
-  slider.addEventListener('input', () => {
-    setCenteredGradient(slider, left, right);
+    setupAutocomplete(`spell-name-${side}`, side);
   });
-});
-
-function updateSliderFill(slider, color) {
-  const value = (slider.value - slider.min) / (slider.max - slider.min);
-  const percent = value * 100;
-  slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${percent}%, #333 ${percent}%, #333 100%)`;
 }
 
-document.getElementById("obs-toggle-a").addEventListener("click", function () {
-  const obsField = document.getElementById("obs-field-a");
-  if (obsField) {
-    const isVisible = obsField.style.display !== "none";
-    obsField.style.display = isVisible ? "none" : "block";
-  }	
-});
+function populateSpellData(side) {
+  const input = document.getElementById(`spell-name-${side}`);
+  const name = input.value.trim();
+  const spell = spellsData.find(s => s.spell_name === name);
+  if (!spell) return;
 
-document.getElementById("obs-toggle-b").addEventListener("click", function () {
-  const obsField = document.getElementById("obs-field-b");
-  if (obsField) {
-    const isVisible = obsField.style.display !== "none";
-    obsField.style.display = isVisible ? "none" : "block";
-  }
-});
+  const spellNdf = parseInt(spell.spell_ndf) || 0;
+  const charNdf = parseInt(document.getElementById(`char_ndf-${side}`)?.textContent.trim()) || 0;
+  const diff = charNdf - spellNdf;
+  const halfSmall = Math.floor(Math.abs(diff) / 2);
+  const halfBig = Math.abs(diff) - halfSmall;
+  const bonusToInput = diff >= 0 ? halfSmall : -halfSmall;
+  const bonusToDmg = (diff === 0) ? "" : `<span style="margin-left: 6px;">${diff >= 0 ? "+" : "-"}${halfBig}</span>`;
+  const showWarning = diff < 0 ? `<span style="margin-left: 6px; color: orange;">⚠️</span>` : "";
 
-document.getElementById("rollalldice-b").addEventListener("click", () => {
-  // Supondo que sua lógica de rolagem já esteja aqui...
-  // Agora adicionamos o envio do popup com log de confirmação:
+  document.getElementById(`spell_ndf-${side}`).innerHTML = spell.spell_ndf + showWarning;
+  document.getElementById(`spell_rare-${side}`).textContent = spell.spell_rare === "1" ? "⭐" : "";
+  document.getElementById(`spell_obs-${side}`).textContent = spell.spell_obs;
+  document.getElementById(`spell_dmg-${side}`).innerHTML = spell.spell_dmg + bonusToDmg;
+  document.getElementById(`spell_duration-${side}`).textContent = spell.spell_duration;
+  document.getElementById(`spell_concentration-${side}`).textContent = spell.spell_concentration === "1" ? "SIM" : "NÃO";
+  document.getElementById(`spell_effect-${side}`).textContent = spell.spell_effect;
+  document.getElementById(`spell_effect_condition-${side}`).textContent = spell.spell_effect_condition;
+  document.getElementById(`spell_extra-${side}`).textContent = spell.spell_extra;
+  document.getElementById(`spell_extra_condition-${side}`).textContent = spell.spell_extra_condition;
+  document.getElementById(`spell_ins-${side}`).textContent = spell.spell_ins;
+  document.getElementById(`spell_raz-${side}`).textContent = spell.spell_raz;
+  document.getElementById(`spell_mal-${side}`).textContent = spell.spell_mal;
+  document.getElementById(`spell_sim-${side}`).textContent = spell.spell_sim;
+  document.getElementById(`spell_counteraction-${side}`).textContent = spell.spell_counteraction;
 
-  setTimeout(() => {
-    const popup = window.open("event_log_window.html", "LogPopup", "width=1060,height=630");
+  // Aplica o bônus ao campo de input
+  const bonusInput = document.getElementById(`fixedbonus-${side}`);
+  if (bonusInput) bonusInput.value = bonusToInput;
 
-    setTimeout(() => {
-      const charAData = getCharacterData("a");
-      const charBData = getCharacterData("b");
-
-      console.log("✅ Enviando dados para o popup:", {
-        charA: charAData,
-        charB: charBData,
-      });
-
-      popup.postMessage({
-        charA: charAData,
-        charB: charBData, 
-      }, "*");
-    }, 500);
-  }, 1000);
-});
-
-function safeText(id) {
-  const el = document.getElementById(id);
-  return el ? el.textContent.trim() : "❓";
+  // Reestiliza os botões de ação
+  styleSpellActions(side);
 }
 
-function safeNumber(id) {
-  const el = document.getElementById(id);
-  return el ? parseInt(el.textContent.trim() || "0") : 0;
+function setupAutocomplete(inputId, side) {
+  const input = document.getElementById(inputId);
+  input.setAttribute("list", `spells-list-${side}`);
+  const datalist = document.createElement("datalist");
+  datalist.id = `spells-list-${side}`;
+  spellsList.forEach(spell => {
+    const opt = document.createElement("option");
+    opt.value = spell;
+    datalist.appendChild(opt);
+  });
+  document.body.appendChild(datalist);
+
+  input.addEventListener("change", () => populateSpellData(side));
 }
 
-function getCharacterData(side) {
-  // ID reverso do adversário
-  const other = side === "a" ? "b" : "a";
-
-  const nameSelect = document.getElementById(`char-select-${side}`);
-  const name = nameSelect?.options[nameSelect.selectedIndex]?.textContent.trim() || "❓";
-
-  const targetSelect = document.getElementById(`char-select-${side === "a" ? "b" : "a"}`);
-  const target = targetSelect?.options[targetSelect.selectedIndex]?.textContent.trim() || "❓";
-
-  const action = document.getElementById(`action-select-${side}`)?.selectedOptions?.[0]?.textContent || "❓";
-  const atr = document.getElementById(`selected_att_name-${side}`)?.textContent || "??";
-
-  const bonus = parseInt(document.getElementById(`fixedbonus-${side}`)?.textContent || "0");
-  const bonus_reason = "";
-
-  // Resultado total
-  const result = parseInt(document.getElementById(`roll_result-${side}`)?.textContent || "0");
-
-  // Energia e HP atual
-  const current_hp = parseInt(document.getElementById(`char_hp-${side}`)?.textContent || "0");
-  const current_en = parseInt(document.getElementById(`char_energy-${side}`)?.textContent || "0");
-
-  // Alterações de energia e HP (só para simular no log)
-  const altered_hp = 0;
-  const altered_en = parseInt(document.getElementById(`action_energy-${side}`)?.textContent || "0");
-
-  // Breakdown com os tooltips
-  const breakdown = Array.from(document.querySelectorAll(`#roll_breakdown-${side} span[title]`)).map(span => ({
-    label: span.getAttribute("title"),
-    value: parseInt(span.textContent) || 0
-  }));
-  
-  // Ndf
-  const ndfEl = document.getElementById(`char_ndf-${side}`);
-  const ndf = ndfEl ? parseInt(ndfEl.textContent.trim()) || 0 : 0;
-  
-  const spell_dmg_el = document.getElementById(`spell_dmg-${side}`);
-  const spell_dmg = spell_dmg_el ? spell_dmg_el.textContent.trim() : "";
-
-  const spell_effect_condition = document.getElementById(`spell_effect_condition-${side}`)?.textContent || "";
-  const spell_extra_condition = document.getElementById(`spell_extra_condition-${side}`)?.textContent || "";
-
-  return {
-    name,
-    target,
-    action,
-    atr,
-    bonus,
-    bonus_reason,
-    breakdown,
-    result,
-    altered_hp,
-    altered_en,
-    current_hp,
-    current_en,
-    ndf,
-    spell_dmg,
-    spell_effect_condition,
-    spell_extra_condition,
-  };
-}
-
-function sendLogPopupData() {
-  const popup = window.open("event_log_window.html", "LogPopup", "width=1060,height=630");
-
-  const dataA = getCharacterData("a");
-  const dataB = getCharacterData("b");
-
-  setTimeout(() => {
-    popup.postMessage({
-      charA: dataA,
-      charB: dataB,
-      action: dataA.action,
-      attribute: dataA.atr
-    }, "*");
-  }, 500);
-}
-
-	
-// Function to add log entries both to the UI and Firebase
-async function addLogEntry(entry, isManual = false) {
-  try {
-    // Use timestamp + random for document ID
-    const now = new Date();
-    const timestamp = now.getTime();
-    const random = Math.random().toString(36).substring(2, 7);
-    const docId = `${timestamp}_${random}`;
-    await setDoc(doc(eventLogColl, docId), {
-      content: entry,
-      timestamp: now,
-      manual: isManual
-    });
-  } catch (error) {
-    console.error("Erro ao salvar log no Firebase:", error);
-  }
-}
-// Make sure global (for window.addLogEntry)
-window.addLogEntry = addLogEntry;
-
-
-// Util: Generate unique ID (could use push from firebase, but here's a fallback)
-function logId() {
-  return String(Date.now()) + '-' + Math.floor(Math.random() * 10000);
-}
-
-// ------------------------------------------------------------------------
-// ----------------- EVENT LOG SYSTEM: CLEAN AND COMPLETE -----------------
-// ------------------------------------------------------------------------
-
+// -------------- EVENT LOG SYSTEM (FIREBASE, NEWEST ON TOP) ----------------
 const eventLogColl = collection(db, "campaigns", "alpha", "event_log_range");
-const logQuery = query(eventLogColl, orderBy("timestamp", "desc"));
 let currentLogArray = [];
 
-// Utility: Consistent timestamp
 function getFormattedTimestamp(date = new Date()) {
   if (!(date instanceof Date)) date = new Date(date);
   const day = String(date.getDate()).padStart(2, "0");
@@ -1457,9 +1282,9 @@ function getFormattedTimestamp(date = new Date()) {
   return `${day}/${mon}/${year} ${hour}:${min}:${sec}`;
 }
 
-// Master log renderer (handles ALL entries, new first, all sources)
 function renderEventLog(logArray) {
   const container = document.getElementById("event-log-container");
+  if (!container) return;
   container.innerHTML = "";
   logArray.forEach(log => {
     const row = document.createElement("div");
@@ -1476,10 +1301,7 @@ function renderEventLog(logArray) {
     const timestampDiv = document.createElement("div");
     timestampDiv.className = "log-timestamp";
     timestampDiv.style = "width: 120px; font-size: 11px; color: #666; margin-top: 6px;";
-    let date = log.timestamp;
-    if (date && typeof date.toDate === "function") date = date.toDate();
-    if (!(date instanceof Date)) date = new Date(date);
-    timestampDiv.textContent = getFormattedTimestamp(date);
+    timestampDiv.textContent = getFormattedTimestamp(log.timestamp);
 
     // Content (editable for manual logs)
     const contentDiv = document.createElement("div");
@@ -1509,27 +1331,20 @@ function renderEventLog(logArray) {
     row.appendChild(contentDiv);
     row.appendChild(statusCheckbox);
 
-    container.appendChild(row); // keep snapshot order (descending)
+    container.appendChild(row); // order already handled by logArray
   });
-  container.style.maxHeight = "600px";
-  container.style.overflowY = "auto";
 }
 
-// Real-time sync with Firestore (single source of truth)
-onSnapshot(logQuery, (snap) => {
-  currentLogArray = [];
-  snap.forEach(doc => currentLogArray.push({ id: doc.id, ...doc.data() }));
-  renderEventLog(currentLogArray);
-});
+function setupLogRealtimeListener() {
+  const q = query(eventLogColl, orderBy("timestamp", "desc"));
+  onSnapshot(q, (snap) => {
+    currentLogArray = [];
+    snap.forEach(doc => currentLogArray.push({ id: doc.id, ...doc.data() }));
+    renderEventLog(currentLogArray);
+  });
+}
+setupLogRealtimeListener();
 
-// ---- BUTTON/CONTROL HOOKS ----
-document.querySelector("#event-log-toolbar .button[onclick*='addManualLog']").onclick = addManualLog;
-document.querySelector("#event-log-toolbar .button[onclick*='addTurnChange']").onclick = addTurnChangeLog;
-document.querySelector("#event-log-toolbar .button[onclick*='deleteSelectedLogs']").onclick = deleteSelectedLogs;
-document.querySelector("#event-log-toolbar .button[onclick*='toggleVisibility']").onclick = toggleVisibility;
-document.getElementById("status-filter").onchange = filterStatusLogs;
-
-// ---- LOG ENTRY ADD/DELETE/CONTROL ----
 async function addManualLog() {
   const entry = {
     content: "Clique aqui e digite seu log...",
@@ -1597,22 +1412,124 @@ function filterStatusLogs() {
   });
 }
 
-// ---- EXPORTABLE: ADD EVENT FROM GAME SYSTEM / POPUP ----
-window.addLogEntry = async function(entry, isManual = false) {
-  await addDoc(eventLogColl, {
-    content: entry,
-    manual: isManual,
-    hidden: false,
-    done: false,
-    timestamp: Date.now()
+// ---- BUTTON HOOKS ----
+document.querySelector("#event-log-toolbar .button[onclick*='addManualLog']").onclick = addManualLog;
+document.querySelector("#event-log-toolbar .button[onclick*='addTurnChange']").onclick = addTurnChangeLog;
+document.querySelector("#event-log-toolbar .button[onclick*='deleteSelectedLogs']").onclick = deleteSelectedLogs;
+document.querySelector("#event-log-toolbar .button[onclick*='toggleVisibility']").onclick = toggleVisibility;
+document.getElementById("status-filter").onchange = filterStatusLogs;
+
+// ---------------- TAG/CONDITION ADD/REMOVE AND SYNC ----------------
+function addArenaCondition(side) {
+  const condInput = document.getElementById(`cond-${side}`);
+  const turnsInput = document.getElementById(`cond-turns-${side}`);
+  const tagList = document.getElementById(`cond-tags-${side}`);
+  const value = condInput.value.trim();
+  const turns = parseInt(turnsInput.value) || 0;
+
+  if (!value || [...tagList.children].some(tag => tag.dataset.value === value)) return;
+
+  const displayTurns = turns < 0 ? "Concentração" : turns === 0 ? "Indefinido" : `${turns}`;
+
+  // Find tooltip from Firebase
+  const match = (window.conditionsData || []).find(c => 
+    c.condition && c.condition.toLowerCase() === value.toLowerCase()
+  );
+  const tooltip = match
+    ? `${match.cond_category || ""}: ${match.cond_description || ""}\nEFEITO: ${match.cond_effects || ""}`
+    : "";
+
+  // Build tag
+  const tag = document.createElement("span");
+  tag.className = "tag";
+  tag.dataset.value = value;
+  tag.title = tooltip;
+  tag.innerHTML = `${value} (${displayTurns}) <button type="button" onclick="removeTag(this, '${side}', 'cond')">✕</button>`;
+  tagList.appendChild(tag);
+
+  condInput.value = "";
+  turnsInput.value = "0";
+
+  syncConditionsToFirebase(side);
+}
+
+// Removes a tag on a single click
+window.removeTag = function(button, side, type) {
+  button.parentElement.remove();
+  if (type === "cond") syncConditionsToFirebase(side);
+};
+
+// Updates Firebase with the DOM's tag list (now as comma-separated string for backward compat)
+function syncConditionsToFirebase(side) {
+  const charId = document.getElementById(`char-select-${side}`).value;
+  if (!charId) return;
+  const tagContainer = document.getElementById(`cond-tags-${side}`);
+  const tags = Array.from(tagContainer.querySelectorAll("span.tag"));
+  const conditionsText = tags
+    .map(tag => tag.textContent.replace(/\s*✕$/, "").trim())
+    .filter(Boolean)
+    .join(", ");
+
+  const charRef = doc(db, "campaigns", "alpha", "characters_range", charId);
+  updateDoc(charRef, { char_cond: conditionsText })
+    .then(() => showSaveIndicator("☁️ Sincronizado"))
+    .catch(error => {
+      console.error("Error updating char_cond:", error);
+      showSaveIndicator("❌ Erro");
+    });
+}
+window.addArenaCondition = addArenaCondition;
+
+// Update all displayed tags with tooltips
+function updateConditionTags(side, condString) {
+  const tagContainer = document.getElementById(`cond-tags-${side}`);
+  tagContainer.innerHTML = "";
+  const charId = document.getElementById(`char-select-${side}`).value;
+  // Accept string param (if from DB) or fallback to charData
+  const conds = (condString || (charData.find(c => c.id === charId)?.char_cond) || "").split(",");
+  conds.map(t => t.trim()).filter(Boolean).forEach(tagText => {
+    const baseName = tagText.replace(/\(.*\)$/, "").trim();
+    const match = (window.conditionsData || []).find(c => c.condition === baseName);
+    const tooltip = match
+      ? `${match.cond_category || ""}: ${match.cond_description || ""}\nEFEITO: ${match.cond_effects || ""}`
+      : "";
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.title = tooltip;
+    tag.dataset.value = baseName;
+    tag.innerHTML = `${tagText} <button type="button" onclick="removeTag(this, '${side}', 'cond')">✕</button>`;
+    tagContainer.appendChild(tag);
   });
+}
+
+// -------------- EVENT LOG POPUP INTEGRATION (window messaging) --------------
+window.addLogEntry = async function addLogEntry(entry, isManual = false) {
+  // Handles logs from popup and direct game logs!
+  try {
+    const now = new Date();
+    const timestamp = now.getTime();
+    const random = Math.random().toString(36).substring(2, 7);
+    const docId = `${timestamp}_${random}`;
+    await setDoc(doc(eventLogColl, docId), {
+      content: entry,
+      timestamp: now,
+      manual: isManual
+    });
+  } catch (error) {
+    console.error("Erro ao salvar log no Firebase:", error);
+  }
 };
 
 window.addEventListener("message", (event) => {
+  // Handles logs received from the popup (event_log_window)
   if (!event.data || !event.data.logs) return;
   event.data.logs.forEach(log => window.addLogEntry(log));
 });
 
+// --- END OF LOG SYSTEM ---
+// ------------------------------------------
+
+// ------------- FINAL UI GLUE (ANY OTHER HELPERS) ----------------
 function styleSpellActions(side) {
   const fields = ["ins", "raz", "mal", "sim"];
   fields.forEach(type => {
@@ -1675,394 +1592,21 @@ function styleSpellActions(side) {
   });
 }
 
-
-function addArenaCondition(side) {
-  const condInput = document.getElementById(`cond-${side}`);
-  const turnsInput = document.getElementById(`cond-turns-${side}`);
-  const tagList = document.getElementById(`cond-tags-${side}`);
-  const value = condInput.value.trim();
-  const turns = parseInt(turnsInput.value) || 0;
-
-  if (!value || [...tagList.children].some(tag => tag.dataset.value === value)) return;
-
-  const displayTurns = turns < 0 ? "Concentração" : turns === 0 ? "Indefinido" : `${turns}`;
-
-  // Find tooltip from Firebase
-  const match = (window.conditionsData || []).find(c => 
-    c.condition && c.condition.toLowerCase() === value.toLowerCase()
-  );
-  const tooltip = match
-    ? `${match.cond_category || ""}: ${match.cond_description || ""}\nEFEITO: ${match.cond_effects || ""}`
-    : "";
-
-  // Build tag
-  const tag = document.createElement("span");
-  tag.className = "tag";
-  tag.dataset.value = value;
-  tag.title = tooltip;
-  tag.innerHTML = `${value} (${displayTurns}) <button type="button" onclick="removeTag(this, '${side}', 'cond')">✕</button>`;
-  tagList.appendChild(tag);
-
-  condInput.value = "";
-  turnsInput.value = "0";
-
-  syncConditionsToFirebase(side);
-}
-
-// Removes a tag on a single click
-window.removeTag = function(button, side, type) {
-  const tag = button.parentElement;
-  tag.remove();
-  if (type === "cond") syncConditionsToFirebase(side);
-};
-
-// Updates Firebase with the DOM's tag list
-function syncConditionsToFirebase(side) {
-  const charId = document.getElementById(`char-select-${side}`).value;
-  if (!charId) return;
-  const tagContainer = document.getElementById(`cond-tags-${side}`);
-  const tags = Array.from(tagContainer.querySelectorAll("span.tag"));
-  const conditionsText = tags
-    .map(tag => tag.textContent.replace(/\s*✕$/, "").trim())
-    .filter(Boolean)
-    .join(", ");
-
-  // Update Firestore (async)
-  const charRef = doc(db, "campaigns", "alpha", "characters_range", charId);
-  updateDoc(charRef, { char_cond: conditionsText })
-    .then(() => showSaveIndicator("☁️ Sincronizado"))
-    .catch(error => {
-      console.error("Error updating char_cond:", error);
-      showSaveIndicator("❌ Erro");
-    });
-}
-// Make function globally accessible
-window.addArenaCondition = addArenaCondition;
-	
-function addTag(side, type) {
-  const inputId = type === "cond" ? `cond-${side}` : `${type}-${side}`;
-  const turnsId = type === "cond" ? `cond-turns-${side}` : `${type}-turns-${side}`;
-  const tagContainer = document.getElementById(`${type}-tags-${side}`);
-  const input = document.getElementById(inputId);
-  const turns = parseInt(document.getElementById(turnsId)?.value || "0");
-
-  const value = input.value.trim();
-  if (!value) return;
-
-  // Prevent duplicate
-  const existingTags = tagContainer.querySelectorAll("span");
-  for (const tag of existingTags) {
-    if (tag.dataset.value === value) return;
-  }
-
-  // Tooltip from Firebase
-  let tooltip = "";
-  if (type === "cond" && typeof conditionsData !== "undefined") {
-    const match = conditionsData.find(c => c.condition === value);
-    tooltip = match
-      ? `${match.cond_category || ''}: ${match.cond_description || ''}\nEFEITO: ${match.cond_effects || ''}`
-      : "";
-  }
-
-  const span = document.createElement("span");
-  span.className = "tag";
-  span.dataset.value = value;
-  span.title = tooltip;
-
-  let turnLabel = "";
-  if (turns === 0) turnLabel = " (Indefinido)";
-  else if (turns < 0) turnLabel = " (Concentração)";
-  else turnLabel = ` (${turns})`;
-
-  span.innerHTML = `${value}${turnLabel} <button onclick="removeTag(this, '${side}', '${type}')">✕</button>`;
-
-  tagContainer.appendChild(span);
-  input.value = "";
-  input.removeAttribute("data-tooltip");
-  
-  // Sync char_cond to Firebase if this is a condition tag
-  if (type === "cond") {
-    syncConditionsToFirebase(side);
-  }
-}
-
-window.removeTag = function(button, side, type) {
-  button.parentElement.remove();
-  
-  // Sync char_cond to Firebase if this is a condition tag
-  if (type === "cond") {
-    syncConditionsToFirebase(side);
-  }
-}
-
-function updateConditionTags(side, condString) {
-  const tagContainer = document.getElementById(`cond-tags-${side}`);
-  tagContainer.innerHTML = "";
-  const charId = document.getElementById(`char-select-${side}`).value;
-  // Accept string param (if from DB) or fallback to charData
-  const conds = (condString || (charData.find(c => c.id === charId)?.char_cond) || "").split(",");
-  conds.map(t => t.trim()).filter(Boolean).forEach(tagText => {
-    const baseName = tagText.replace(/\(.*\)$/, "").trim();
-    const match = (window.conditionsData || []).find(c => c.condition === baseName);
-    const tooltip = match
-      ? `${match.cond_category || ""}: ${match.cond_description || ""}\nEFEITO: ${match.cond_effects || ""}`
-      : "";
-    const tag = document.createElement("span");
-    tag.className = "tag";
-    tag.title = tooltip;
-    tag.dataset.value = baseName;
-    tag.innerHTML = `${tagText} <button type="button" onclick="removeTag(this, '${side}', 'cond')">✕</button>`;
-    tagContainer.appendChild(tag);
+// --------- FINAL: LAZY EXPORT FOR GAME SYSTEM TO CALL -----------
+export async function addGameLogEntry(htmlString) {
+  await addDoc(eventLogColl, {
+    content: htmlString,
+    manual: false,
+    hidden: false,
+    done: false,
+    timestamp: Date.now(),
   });
 }
 
-
-	function setupLiveCharField(field, side, eventType = "input", parser = (x) => x) {
-  const el = document.getElementById(`${field}-${side}`);
-  if (!el) return;
-  el.addEventListener(eventType, async function() {
-    const charId = document.getElementById(`char-select-${side}`).value;
-    // Early return if not loaded yet
-    if (!charId) return;
-    const value = parser(this.value);
-    try {
-      // Use Firestore to update the correct doc!
-      await updateDoc(
-        doc(db, "campaigns", "alpha", "characters_range", charId),
-        { [field]: value }
-      );
-      showSaveIndicator("☁️ Sincronizado");
-    } catch (error) {
-      console.error(`Error updating ${field} for character ${charId}:`, error);
-      showSaveIndicator("❌ Erro");
-    }
-  });
-}
-
-// Setup Firebase sync for dice amount and bonus dice fields
-function setupSessionField(field, side, eventType = "input", parser = (x) => x) {
-  const el = document.getElementById(`${field}-${side}`);
-  if (!el) return;
-  el.addEventListener(eventType, async function() {
-    const value = parser(this.value);
-    try {
-      const sessionStateRef = doc(db, "campaigns", "alpha", "session_state", "main");
-      await updateDoc(sessionStateRef, {
-        [`${field}_${side}`]: value
-      });
-      showSaveIndicator("☁️ Sincronizado");
-    } catch (error) {
-      // If document doesn't exist, create it
-      if (error.code === 'not-found') {
-        try {
-          await setDoc(sessionStateRef, {
-            [`${field}_${side}`]: value
-          });
-          showSaveIndicator("☁️ Sincronizado");
-        } catch (createError) {
-          console.error(`Error creating session state for ${field}:`, createError);
-          showSaveIndicator("❌ Erro");
-        }
-      } else {
-        console.error(`Error updating ${field}:`, error);
-        showSaveIndicator("❌ Erro");
-      }
-    }
-  });
-}
-
-// Setup dice amount and bonus dice sync
-["diceamount", "fixedbonus"].forEach(field => {
-  setupSessionField(field, "a", "input", x => parseInt(x) || 0);
-  setupSessionField(field, "b", "input", x => parseInt(x) || 0);
-});
-
-
-// Constrói as tabelas de spells A e B
-function buildSpellsTables() {
-  ["a", "b"].forEach(side => {
-    const container = document.getElementById(`spells-${side}`);
-    container.innerHTML = `
-      <table style="width: 100%; font-size: 13px;">
-        <tr style="vertical-align: top;">
-          <td width="35px">NdF: <span id="spell_ndf-${side}"></span><br>Raro: <span id="spell_rare-${side}"></span></td>
-          <td width="110px">
-            Feitiço: <input id="spell-name-${side}" style="width: 90%;">
-            <br>Obs.: <span id="spell_obs-${side}"></span>
-          </td>
-          <td width="43px">
-            Dano: <span id="spell_dmg-${side}"></span><br>
-            Dur.: <span id="spell_duration-${side}"></span><br>
-            Con.: <span id="spell_concentration-${side}"></span>
-          </td>
-          <td width="50px">
-            Efeito:<br> <span id="spell_effect-${side}"></span><br>
-            Condições:<br> <span id="spell_effect_condition-${side}"></span>
-          </td>
-          <td width="50px">
-            Efeito Extra:<br> <span id="spell_extra-${side}"></span><br>
-            Condições:<br> <span id="spell_extra_condition-${side}"></span>
-          </td>
-          <td id="action-links-section" width="70px" class="spells-action-container">
-            Ações:<br>
-            <div style="display: flex; flex-wrap: wrap; gap: 6px;"><span id="spell_ins-${side}"></span><span id="spell_raz-${side}"></span><span id="spell_mal-${side}"></span><span id="spell_sim-${side}"></span></div><br>
-            Counter: <span id="spell_counteraction-${side}"></span>
-          </td>
-        </tr>
-      </table>
-    `;
-
-    setupAutocomplete(`spell-name-${side}`, side);
-  });
-}
-
-// Preenche os dados de acordo com o feitiço selecionado
-function populateSpellData(side) {
-  const input = document.getElementById(`spell-name-${side}`);
-  const name = input.value.trim();
-  const spell = spellsData.find(s => s.spell_name === name);
-  if (!spell) return;
-
-  const spellNdf = parseInt(spell.spell_ndf) || 0;
-  const charNdf = parseInt(document.getElementById(`char_ndf-${side}`)?.textContent.trim()) || 0;
-
-  const diff = charNdf - spellNdf;
-  const halfSmall = Math.floor(Math.abs(diff) / 2);
-  const halfBig = Math.abs(diff) - halfSmall;
-
-  const bonusToInput = diff >= 0 ? halfSmall : -halfSmall;
-  const bonusToDmg = (diff === 0) ? "" : `<span style="margin-left: 6px;">${diff >= 0 ? "+" : "-"}${halfBig}</span>`;
-  const showWarning = diff < 0 ? `<span style="margin-left: 6px; color: orange;">⚠️</span>` : "";
-
-  // Preenche os campos da tabela de feitiço
-  document.getElementById(`spell_ndf-${side}`).innerHTML = spell.spell_ndf + showWarning;
-  document.getElementById(`spell_rare-${side}`).textContent = spell.spell_rare === "1" ? "⭐" : "";
-  document.getElementById(`spell_obs-${side}`).textContent = spell.spell_obs;
-  document.getElementById(`spell_dmg-${side}`).innerHTML = spell.spell_dmg + bonusToDmg;
-  document.getElementById(`spell_duration-${side}`).textContent = spell.spell_duration;
-  document.getElementById(`spell_concentration-${side}`).textContent = spell.spell_concentration === "1" ? "SIM" : "NÃO";
-  document.getElementById(`spell_effect-${side}`).textContent = spell.spell_effect;
-  document.getElementById(`spell_effect_condition-${side}`).textContent = spell.spell_effect_condition;
-  document.getElementById(`spell_extra-${side}`).textContent = spell.spell_extra;
-  document.getElementById(`spell_extra_condition-${side}`).textContent = spell.spell_extra_condition;
-  document.getElementById(`spell_ins-${side}`).textContent = spell.spell_ins;
-  document.getElementById(`spell_raz-${side}`).textContent = spell.spell_raz;
-  document.getElementById(`spell_mal-${side}`).textContent = spell.spell_mal;
-  document.getElementById(`spell_sim-${side}`).textContent = spell.spell_sim;
-  document.getElementById(`spell_counteraction-${side}`).textContent = spell.spell_counteraction;
-
-  // Aplica o bônus ao campo de input
-  const bonusInput = document.getElementById(`fixedbonus-${side}`);
-  if (bonusInput) bonusInput.value = bonusToInput;
-
-  // Reestiliza os botões de ação
-  styleSpellActions(side);
-}
-
-// Ativa autocomplete em um input
-function setupAutocomplete(inputId, side) {
-  const input = document.getElementById(inputId);
-  input.setAttribute("list", `spells-list-${side}`);
-  const datalist = document.createElement("datalist");
-  datalist.id = `spells-list-${side}`;
-  spellsList.forEach(spell => {
-    const opt = document.createElement("option");
-    opt.value = spell;
-    datalist.appendChild(opt);
-  });
-  document.body.appendChild(datalist);
-
-  input.addEventListener("change", () => populateSpellData(side));
-}
-async function loadFirebaseData() {
-  try {
-    // NO import or firebaseConfig/init here!
-    // Fetch your collections:
-    const charactersSnapshot = await getDocs(collection(db, "campaigns", "alpha", "characters_range"));
-    charData = charactersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    window.charData = charData;
-
-    const actionsSnapshot = await getDocs(collection(db, "campaigns", "alpha", "actions_range"));
-    actionData = actionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    window.actionData = actionData;
-
-    const spellsSnapshot = await getDocs(collection(db, "campaigns", "alpha", "spells_range"));
-    spellsData = spellsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    spellsList = spellsData.map(s => s.spell_name);
-    window.spellsData = spellsData;
-    window.spellsList = spellsList;
-
-    const conditionsSnapshot = await getDocs(collection(db, "campaigns", "alpha", "conditions_range"));
-    conditionsData = conditionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    window.conditionsData = conditionsData;
-
-    // If using conditions_range, load that instead
-    // const querySnap = await getDocs(collection(db, "campaigns", "alpha", "conditions_range"));
-    // conditionsData = [];
-    // querySnap.forEach(doc => conditionsData.push(doc.data()));
-
-    setupDropdowns();
-    buildSpellsTables();
-    setupConditionsAutocomplete("a");
-    setupConditionsAutocomplete("b");
-    setupCharacterListeners();
-    console.log("Firebase data loaded successfully");
-
-    // Listen for changes in the session state
-    const sessionStateRef = doc(db, "campaigns", "alpha", "session_state", "main");
-    onSnapshot(sessionStateRef, (doc) => {
-      if (doc.exists()) {
-        const data = doc.data();
-        if (data.charA) {
-          document.getElementById("char-select-a").value = data.charA;
-        }
-        if (data.charB) {
-          document.getElementById("char-select-b").value = data.charB;
-        }
-        if (data.actionA) {
-          document.getElementById("action-select-a").value = data.actionA;
-        }
-        if (data.actionB) {
-          document.getElementById("action-select-b").value = data.actionB;
-        }
-        // Update dice amount and bonus dice fields
-        if (data.diceamount_a !== undefined) {
-          document.getElementById("diceamount-a").value = data.diceamount_a;
-        }
-        if (data.diceamount_b !== undefined) {
-          document.getElementById("diceamount-b").value = data.diceamount_b;
-        }
-        if (data.fixedbonus_a !== undefined) {
-          document.getElementById("fixedbonus-a").value = data.fixedbonus_a;
-        }
-        if (data.fixedbonus_b !== undefined) {
-          document.getElementById("fixedbonus-b").value = data.fixedbonus_b;
-        }
-        // Trigger the change events to update the UI
-        document.getElementById("char-select-a").dispatchEvent(new Event('change'));
-        document.getElementById("char-select-b").dispatchEvent(new Event('change'));
-        document.getElementById("action-select-a").dispatchEvent(new Event('change'));
-        document.getElementById("action-select-b").dispatchEvent(new Event('change'));
-      }
-    });
-
-  } catch (error) {
-    console.error("Error loading Firebase data:", error);
-  }
-}
-
-onSnapshot(logQuery, (snapshot) => {
-  const container = document.getElementById("event-log-container");
-  container.innerHTML = ""; // Clear log display
-
-  snapshot.forEach(docSnap => {
-    renderFirebaseLogEntry(docSnap.data());
-  });
-});
-
+// Final: onload trigger
 window.onload = loadFirebaseData;
-
 </script>
+	
 <table border="0" cellpadding="0" cellspacing="0" class="twocell-table">
 <tr>
 <!-- Character A Cell -->
