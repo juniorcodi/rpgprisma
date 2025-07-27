@@ -639,7 +639,7 @@ body { background: #0F0F0F; color: whitesmoke;}
   border-radius: 6px;
   z-index: 9999;
   box-shadow: 0 0 8px rgba(0,0,0,0.3);
-">☁️ Aguardando...</div>
+">☁️ Atualizado.</div>
 <div class="top-toolbar" id="top-bar">
 <button class="top-button" id="toggle-spells" onclick="toggleSpellSection()" title="Feitiços">🪄</button>
 <button class="top-button" id="calculator-button" onclick="window.open('difficulty_calculator.html', 'CalculadoraDeDificuldade', 'width=1000,height=700,resizable=yes,scrollbars=yes')" title="Calculadora de Dificuldade">🧮</button>
@@ -924,12 +924,41 @@ function applyBonusDeductionStyling(side) {
   }
 }
 
+function applyActionVariableClasses(groupSuffix = 'a') {
+  // Placeholder, may be empty if not used, but must exist if referenced.
+}
+
+function applySimpleVariableClassesFromField(groupSuffix = 'a') {
+  const attrEl = document.getElementById(`selected_att_name-${groupSuffix}`);
+  if (!attrEl) return;
+  const attrRaw = attrEl.textContent.trim().toUpperCase();
+  const att = ['INS', 'SIM', 'RAZ', 'MAL'].includes(attrRaw) ? attrRaw : 'NONE';
+  const classTypes = [
+    'title-variable', 'sub-variable',
+    'descr-variable', 'strong-variable',
+    'back-variable', 'light-div', 'dark-div', 'text-variable', 'text-variable-emoji'
+  ];
+  classTypes.forEach(classType => {
+    const elements = document.querySelectorAll(`.${classType}[id$="-${groupSuffix}"]`);
+    elements.forEach(el => {
+      el.classList.remove('ins', 'sim', 'raz', 'mal', 'none');
+      el.classList.add(att.toLowerCase());
+    });
+  });
+}
+
+function getActionAttrKey(actionRow) {
+  if (!actionRow) return "";
+  return (actionRow.att || "").toLowerCase();
+}
+
+
 // --- SAVE INDICATOR ---
 function showSaveIndicator(message) {
   const indicator = document.getElementById("save-indicator");
   if (indicator) {
     indicator.textContent = message;
-    setTimeout(() => { indicator.textContent = "☁️ Aguardando..."; }, 2000);
+    setTimeout(() => { indicator.textContent = "☁️ Atualizado."; }, 2000);
   }
 }
 
@@ -1006,16 +1035,15 @@ function setupDropdowns() {
   refreshB();
 }
 
+// Setup live sync for character fields
 function setupLiveCharField(field, side, eventType = "input", parser = (x) => x) {
   const el = document.getElementById(`${field}-${side}`);
   if (!el) return;
   el.addEventListener(eventType, async function() {
     const charId = document.getElementById(`char-select-${side}`).value;
-    // Early return if not loaded yet
     if (!charId) return;
     const value = parser(this.value);
     try {
-      // Use Firestore to update the correct doc!
       await updateDoc(
         doc(db, "campaigns", "alpha", "characters_range", charId),
         { [field]: value }
@@ -1027,6 +1055,80 @@ function setupLiveCharField(field, side, eventType = "input", parser = (x) => x)
     }
   });
 }
+
+// Setup live sync for session state fields (dice amount, bonus, etc)
+function setupSessionField(field, side, eventType = "input", parser = (x) => x) {
+  const el = document.getElementById(`${field}-${side}`);
+  if (!el) return;
+  el.addEventListener(eventType, async function() {
+    const value = parser(this.value);
+    try {
+      const sessionStateRef = doc(db, "campaigns", "alpha", "session_state", "main");
+      await updateDoc(sessionStateRef, {
+        [`${field}_${side}`]: value
+      });
+      showSaveIndicator("☁️ Sincronizado");
+    } catch (error) {
+      if (error.code === 'not-found') {
+        try {
+          await setDoc(sessionStateRef, {
+            [`${field}_${side}`]: value
+          });
+          showSaveIndicator("☁️ Sincronizado");
+        } catch (createError) {
+          console.error(`Error creating session state for ${field}:`, createError);
+          showSaveIndicator("❌ Erro");
+        }
+      } else {
+        console.error(`Error updating ${field}:`, error);
+        showSaveIndicator("❌ Erro");
+      }
+    }
+  });
+}
+
+// Utility to update range slider fill color
+function updateSliderFill(slider, color) {
+  const value = (slider.value - slider.min) / (slider.max - slider.min);
+  const percent = value * 100;
+  slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${percent}%, #333 ${percent}%, #333 100%)`;
+}
+
+// Centered gradient for emotion sliders
+function setCenteredGradient(slider, colorLeft, colorRight) {
+  const value = parseInt(slider.value, 10);
+  const percent = (Math.abs(value) / 3) * 50;
+
+  let backgroundFill;
+  if (value > 0) {
+    backgroundFill = `linear-gradient(to right, 
+      transparent 50%, 
+      ${colorRight} 50%, 
+      ${colorRight} ${50 + percent}%, 
+      transparent ${50 + percent}%)`;
+  } else if (value < 0) {
+    backgroundFill = `linear-gradient(to right, 
+      transparent ${50 - percent}%, 
+      ${colorLeft} ${50 - percent}%, 
+      ${colorLeft} 50%, 
+      transparent 50%)`;
+  } else {
+    backgroundFill = `transparent`;
+  }
+
+  const base = `repeating-linear-gradient(
+    to right,
+    #222,
+    #222 calc((100% / 6) - 3px),
+    transparent calc((100% / 6) - 3px),
+    transparent calc(100% / 6)
+  )`;
+
+  slider.style.background = backgroundFill !== 'transparent'
+    ? `${backgroundFill}, ${base}`
+    : base;
+}
+
 	
 ["char_hp", "char_energy", "char_narrativepoints"].forEach(field => {
   setupLiveCharField(field, "a", "input", x => parseInt(x) || 0);
