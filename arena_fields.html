@@ -1035,6 +1035,60 @@ function setupDropdowns() {
   refreshB();
 }
 
+	function getCharacterData(side) {
+  // Coleta os dados relevantes do personagem da interface
+  const other = side === "a" ? "b" : "a";
+
+  const nameSelect = document.getElementById(`char-select-${side}`);
+  const name = nameSelect?.options[nameSelect.selectedIndex]?.textContent.trim() || "❓";
+
+  const targetSelect = document.getElementById(`char-select-${other}`);
+  const target = targetSelect?.options[targetSelect.selectedIndex]?.textContent.trim() || "❓";
+
+  const action = document.getElementById(`action-select-${side}`)?.selectedOptions?.[0]?.textContent || "❓";
+  const atr = document.getElementById(`selected_att_name-${side}`)?.textContent || "??";
+  const bonus = parseInt(document.getElementById(`fixedbonus-${side}`)?.value || "0");
+
+  // Resultado total (só para exibir no log)
+  const result = parseInt(document.getElementById(`roll_result-${side}`)?.textContent || "0");
+
+  // Energia e HP atual
+  const current_hp = parseInt(document.getElementById(`char_hp-${side}`)?.value || "0");
+  const current_en = parseInt(document.getElementById(`char_energy-${side}`)?.value || "0");
+
+  // Alterações de energia e HP (simulação)
+  const altered_hp = 0;
+  const altered_en = parseInt(document.getElementById(`action_energy-${side}`)?.textContent || "0");
+
+  // Breakdown (pega o breakdown atual da UI)
+  const breakdown = document.getElementById(`roll_breakdown-${side}`)?.innerHTML || "";
+
+  // NDF, spell fields etc (adapte conforme seu layout)
+  const ndf = parseInt(document.getElementById(`char_ndf-${side}`)?.textContent || "0");
+  const spell_dmg = document.getElementById(`spell_dmg-${side}`)?.textContent || "";
+  const spell_effect_condition = document.getElementById(`spell_effect_condition-${side}`)?.textContent || "";
+  const spell_extra_condition = document.getElementById(`spell_extra_condition-${side}`)?.textContent || "";
+
+  return {
+    name,
+    target,
+    action,
+    atr,
+    bonus,
+    result,
+    altered_hp,
+    altered_en,
+    current_hp,
+    current_en,
+    ndf,
+    breakdown,
+    spell_dmg,
+    spell_effect_condition,
+    spell_extra_condition,
+    // adicione mais campos se desejar
+  };
+}
+	
 // Setup live sync for character fields
 function setupLiveCharField(field, side, eventType = "input", parser = (x) => x) {
   const el = document.getElementById(`${field}-${side}`);
