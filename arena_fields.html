@@ -1006,7 +1006,28 @@ function setupDropdowns() {
   refreshB();
 }
 
-// --- REMAINING EXISTING HOOKUPS ---
+function setupLiveCharField(field, side, eventType = "input", parser = (x) => x) {
+  const el = document.getElementById(`${field}-${side}`);
+  if (!el) return;
+  el.addEventListener(eventType, async function() {
+    const charId = document.getElementById(`char-select-${side}`).value;
+    // Early return if not loaded yet
+    if (!charId) return;
+    const value = parser(this.value);
+    try {
+      // Use Firestore to update the correct doc!
+      await updateDoc(
+        doc(db, "campaigns", "alpha", "characters_range", charId),
+        { [field]: value }
+      );
+      showSaveIndicator("☁️ Sincronizado");
+    } catch (error) {
+      console.error(`Error updating ${field} for character ${charId}:`, error);
+      showSaveIndicator("❌ Erro");
+    }
+  });
+}
+	
 ["char_hp", "char_energy", "char_narrativepoints"].forEach(field => {
   setupLiveCharField(field, "a", "input", x => parseInt(x) || 0);
   setupLiveCharField(field, "b", "input", x => parseInt(x) || 0);
@@ -1016,6 +1037,8 @@ function setupDropdowns() {
   setupLiveCharField(field, "b", "input");
 });
 
+	
+	
 // --- DICE LOGIC PATCH ---
 function setupDiceSection(side) {
   const area = document.getElementById('specialdice_area-' + side);
