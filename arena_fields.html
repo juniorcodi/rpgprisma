@@ -639,7 +639,7 @@ body { background: #0F0F0F; color: whitesmoke;}
   border-radius: 6px;
   z-index: 9999;
   box-shadow: 0 0 8px rgba(0,0,0,0.3);
-">☁️ Atualizado.</div>
+">☁️✅</div>
 <div class="top-toolbar" id="top-bar">
 <button class="top-button" id="toggle-spells" onclick="toggleSpellSection()" title="Feitiços">🪄</button>
 <button class="top-button" id="calculator-button" onclick="window.open('difficulty_calculator.html', 'CalculadoraDeDificuldade', 'width=1000,height=700,resizable=yes,scrollbars=yes')" title="Calculadora de Dificuldade">🧮</button>
@@ -958,7 +958,7 @@ function showSaveIndicator(message) {
   const indicator = document.getElementById("save-indicator");
   if (indicator) {
     indicator.textContent = message;
-    setTimeout(() => { indicator.textContent = "☁️ Atualizado."; }, 2000);
+    setTimeout(() => { indicator.textContent = "☁️✅"; }, 2000);
   }
 }
 
@@ -1256,8 +1256,10 @@ function setupDiceSection(side) {
   const area = document.getElementById('specialdice_area-' + side);
   const btn = document.getElementById('add-special-' + side);
   if (!area || !btn) return;
-  if (area.dataset.initialized) return;
-  area.dataset.initialized = "true";
+
+  // REMOVE: if (area.dataset.initialized) return;
+  // REMOVE: area.dataset.initialized = "true";
+
   area.innerHTML = '';
   btn.innerHTML = '✦';
   btn.title = 'Novo Dado';
@@ -1276,6 +1278,8 @@ function setupDiceSection(side) {
     group.querySelector("button").onclick = () => group.remove();
     area.appendChild(group);
   };
+}
+
 
   function getSelectedAttVal() {
     const el = document.getElementById('selected_att-' + side);
@@ -1329,8 +1333,36 @@ function setupDiceSection(side) {
     });
 
     const finalSum = total + specialTotal;
-    const breakdownHTML = breakdown.join(" + ");
 
+const breakdownArray = [
+  { label: "Atributo Base", value: attVal },
+  { label: "Bônus Fixo", value: mainBonus },
+  ...rolls.map(r => ({ label: "Dado Padrão 0-3", value: r }))
+];
+// especiais
+specialArea.querySelectorAll('.dice-group').forEach(group => {
+  const amount = parseInt(group.querySelector('.special-amount').value) || 1;
+  const max = parseInt(group.querySelector('.special-max').value);
+  const min = parseInt(group.querySelector('.special-min').value);
+  for (let j = 0; j < amount; ++j) {
+    const r = Math.floor(Math.random() * (max - min + 1)) + min;
+    breakdownArray.push({ label: `Dado Especial ${min}-${max}*`, value: r });
+    specialTotal += r;
+  }
+});
+const finalSum = total + specialTotal;
+
+// Salva o breakdown como ARRAY no Firebase
+const updateData = {};
+if (side === 'a') {
+  updateData['aBreakdown'] = breakdownArray;
+  updateData['aResult'] = finalSum;
+} else {
+  updateData['bBreakdown'] = breakdownArray;
+  updateData['bResult'] = finalSum;
+}
+await updateDoc(sessionStateRef, updateData);
+  
     // Output to UI
     document.getElementById('roll_breakdown-' + side).innerHTML = breakdownHTML;
     document.getElementById('roll_result-' + side).innerHTML = `<br><span class="individual-result"><b>${finalSum}</b></span>`;
