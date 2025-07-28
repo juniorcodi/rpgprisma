@@ -1253,13 +1253,12 @@ function setCenteredGradient(slider, colorLeft, colorRight) {
 	
 // --- DICE LOGIC PATCH ---
 function setupDiceSection(side) {
+  // Special dice add/remove
   const area = document.getElementById('specialdice_area-' + side);
   const btn = document.getElementById('add-special-' + side);
   if (!area || !btn) return;
-
-  // REMOVE: if (area.dataset.initialized) return;
-  // REMOVE: area.dataset.initialized = "true";
-
+  if (area.dataset.initialized) return;
+  area.dataset.initialized = "true";
   area.innerHTML = '';
   btn.innerHTML = '✦';
   btn.title = 'Novo Dado';
