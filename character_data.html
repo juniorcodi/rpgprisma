@@ -59,8 +59,6 @@
         return;
       }
 
-      currentDocId = selected === "NEW" ? crypto.randomUUID() : selected;
-
       let data = {};
       if (selected !== "NEW") {
         const docRef = doc(db, "campaigns", "alpha", "characters_range", selected);
@@ -93,12 +91,26 @@
         charData[field] = isNaN(val) ? val : (val === "" ? "" : Number(val));
       });
 
-      await setDoc(doc(db, "campaigns", "alpha", "characters_range", currentDocId), charData);
+     const docId = charData.char_name?.trim();
+if (!docId) {
+  alert("❌ O campo 'char_name' não pode estar vazio.");
+  return;
+}
+await setDoc(doc(db, "campaigns", "alpha", "characters_range", docId), charData);
+currentDocId = docId;
+
       alert("✅ Personagem salvo!");
       loadCharacters();
     }
 
     loadCharacters();
+
+    const docRef = doc(db, "campaigns", "alpha", "characters_range", docId);
+const existingDoc = await getDoc(docRef);
+if (existingDoc.exists() && currentDocId !== docId) {
+  const overwrite = confirm("⚠️ Já existe um personagem com este nome. Deseja sobrescrevê-lo?");
+  if (!overwrite) return;
+}
 
     window.saveCharacter = saveCharacter;
   </script>
