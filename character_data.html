@@ -41,15 +41,20 @@
     let currentDocId = "";
 
     async function loadCharacters() {
-      charSelect.innerHTML = '<option value="">🔽 Selecione</option><option value="NEW">➕ Novo Personagem</option>';
-      const querySnapshot = await getDocs(collection(db, "campaigns", "alpha", "characters_range"));
-      querySnapshot.forEach(docSnap => {
-        const opt = document.createElement("option");
-        opt.value = docSnap.id;
-        opt.textContent = docSnap.data().char_name || docSnap.id;
-        charSelect.appendChild(opt);
-      });
-    }
+  try {
+    charSelect.innerHTML = '<option value="">🔽 Selecione</option><option value="NEW">➕ Novo Personagem</option>';
+    const querySnapshot = await getDocs(collection(db, "campaigns", "alpha", "characters_range"));
+    querySnapshot.forEach(docSnap => {
+      const opt = document.createElement("option");
+      opt.value = docSnap.id;
+      opt.textContent = docSnap.data().char_name || docSnap.id;
+      charSelect.appendChild(opt);
+    });
+  } catch (e) {
+    console.error("🔥 Erro ao carregar personagens:", e);
+    charSelect.innerHTML = '<option value="">❌ Erro ao carregar personagens</option>';
+  }
+}
 
     charSelect.addEventListener("change", async () => {
       const selected = charSelect.value;
