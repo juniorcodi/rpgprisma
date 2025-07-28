@@ -84,32 +84,25 @@
       form.style.display = "block";
     });
 
-    async function saveCharacter() {
-      const charData = {};
-      charFields.forEach(field => {
-        const val = document.getElementById(field)?.value?.trim();
-        charData[field] = isNaN(val) ? val : (val === "" ? "" : Number(val));
-      });
+async function saveCharacter() {
+  const charData = {};
+  charFields.forEach(field => {
+    const val = document.getElementById(field)?.value?.trim();
+    charData[field] = isNaN(val) ? val : (val === "" ? "" : Number(val));
+  });
 
-     const docId = charData.char_name?.trim();
-if (!docId) {
-  alert("❌ O campo 'char_name' não pode estar vazio.");
-  return;
-}
-await setDoc(doc(db, "campaigns", "alpha", "characters_range", docId), charData);
-currentDocId = docId;
+  const docId = charData.char_name?.trim();
+  if (!docId) {
+    alert("❌ O campo 'char_name' não pode estar vazio.");
+    return; // ✅ This return is inside the function
+  }
 
-      alert("✅ Personagem salvo!");
-      loadCharacters();
-    }
+  await setDoc(doc(db, "campaigns", "alpha", "characters_range", docId), charData);
+  currentDocId = docId;
 
-    loadCharacters();
-
-    const docRef = doc(db, "campaigns", "alpha", "characters_range", docId);
-const existingDoc = await getDoc(docRef);
-if (existingDoc.exists() && currentDocId !== docId) {
-  const overwrite = confirm("⚠️ Já existe um personagem com este nome. Deseja sobrescrevê-lo?");
-  if (!overwrite) return;
+  alert("✅ Personagem salvo!");
+  await loadCharacters();
+  charSelect.value = docId;
 }
 
     window.saveCharacter = saveCharacter;
