@@ -1331,9 +1331,8 @@ function setupDiceSection(side) {
         specialTotal += r;
       }
     });
-
-    const finalSum = total + specialTotal;
-
+	  
+const finalSum = total + specialTotal;
 const breakdownArray = [
   { label: "Atributo Base", value: attVal },
   { label: "Bônus Fixo", value: mainBonus },
@@ -1350,7 +1349,7 @@ specialArea.querySelectorAll('.dice-group').forEach(group => {
     specialTotal += r;
   }
 });
-const finalSum = total + specialTotal;
+
 
 // Salva o breakdown como ARRAY no Firebase
 const updateData = {};
