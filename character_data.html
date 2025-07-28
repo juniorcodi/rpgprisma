@@ -1,0 +1,103 @@
+<body>
+  <h1>🧙 Personagens</h1>
+  <label for="char-select">Selecionar personagem:</label>
+  <select id="char-select">
+    <option value="">⏳ Carregando...</option>
+  </select>
+
+  <form id="char-form" style="display:none; margin-top:20px;">
+    <div id="char-fields" style="display:grid; grid-template-columns: repeat(2, 1fr); gap: 10px;"></div>
+    <button type="button" onclick="saveCharacter()">💾 Salvar</button>
+  </form>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, getDocs, setDoc, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCoO7sYTOcz_1JrW46VoRowvHYa5wUFSTk",
+      authDomain: "rpg-prisma-f5a11.firebaseapp.com",
+      projectId: "rpg-prisma-f5a11",
+      storageBucket: "rpg-prisma-f5a11.appspot.com",
+      messagingSenderId: "65278749627",
+      appId: "1:65278749627:web:804f5d41adbab5351e729e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const charFields = [
+      "char_name", "char_player", "char_avatar", "char_por", "char_ndf",
+      "char_maxhp", "char_hp", "char_ins", "char_sim", "char_raz", "char_mal", "char_agi",
+      "char_maxenergy", "char_energy", "char_passiveperc", "char_narrativepoints",
+      "char_bonus1", "char_bonus2", "char_bonus3", "char_bonus4", "char_bonus5", "char_bonus6",
+      "char_deduc1", "char_deduc2", "char_deduc3", "char_cond", "char_obs",
+      "char_fear", "char_anger", "char_calm", "char_stress", "char_distrust", "char_trust", "char_guilt", "char_satisf"
+    ];
+
+    const charSelect = document.getElementById("char-select");
+    const form = document.getElementById("char-form");
+    const fieldContainer = document.getElementById("char-fields");
+    let currentDocId = "";
+
+    async function loadCharacters() {
+      charSelect.innerHTML = '<option value="">🔽 Selecione</option><option value="NEW">➕ Novo Personagem</option>';
+      const querySnapshot = await getDocs(collection(db, "campaigns", "alpha", "characters_range"));
+      querySnapshot.forEach(docSnap => {
+        const opt = document.createElement("option");
+        opt.value = docSnap.id;
+        opt.textContent = docSnap.data().char_name || docSnap.id;
+        charSelect.appendChild(opt);
+      });
+    }
+
+    charSelect.addEventListener("change", async () => {
+      const selected = charSelect.value;
+      fieldContainer.innerHTML = "";
+      if (!selected) {
+        form.style.display = "none";
+        return;
+      }
+
+      currentDocId = selected === "NEW" ? crypto.randomUUID() : selected;
+
+      let data = {};
+      if (selected !== "NEW") {
+        const docRef = doc(db, "campaigns", "alpha", "characters_range", selected);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) data = docSnap.data();
+      }
+
+      charFields.forEach(field => {
+        const label = document.createElement("label");
+        label.textContent = field;
+        label.setAttribute("for", field);
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.id = field;
+        input.name = field;
+        input.value = data[field] ?? "";
+
+        fieldContainer.appendChild(label);
+        fieldContainer.appendChild(input);
+      });
+
+      form.style.display = "block";
+    });
+
+    async function saveCharacter() {
+      const charData = {};
+      charFields.forEach(field => {
+        const val = document.getElementById(field)?.value?.trim();
+        charData[field] = isNaN(val) ? val : (val === "" ? "" : Number(val));
+      });
+
+      await setDoc(doc(db, "campaigns", "alpha", "characters_range", currentDocId), charData);
+      alert("✅ Personagem salvo!");
+      loadCharacters();
+    }
+
+    loadCharacters();
+  </script>
+</body>
