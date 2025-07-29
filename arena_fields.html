@@ -1521,7 +1521,9 @@ const eventLogColl = collection(db, "campaigns", "alpha", "event_log_range");
 let currentLogArray = [];
 
 function getFormattedTimestamp(date = new Date()) {
+  if (date && typeof date.toDate === "function") date = date.toDate();
   if (!(date instanceof Date)) date = new Date(date);
+  if (isNaN(date.getTime())) return "—";
   const day = String(date.getDate()).padStart(2, "0");
   const mon = date.toLocaleString("en", { month: "short" });
   const year = String(date.getFullYear()).slice(-2);
@@ -1530,6 +1532,7 @@ function getFormattedTimestamp(date = new Date()) {
   const sec = String(date.getSeconds()).padStart(2, "0");
   return `${day}/${mon}/${year} ${hour}:${min}:${sec}`;
 }
+
 
 function renderEventLog(logArray) {
   const container = document.getElementById("event-log-container");
