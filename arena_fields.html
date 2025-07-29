@@ -1253,6 +1253,8 @@ function setCenteredGradient(slider, colorLeft, colorRight) {
 	
 	
 // --- DICE LOGIC PATCH ---
+function setupDiceSection(side) {
+  // --- DICE LOGIC PATCH ---
   function getSelectedAttVal() {
     const el = document.getElementById('selected_att-' + side);
     const val = parseInt(el && el.textContent ? el.textContent : "0", 10);
@@ -1267,6 +1269,33 @@ function setCenteredGradient(slider, colorLeft, colorRight) {
     document.getElementById('partialresult_log-' + side).textContent = partial;
   }
 
+  // Setup special dice UI
+  const area = document.getElementById('specialdice_area-' + side);
+  const btn = document.getElementById('add-special-' + side);
+  if (area && btn) {
+    if (!area.dataset.initialized) {
+      area.dataset.initialized = "true";
+      area.innerHTML = '';
+      btn.innerHTML = '✦';
+      btn.title = 'Novo Dado';
+      btn.onclick = function () {
+        const group = document.createElement('span');
+        group.className = "dice-group special-dice-box";
+        group.innerHTML = `
+          <input type="number" min="1" value="1" style="width:32px;" class="special-amount">
+          <span style="font-size:13px;">d</span>
+          <input type="number" min="0" value="0" style="width:32px;" class="special-min">
+          <span style="font-size:13px;">–</span>
+          <input type="number" min="1" value="6" style="width:32px;" class="special-max">
+          <button type="button" class="button">×</button>
+        `;
+        group.querySelector("button").onclick = () => group.remove();
+        area.appendChild(group);
+      };
+    }
+  }
+
+  // Bind events
   document.getElementById('diceamount-' + side).oninput = updatePartial;
   document.getElementById('fixedbonus-' + side).oninput = updatePartial;
   updatePartial();
@@ -1333,6 +1362,14 @@ function setCenteredGradient(slider, colorLeft, colorRight) {
         console.error("Erro ao sincronizar resultado no Firestore:", error);
       }
     }
+  };
+}
+// End of setupDiceSection
+	
+  function getSelectedAttVal() {
+    const el = document.getElementById('selected_att-' + side);
+    const val = parseInt(el && el.textContent ? el.textContent : "0", 10);
+    return isNaN(val) ? 0 : val;
   }
 
 function updatePartialResult(side) {
