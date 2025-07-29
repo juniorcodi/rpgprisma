@@ -1098,29 +1098,30 @@ function getCharacterData(side) {
     spell_extra_condition,
   };
 }	
-	function renderBreakdown(arr) {
+
+function renderBreakdown(arr) {
+  // Receives either array of {label, value} or string with HTML, handles both for robustness
+  if (!arr) return "";
+  if (typeof arr === "string") return arr; // already HTML string (legacy)
   if (!Array.isArray(arr)) return "";
   return arr.map(obj => 
     `<span class="partial-result" title="${obj.label || ''}"><b>${obj.value || 0}</b></span>`
   ).join(" + ");
-}
+}	
 
 onSnapshot(doc(db, "campaigns", "alpha", "session_state", "main"), (docSnap) => {
   if (!docSnap.exists()) return;
   const data = docSnap.data();
-
   if (data.aBreakdown !== undefined)
     document.getElementById("roll_breakdown-a").innerHTML = renderBreakdown(data.aBreakdown);
-
   if (data.bBreakdown !== undefined)
     document.getElementById("roll_breakdown-b").innerHTML = renderBreakdown(data.bBreakdown);
-
   if (data.aResult !== undefined)
     document.getElementById("roll_result-a").innerHTML = `<br><span class="individual-result"><b>${data.aResult}</b></span>`;
-
   if (data.bResult !== undefined)
     document.getElementById("roll_result-b").innerHTML = `<br><span class="individual-result"><b>${data.bResult}</b></span>`;
 });
+
 
 	
 // Setup live sync for character fields
@@ -1252,34 +1253,6 @@ function setCenteredGradient(slider, colorLeft, colorRight) {
 	
 	
 // --- DICE LOGIC PATCH ---
-function setupDiceSection(side) {
-  // Special dice add/remove
-  const area = document.getElementById('specialdice_area-' + side);
-  const btn = document.getElementById('add-special-' + side);
-  if (!area || !btn) return;
-  if (area.dataset.initialized) return;
-  area.dataset.initialized = "true";
-  area.innerHTML = '';
-  btn.innerHTML = '✦';
-  btn.title = 'Novo Dado';
-
-  btn.onclick = function () {
-    const group = document.createElement('span');
-    group.className = "dice-group special-dice-box";
-    group.innerHTML = `
-      <input type="number" min="1" value="1" style="width:32px;" class="special-amount">
-      <span style="font-size:13px;">d</span>
-      <input type="number" min="0" value="0" style="width:32px;" class="special-min">
-      <span style="font-size:13px;">–</span>
-      <input type="number" min="1" value="6" style="width:32px;" class="special-max">
-      <button type="button" class="button">×</button>
-    `;
-    group.querySelector("button").onclick = () => group.remove();
-    area.appendChild(group);
-  };
-}
-
-
   function getSelectedAttVal() {
     const el = document.getElementById('selected_att-' + side);
     const val = parseInt(el && el.textContent ? el.textContent : "0", 10);
@@ -1310,14 +1283,14 @@ function setupDiceSection(side) {
     let sum = rolls.reduce((a, b) => a + b, 0);
     let total = attVal + mainBonus + sum;
 
-    // Create breakdown list (HTML)
-    let breakdown = [
-      `<span class="partial-result" title="Atributo Base"><b>${attVal}</b></span>`,
-      `<span class="partial-result" title="Bônus Fixo"><b>${mainBonus}</b></span>`,
-      ...rolls.map(r => `<span class="partial-result" title="Dado Padrão 0-3"><b>${r}</b></span>`)
+    // Normal dice breakdown
+    let breakdownArray = [
+      { label: "Atributo Base", value: attVal },
+      { label: "Bônus Fixo", value: mainBonus },
+      ...rolls.map(r => ({ label: "Dado Padrão 0-3", value: r }))
     ];
 
-    // Handle special dice
+    // Special dice breakdown
     let specialTotal = 0;
     const specialArea = document.getElementById('specialdice_area-' + side);
     specialArea.querySelectorAll('.dice-group').forEach(group => {
@@ -1326,54 +1299,29 @@ function setupDiceSection(side) {
       const min = parseInt(group.querySelector('.special-min').value);
       for (let j = 0; j < amount; ++j) {
         const r = Math.floor(Math.random() * (max - min + 1)) + min;
-        breakdown.push(`<span class="partial-result" title="Dado Especial ${min}-${max}*"><b>${r}</b></span>`);
+        breakdownArray.push({ label: `Dado Especial ${min}-${max}*`, value: r });
         specialTotal += r;
       }
     });
-	  
-const finalSum = total + specialTotal;
-const breakdownArray = [
-  { label: "Atributo Base", value: attVal },
-  { label: "Bônus Fixo", value: mainBonus },
-  ...rolls.map(r => ({ label: "Dado Padrão 0-3", value: r }))
-];
-// especiais
-specialArea.querySelectorAll('.dice-group').forEach(group => {
-  const amount = parseInt(group.querySelector('.special-amount').value) || 1;
-  const max = parseInt(group.querySelector('.special-max').value);
-  const min = parseInt(group.querySelector('.special-min').value);
-  for (let j = 0; j < amount; ++j) {
-    const r = Math.floor(Math.random() * (max - min + 1)) + min;
-    breakdownArray.push({ label: `Dado Especial ${min}-${max}*`, value: r });
-    specialTotal += r;
-  }
-});
 
+    const finalSum = total + specialTotal;
 
-// Salva o breakdown como ARRAY no Firebase
-const updateData = {};
-if (side === 'a') {
-  updateData['aBreakdown'] = breakdownArray;
-  updateData['aResult'] = finalSum;
-} else {
-  updateData['bBreakdown'] = breakdownArray;
-  updateData['bResult'] = finalSum;
-}
-await updateDoc(sessionStateRef, updateData);
-  
+    // Render breakdown as HTML
+    const breakdownHTML = renderBreakdown(breakdownArray);
+
     // Output to UI
     document.getElementById('roll_breakdown-' + side).innerHTML = breakdownHTML;
     document.getElementById('roll_result-' + side).innerHTML = `<br><span class="individual-result"><b>${finalSum}</b></span>`;
 
-    // --- NEW: Sync to Firebase session_state/main ---
+    // --- Sync to Firebase session_state/main as ARRAY! ---
     try {
       const sessionStateRef = doc(db, "campaigns", "alpha", "session_state", "main");
       const updateData = {};
       if (side === 'a') {
-        updateData['aBreakdown'] = breakdownHTML;
+        updateData['aBreakdown'] = breakdownArray;
         updateData['aResult'] = finalSum;
       } else {
-        updateData['bBreakdown'] = breakdownHTML;
+        updateData['bBreakdown'] = breakdownArray;
         updateData['bResult'] = finalSum;
       }
       await updateDoc(sessionStateRef, updateData);
@@ -1385,6 +1333,7 @@ await updateDoc(sessionStateRef, updateData);
         console.error("Erro ao sincronizar resultado no Firestore:", error);
       }
     }
+  };
 }
 
 function updatePartialResult(side) {
