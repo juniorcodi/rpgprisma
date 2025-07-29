@@ -42,19 +42,25 @@
 
     async function loadCharacters() {
   try {
+    console.log("Loading characters…");
     charSelect.innerHTML = '<option value="">🔽 Selecione</option><option value="NEW">➕ Novo Personagem</option>';
-    const querySnapshot = await getDocs(collection(db, "campaigns", "alpha", "characters_range"));
-    querySnapshot.forEach(docSnap => {
+    console.log("Fetching docs…");
+    const snap = await getDocs(collection(db, "campaigns", "alpha", "characters_range"));
+    console.log("Snapshot received:", snap);
+    snap.forEach(docSnap => {
+      console.log(" - doc:", docSnap.id, docSnap.data());
       const opt = document.createElement("option");
       opt.value = docSnap.id;
       opt.textContent = docSnap.data().char_name || docSnap.id;
       charSelect.appendChild(opt);
     });
+    console.log("Finished loading options.");
   } catch (e) {
-    console.error("🔥 Erro ao carregar personagens:", e);
+    console.error("🔥 Error in loadCharacters:", e);
     charSelect.innerHTML = '<option value="">❌ Erro ao carregar personagens</option>';
   }
 }
+
 
     charSelect.addEventListener("change", async () => {
       const selected = charSelect.value;
