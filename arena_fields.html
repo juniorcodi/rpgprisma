@@ -1538,53 +1538,66 @@ function renderEventLog(logArray) {
   const container = document.getElementById("event-log-container");
   if (!container) return;
   container.innerHTML = "";
-  logArray.forEach(log => {
-    const row = document.createElement("div");
-    row.className = "log-entry";
-    if (log.hidden) row.classList.add("hidden-log");
 
-    // Checkbox for selection
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.className = "log-select";
-    checkbox.dataset.id = log.id;
+  // --- Sort logs newest to oldest by timestamp ---
+  logArray
+    .slice() // don't mutate original
+    .sort((a, b) => {
+      let ta = a.timestamp;
+      let tb = b.timestamp;
+      if (ta && typeof ta.toDate === "function") ta = ta.toDate().getTime();
+      if (tb && typeof tb.toDate === "function") tb = tb.toDate().getTime();
+      ta = typeof ta === "number" ? ta : (new Date(ta)).getTime();
+      tb = typeof tb === "number" ? tb : (new Date(tb)).getTime();
+      return tb - ta; // newest first
+    })
+    .forEach(log => {
+      const row = document.createElement("div");
+      row.className = "log-entry";
+      if (log.hidden) row.classList.add("hidden-log");
 
-    // Timestamp
-    const timestampDiv = document.createElement("div");
-    timestampDiv.className = "log-timestamp";
-    timestampDiv.style = "width: 120px; font-size: 11px; color: #666; margin-top: 6px;";
-    timestampDiv.textContent = getFormattedTimestamp(log.timestamp);
+      // Checkbox for selection
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "log-select";
+      checkbox.dataset.id = log.id;
 
-    // Content (editable for manual logs)
-    const contentDiv = document.createElement("div");
-    contentDiv.className = "log-content";
-    contentDiv.innerHTML = log.content;
-    contentDiv.dataset.id = log.id;
-    contentDiv.contentEditable = !!log.manual;
-    contentDiv.style.background = log.manual ? "#262626" : "none";
-    contentDiv.addEventListener("blur", async (e) => {
-      if (!log.manual) return;
-      const newText = contentDiv.innerText.trim();
-      await updateDoc(doc(eventLogColl, log.id), { content: newText });
+      // Timestamp
+      const timestampDiv = document.createElement("div");
+      timestampDiv.className = "log-timestamp";
+      timestampDiv.style = "width: 120px; font-size: 11px; color: #666; margin-top: 6px;";
+      timestampDiv.textContent = getFormattedTimestamp(log.timestamp);
+
+      // Content (editable for manual logs)
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "log-content";
+      contentDiv.innerHTML = log.content;
+      contentDiv.dataset.id = log.id;
+      contentDiv.contentEditable = !!log.manual;
+      contentDiv.style.background = log.manual ? "#262626" : "none";
+      contentDiv.addEventListener("blur", async (e) => {
+        if (!log.manual) return;
+        const newText = contentDiv.innerText.trim();
+        await updateDoc(doc(eventLogColl, log.id), { content: newText });
+      });
+
+      // Status "done"
+      const statusCheckbox = document.createElement("input");
+      statusCheckbox.type = "checkbox";
+      statusCheckbox.className = "log-status";
+      statusCheckbox.checked = !!log.done;
+      statusCheckbox.title = "Feito";
+      statusCheckbox.addEventListener("change", () => {
+        updateDoc(doc(eventLogColl, log.id), { done: statusCheckbox.checked });
+      });
+
+      row.appendChild(checkbox);
+      row.appendChild(timestampDiv);
+      row.appendChild(contentDiv);
+      row.appendChild(statusCheckbox);
+
+      container.appendChild(row); // <--- Use appendChild here!
     });
-
-    // Status "done"
-    const statusCheckbox = document.createElement("input");
-    statusCheckbox.type = "checkbox";
-    statusCheckbox.className = "log-status";
-    statusCheckbox.checked = !!log.done;
-    statusCheckbox.title = "Feito";
-    statusCheckbox.addEventListener("change", () => {
-      updateDoc(doc(eventLogColl, log.id), { done: statusCheckbox.checked });
-    });
-
-    row.appendChild(checkbox);
-    row.appendChild(timestampDiv);
-    row.appendChild(contentDiv);
-    row.appendChild(statusCheckbox);
-
-    container.prepend(row); // order already handled by logArray
-  });
 }
 
 function setupLogRealtimeListener() {
