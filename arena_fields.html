@@ -1118,10 +1118,10 @@ async function refreshA() {
     const energyRange = document.getElementById("char_energy_range-a");
     if (energyRange) { energyRange.value = data.char_energy || 0; updateSliderFill(energyRange, "#FDA528"); }
 
-    const condEl = document.getElementById("char_cond-a");
-    if (condEl && document.activeElement !== condEl) {
-      condEl.value = data.char_cond || "";
-    }
+// 🔥 Refresh conditions from Firebase
+if (data.char_cond !== undefined) {
+  updateConditionTags("a", data.char_cond);
+}
   });
 
   // 🔥 Reset fixedbonus after character change
@@ -1181,11 +1181,10 @@ async function refreshB() {
       updateSliderFill(energyRange, "#FDA528");
     }
 
-    // 🔥 Refresh conditions from Firebase
-    const condEl = document.getElementById("char_cond-b");
-    if (condEl && document.activeElement !== condEl) {
-      condEl.value = data.char_cond || "";
-    }
+// 🔥 Refresh conditions from Firebase
+if (data.char_cond !== undefined) {
+  updateConditionTags("a", data.char_cond);
+}
   });
 
   // 🔥 Reset fixedbonus after character change
