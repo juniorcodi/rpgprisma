@@ -945,11 +945,37 @@ function setupDropdowns() {
   const actSelA = document.getElementById("action-select-a");
   const actSelB = document.getElementById("action-select-b");
 
-  charSelA.innerHTML = charData.map(row => `<option class="option" value="${row.id}">${row.char_name}</option>`).join('');
-  charSelB.innerHTML = charData.map(row => `<option class="option" value="${row.id}">${row.char_name}</option>`).join('');
-  actSelA.innerHTML = actionData.map((row, i) => `<option class="option" value="${i}">${row.action}</option>`).join('');
-  actSelB.innerHTML = actionData.map((row, i) => `<option class="option" value="${i}">${row.action}</option>`).join('');
+  // Populate dropdowns
+  charSelA.innerHTML = charData.map(row => `<option value="${row.id}">${row.char_name}</option>`).join("");
+  charSelB.innerHTML = charData.map(row => `<option value="${row.id}">${row.char_name}</option>`).join("");
+  actSelA.innerHTML = actionData.map((row, i) => `<option value="${i}">${row.action}</option>`).join("");
+  actSelB.innerHTML = actionData.map((row, i) => `<option value="${i}">${row.action}</option>`).join("");
 
+  // --- LIVE FIELD BINDINGS ---
+  ["char_hp", "char_energy", "char_narrativepoints"].forEach(field => {
+    ["a", "b"].forEach(side => {
+      setupLiveCharField(field, side, "input", x => parseInt(x) || 0);
+    });
+  });
+
+  ["a", "b"].forEach(side => {
+    setupLiveCharField("char_obs", side, "input", x => x);
+    const toggleBtn = document.getElementById(`obs-toggle-${side}`);
+    const obsField = document.getElementById(`obs-field-${side}`);
+    if (toggleBtn && obsField) {
+      toggleBtn.addEventListener("click", () => {
+        obsField.style.display = obsField.style.display === "none" ? "block" : "none";
+      });
+    }
+  });
+
+  ["diceamount", "fixedbonus"].forEach(field => {
+    ["a", "b"].forEach(side => {
+      setupSessionField(field, side, "input", x => parseInt(x) || 0);
+    });
+  });
+
+  // --- Session state ---
   async function updateSessionState() {
     try {
       const sessionStateRef = doc(db, "campaigns", "alpha", "session_state", "main");
@@ -965,6 +991,37 @@ function setupDropdowns() {
       showSaveIndicator("❌ Erro");
     }
   }
+
+  // --- Dropdown onchange handlers ---
+  charSelA.onchange = () => { refreshA(); updateSessionState(); };
+  actSelA.onchange = () => { refreshA(); updateSessionState(); };
+  charSelB.onchange = () => { refreshB(); updateSessionState(); };
+  actSelB.onchange = () => { refreshB(); updateSessionState(); };
+
+  // Initial load AFTER dropdowns populated
+  refreshA();
+  refreshB();
+
+  // --- Sync session_state across clients ---
+  const sessionStateRef = doc(db, "campaigns", "alpha", "session_state", "main");
+  onSnapshot(sessionStateRef, (snap) => {
+    if (!snap.exists()) return;
+    const state = snap.data();
+    if (state.charA && charSelA.value !== state.charA) {
+      charSelA.value = state.charA; refreshA();
+    }
+    if (state.charB && charSelB.value !== state.charB) {
+      charSelB.value = state.charB; refreshB();
+    }
+    if (state.actionA && actSelA.value !== state.actionA) {
+      actSelA.value = state.actionA; refreshA();
+    }
+    if (state.actionB && actSelB.value !== state.actionB) {
+      actSelB.value = state.actionB; refreshB();
+    }
+  });
+}
+
 
   // --- LIVE FIELD BINDINGS ---
 
@@ -1989,8 +2046,7 @@ async function loadFirebaseData() {
     buildSpellsTables();
     setupConditionsAutocomplete("a");
     setupConditionsAutocomplete("b");
-    setupCharacterListeners();
-
+    
     console.log("Firebase data loaded successfully");
 
     // Listen for changes in the session state
