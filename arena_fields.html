@@ -1049,29 +1049,80 @@ function setupDropdowns() {
     createEmotionBar(charId, side, "guilt-satisf", "char_guilt", "char_satisf", "deeppink", "teal");
   }
 
-  function refreshA() {
-    setFields(charData.find(row => row.id === charSelA.value), actionData[actSelA.value], "-a");
-    updatePartialResult("a");
-    updateStatRanges("a");
-    setTimeout(() => {
-      applyActionVariableClasses("a");
-      applySimpleVariableClassesFromField("a");
-      setupDiceSection("a");
-      setupAllEmotionBars(charSelA.value, "a");
-    }, 30);
-  }
+let unsubscribeA = null;
+let unsubscribeB = null;
 
-  function refreshB() {
-    setFields(charData.find(row => row.id === charSelB.value), actionData[actSelB.value], "-b");
-    updatePartialResult("b");
-    updateStatRanges("b");
-    setTimeout(() => {
-      applyActionVariableClasses("b");
-      applySimpleVariableClassesFromField("b");
-      setupDiceSection("b");
-      setupAllEmotionBars(charSelB.value, "b");
-    }, 30);
-  }
+async function refreshA() {
+  if (unsubscribeA) unsubscribeA(); // detach old listener
+  const charId = document.getElementById("char-select-a").value;
+
+  setFields(charData.find(row => row.id === charId), actionData[document.getElementById("action-select-a").value], "-a");
+  updatePartialResult("a");
+  updateStatRanges("a");
+
+  setTimeout(() => {
+    applyActionVariableClasses("a");
+    applySimpleVariableClassesFromField("a");
+    setupDiceSection("a");
+    setupAllEmotionBars(charId, "a");
+  }, 30);
+
+  // 🔥 attach Firestore live sync for this char
+  unsubscribeA = onSnapshot(doc(db, "campaigns", "alpha", "characters_range", charId), (docSnap) => {
+    if (!docSnap.exists()) return;
+    const data = docSnap.data();
+    for (let field in data) {
+      const el = document.getElementById(field + "-a");
+      if (!el) continue;
+      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+        if (document.activeElement !== el) el.value = data[field];
+      } else {
+        el.textContent = data[field];
+      }
+    }
+    // update slider fills
+    const hpRange = document.getElementById("char_hp_range-a");
+    if (hpRange) { hpRange.value = data.char_hp || 0; updateSliderFill(hpRange, "crimson"); }
+    const energyRange = document.getElementById("char_energy_range-a");
+    if (energyRange) { energyRange.value = data.char_energy || 0; updateSliderFill(energyRange, "#FDA528"); }
+  });
+}
+
+async function refreshB() {
+  if (unsubscribeB) unsubscribeB(); // detach old listener
+  const charId = document.getElementById("char-select-b").value;
+
+  setFields(charData.find(row => row.id === charId), actionData[document.getElementById("action-select-b").value], "-b");
+  updatePartialResult("b");
+  updateStatRanges("b");
+
+  setTimeout(() => {
+    applyActionVariableClasses("b");
+    applySimpleVariableClassesFromField("b");
+    setupDiceSection("b");
+    setupAllEmotionBars(charId, "b");
+  }, 30);
+
+  // 🔥 attach Firestore live sync for this char
+  unsubscribeB = onSnapshot(doc(db, "campaigns", "alpha", "characters_range", charId), (docSnap) => {
+    if (!docSnap.exists()) return;
+    const data = docSnap.data();
+    for (let field in data) {
+      const el = document.getElementById(field + "-b");
+      if (!el) continue;
+      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+        if (document.activeElement !== el) el.value = data[field];
+      } else {
+        el.textContent = data[field];
+      }
+    }
+    // update slider fills
+    const hpRange = document.getElementById("char_hp_range-b");
+    if (hpRange) { hpRange.value = data.char_hp || 0; updateSliderFill(hpRange, "crimson"); }
+    const energyRange = document.getElementById("char_energy_range-b");
+    if (energyRange) { energyRange.value = data.char_energy || 0; updateSliderFill(energyRange, "#FDA528"); }
+  });
+}
 
   charSelA.onchange = () => { refreshA(); updateSessionState(); };
   actSelA.onchange = () => { refreshA(); updateSessionState(); };
