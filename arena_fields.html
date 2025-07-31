@@ -1081,9 +1081,12 @@ let unsubscribeA = null;
 let unsubscribeB = null;
 
 async function refreshA() {
+  // Detach old listener if any
   if (unsubscribeA) unsubscribeA();
+
   const charId = document.getElementById("char-select-a").value;
 
+  // Populate fields from local cache first
   setFields(charData.find(row => row.id === charId), actionData[document.getElementById("action-select-a").value], "-a");
   updatePartialResult("a");
   updateStatRanges("a");
@@ -1095,14 +1098,18 @@ async function refreshA() {
     setupAllEmotionBars(charId, "a");
   }, 30);
 
-  // attach Firestore listener
+  // 🔥 Attach Firestore listener for live updates
   unsubscribeA = onSnapshot(doc(db, "campaigns", "alpha", "characters_range", charId), (docSnap) => {
     if (!docSnap.exists()) return;
     const data = docSnap.data();
 
+    // Update all fields except char_cond (handled separately)
     for (let field in data) {
+      if (field === "char_cond") continue;
+
       const el = document.getElementById(field + "-a");
       if (!el) continue;
+
       if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
         if (document.activeElement !== el) {
           el.value = data[field];
@@ -1112,16 +1119,24 @@ async function refreshA() {
       }
     }
 
+    // Update HP slider fill
     const hpRange = document.getElementById("char_hp_range-a");
-    if (hpRange) { hpRange.value = data.char_hp || 0; updateSliderFill(hpRange, "crimson"); }
+    if (hpRange) {
+      hpRange.value = data.char_hp || 0;
+      updateSliderFill(hpRange, "crimson");
+    }
 
+    // Update Energy slider fill
     const energyRange = document.getElementById("char_energy_range-a");
-    if (energyRange) { energyRange.value = data.char_energy || 0; updateSliderFill(energyRange, "#FDA528"); }
+    if (energyRange) {
+      energyRange.value = data.char_energy || 0;
+      updateSliderFill(energyRange, "#FDA528");
+    }
 
-// 🔥 Refresh conditions from Firebase
-if (data.char_cond !== undefined) {
-  updateConditionTags("a", data.char_cond);
-}
+    // 🔥 Explicit refresh for conditions
+    if (data.char_cond !== undefined) {
+      updateConditionTags("a", data.char_cond);
+    }
   });
 
   // 🔥 Reset fixedbonus after character change
@@ -1134,9 +1149,12 @@ if (data.char_cond !== undefined) {
   }
 }
 async function refreshB() {
-  if (unsubscribeB) unsubscribeB(); // detach old listener
+  // Detach old listener if any
+  if (unsubscribeB) unsubscribeB();
+
   const charId = document.getElementById("char-select-b").value;
 
+  // Populate fields from local cache first
   setFields(charData.find(row => row.id === charId), actionData[document.getElementById("action-select-b").value], "-b");
   updatePartialResult("b");
   updateStatRanges("b");
@@ -1148,13 +1166,15 @@ async function refreshB() {
     setupAllEmotionBars(charId, "b");
   }, 30);
 
-  // 🔥 attach Firestore live sync for this char
-    unsubscribeB = onSnapshot(doc(db, "campaigns", "alpha", "characters_range", charId), (docSnap) => {
+  // 🔥 Attach Firestore listener for live updates
+  unsubscribeB = onSnapshot(doc(db, "campaigns", "alpha", "characters_range", charId), (docSnap) => {
     if (!docSnap.exists()) return;
     const data = docSnap.data();
 
-    // Update all simple bound fields
+    // Update all fields except char_cond (handled separately)
     for (let field in data) {
+      if (field === "char_cond") continue;
+
       const el = document.getElementById(field + "-b");
       if (!el) continue;
 
@@ -1181,10 +1201,10 @@ async function refreshB() {
       updateSliderFill(energyRange, "#FDA528");
     }
 
-// 🔥 Refresh conditions from Firebase
-if (data.char_cond !== undefined) {
-  updateConditionTags("a", data.char_cond);
-}
+    // 🔥 Explicit refresh for conditions
+    if (data.char_cond !== undefined) {
+      updateConditionTags("b", data.char_cond);
+    }
   });
 
   // 🔥 Reset fixedbonus after character change
@@ -1196,6 +1216,75 @@ if (data.char_cond !== undefined) {
     fixedBonusB.value = val;
   }
 }
+async function refreshB() {
+  // Detach old listener if any
+  if (unsubscribeB) unsubscribeB();
+
+  const charId = document.getElementById("char-select-b").value;
+
+  // Populate fields from local cache first
+  setFields(charData.find(row => row.id === charId), actionData[document.getElementById("action-select-b").value], "-b");
+  updatePartialResult("b");
+  updateStatRanges("b");
+
+  setTimeout(() => {
+    applyActionVariableClasses("b");
+    applySimpleVariableClassesFromField("b");
+    setupDiceSection("b");
+    setupAllEmotionBars(charId, "b");
+  }, 30);
+
+  // 🔥 Attach Firestore listener for live updates
+  unsubscribeB = onSnapshot(doc(db, "campaigns", "alpha", "characters_range", charId), (docSnap) => {
+    if (!docSnap.exists()) return;
+    const data = docSnap.data();
+
+    // Update all fields except char_cond (handled separately)
+    for (let field in data) {
+      if (field === "char_cond") continue;
+
+      const el = document.getElementById(field + "-b");
+      if (!el) continue;
+
+      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+        if (document.activeElement !== el) {
+          el.value = data[field];
+        }
+      } else {
+        el.textContent = data[field];
+      }
+    }
+
+    // Update HP slider fill
+    const hpRange = document.getElementById("char_hp_range-b");
+    if (hpRange) {
+      hpRange.value = data.char_hp || 0;
+      updateSliderFill(hpRange, "crimson");
+    }
+
+    // Update Energy slider fill
+    const energyRange = document.getElementById("char_energy_range-b");
+    if (energyRange) {
+      energyRange.value = data.char_energy || 0;
+      updateSliderFill(energyRange, "#FDA528");
+    }
+
+    // 🔥 Explicit refresh for conditions
+    if (data.char_cond !== undefined) {
+      updateConditionTags("b", data.char_cond);
+    }
+  });
+
+  // 🔥 Reset fixedbonus after character change
+  const fixedBonusB = document.getElementById("fixedbonus-b");
+  if (fixedBonusB) {
+    let val = 0;
+    const spellRow = spellsData.find(row => row.spell === document.getElementById("spell-name-b").value);
+    if (spellRow && spellRow.halfSmall) val = parseInt(spellRow.halfSmall) || 0;
+    fixedBonusB.value = val;
+  }
+}
+
 	
 function getCharacterData(side) {
   // ID reverso do adversário
