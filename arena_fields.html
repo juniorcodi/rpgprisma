@@ -1264,14 +1264,6 @@ async function refreshB() {
   }
 }
 
-  charSelA.onchange = () => { refreshA(); updateSessionState(); };
-  actSelA.onchange = () => { refreshA(); updateSessionState(); };
-  charSelB.onchange = () => { refreshB(); updateSessionState(); };
-  actSelB.onchange = () => { refreshB(); updateSessionState(); };
-
-  refreshA();
-  refreshB();
-	
 function getCharacterData(side) {
   // ID reverso do adversário
   const other = side === "a" ? "b" : "a";
