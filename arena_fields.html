@@ -1081,7 +1081,7 @@ let unsubscribeA = null;
 let unsubscribeB = null;
 
 async function refreshA() {
-  if (unsubscribeA) unsubscribeA(); // detach old listener
+  if (unsubscribeA) unsubscribeA();
   const charId = document.getElementById("char-select-a").value;
 
   setFields(charData.find(row => row.id === charId), actionData[document.getElementById("action-select-a").value], "-a");
@@ -1095,7 +1095,7 @@ async function refreshA() {
     setupAllEmotionBars(charId, "a");
   }, 30);
 
-  // 🔥 attach Firestore live sync for this char
+  // attach Firestore listener
   unsubscribeA = onSnapshot(doc(db, "campaigns", "alpha", "characters_range", charId), (docSnap) => {
     if (!docSnap.exists()) return;
     const data = docSnap.data();
@@ -1104,29 +1104,24 @@ async function refreshA() {
       const el = document.getElementById(field + "-a");
       if (!el) continue;
       if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-        if (document.activeElement !== el) el.value = data[field];
+        if (document.activeElement !== el) {
+          el.value = data[field];
+        }
       } else {
         el.textContent = data[field];
       }
     }
 
-    // Update HP slider fill
     const hpRange = document.getElementById("char_hp_range-a");
-    if (hpRange) {
-      hpRange.value = data.char_hp || 0;
-      updateSliderFill(hpRange, "crimson");
-    }
+    if (hpRange) { hpRange.value = data.char_hp || 0; updateSliderFill(hpRange, "crimson"); }
 
-    // Update Energy slider fill
     const energyRange = document.getElementById("char_energy_range-a");
-    if (energyRange) {
-      energyRange.value = data.char_energy || 0;
-      updateSliderFill(energyRange, "#FDA528");
-    }
+    if (energyRange) { energyRange.value = data.char_energy || 0; updateSliderFill(energyRange, "#FDA528"); }
 
-    // 🔥 Refresh conditions from Firebase
     const condEl = document.getElementById("char_cond-a");
-    if (condEl) condEl.value = data.char_cond || "";
+    if (condEl && document.activeElement !== condEl) {
+      condEl.value = data.char_cond || "";
+    }
   });
 
   // 🔥 Reset fixedbonus after character change
@@ -1154,15 +1149,19 @@ async function refreshB() {
   }, 30);
 
   // 🔥 attach Firestore live sync for this char
-  unsubscribeB = onSnapshot(doc(db, "campaigns", "alpha", "characters_range", charId), (docSnap) => {
+    unsubscribeB = onSnapshot(doc(db, "campaigns", "alpha", "characters_range", charId), (docSnap) => {
     if (!docSnap.exists()) return;
     const data = docSnap.data();
 
+    // Update all simple bound fields
     for (let field in data) {
       const el = document.getElementById(field + "-b");
       if (!el) continue;
+
       if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-        if (document.activeElement !== el) el.value = data[field];
+        if (document.activeElement !== el) {
+          el.value = data[field];
+        }
       } else {
         el.textContent = data[field];
       }
@@ -1184,7 +1183,9 @@ async function refreshB() {
 
     // 🔥 Refresh conditions from Firebase
     const condEl = document.getElementById("char_cond-b");
-    if (condEl) condEl.value = data.char_cond || "";
+    if (condEl && document.activeElement !== condEl) {
+      condEl.value = data.char_cond || "";
+    }
   });
 
   // 🔥 Reset fixedbonus after character change
@@ -1196,7 +1197,7 @@ async function refreshB() {
     fixedBonusB.value = val;
   }
 }
-
+	
 function getCharacterData(side) {
   // ID reverso do adversário
   const other = side === "a" ? "b" : "a";
