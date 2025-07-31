@@ -603,452 +603,6 @@ body { background: #0F0F0F; color: whitesmoke;}
 }
 	
 </style>
-</head>
-<body>
-<div id="save-indicator" style="
-  position: fixed;
-  top: 12px;
-  right: 16px;
-  background: #222;
-  padding: 8px 12px;
-  font-size: 16px;
-  font-family: 'Nova Flat', sans-serif;
-  color: white;
-  border: 1px solid #555;
-  border-radius: 6px;
-  z-index: 9999;
-  box-shadow: 0 0 8px rgba(0,0,0,0.3);
-">☁️✅</div>
-<div class="top-toolbar" id="top-bar">
-<button class="top-button" id="toggle-spells" onclick="toggleSpellSection()" title="Feitiços">🪄</button>
-<button class="top-button" id="calculator-button" onclick="window.open('difficulty_calculator.html', 'CalculadoraDeDificuldade', 'width=1000,height=700,resizable=yes,scrollbars=yes')" title="Calculadora de Dificuldade">🧮</button>
-<button class="top-button" title="Relacionamentos">💞</button>
-<button class="top-button" title="Aprendizados">📚</button>
-<button class="top-button" onclick="window.open('uso_ambiente.html', 'UsoDoAmbiente', 'width=1000,height=700,resizable=yes,scrollbars=yes')" title="Uso do ambiente">🌎</button>
-<button class="top-button" title="Inventário">🎒</button>
-<button class="top-button" title="Filtro de Ações">❓</button>
-</div>
-<center><div class="spell-container" id="spells-area">
-<div style="display: grid; grid-template-columns: 880px 880px; gap: 30px; justify-content: center;">
-<!-- Lado A -->
-<div class="spell-side" id="spells-a" style="flex: 1;"></div>
-<!-- Lado B -->
-<div class="spell-side" id="spells-b" style="flex: 1;"></div>
-</div>
-</div></center>
-<!-- Script para autocomplete e preenchimento -->	
-<table border="0" cellpadding="0" cellspacing="0" class="twocell-table">
-<tr>
-<!-- Character A Cell -->
-<td valign="top">
-<div class="char-block" id="char-a">
-<!-- Character Info Table -->
-<center><table border="1" cellpadding="10" name="Character-A" style="border-collapse:collapse; table-layout:fixed; width:95%; background-color: #151515; border-radius: 4px;">
-<colgroup>
-<col style="width:150px;"/>
-<col style="width:140px;"/>
-<col style="width:190px;"/>
-<col style="width:70px;"/>
-<col style="width:140px;"/>
-<col style="width:100px;"/>
-</colgroup>
-<tr>
-<td id="char_avatar-a" rowspan="2"></td>
-<td colspan="2" height="60"><select class="char-name" id="char-select-a"></select>
-<div style="text-align: right">(<span class="minititle" id="char_player-a"></span>)</div></td>
-<td colspan="3">
-<div style="display: flex; gap: 18px; align-items: flex-start; width: 100%;">
-<!-- HP -->
-<div style="width: 155px;">
-<div>
-<div style="text-align: right; width: 134px;">
-        🩸<input class="cond-obs" id="char_hp-a" style="width:30px; font-size:15px; padding:2px; text-align:center;" type="number" min="0"/> /
-        <span class="text-hp" id="char_maxhp-a"></span>
-</div>
-</div>
-<input class="slider-top" id="char_hp_range-a" style="width: 135px; display: block;" type="range"/>
-</div>
-<!-- Energy -->
-<div style="width: 155px;">
-<div>
-<div style="text-align: right; width: 134px;">
-                  ⚡<input class="cond-obs" id="char_energy-a" style="width:30px; font-size:15px; padding:2px; text-align:center;" type="number" min="0"/> /
-                  <span class="text-energy" id="char_maxenergy-a"></span>
-</div>
-</div>
-<input class="slider-top" id="char_energy_range-a" style="width: 135px; display: block;" type="range"/>
-</div>
-</div>
-</td>
-</tr>
-<tr>
-<td colspan="3" height="110" style="text-align: center; vertical-align: top;">
-<div style="display: flex; gap: 10px; padding-left: 12px;">
-<table border="1"><tr><td class="atr-num-ins" height="60" id="char_ins-a" width="70"></td></tr><tr><td class="atr">🔥 INS</td></tr></table>
-<table border="1"><tr><td class="atr-num-sim" height="60" id="char_sim-a" width="70"></td></tr><tr><td class="atr">❤️ SIM</td></tr></table>
-<table border="1"><tr><td class="atr-num-raz" height="60" id="char_raz-a" width="70"></td></tr><tr><td class="atr">⚙️ RAZ</td></tr></table>
-<table border="1"><tr><td class="atr-num-mal" height="60" id="char_mal-a" width="70"></td></tr><tr><td class="atr">𖦹 MAL</td></tr></table>
-</div>
-</td>
-<td rowspan="2" style="text-align: center; text-align: center; vertical-align: top;">
-<div class="frame"><span class="title">BÔNUS</span><br/>
-<span class="action-variable" id="char_bonus1-a"></span><br/>
-<span class="action-variable" id="char_bonus2-a"></span><br/>
-<span class="action-variable" id="char_bonus3-a"></span><br/>
-<span class="action-variable" id="char_bonus4-a"></span><br/>
-<span class="action-variable" id="char_bonus5-a"></span><br/>
-<span class="action-variable" id="char_bonus6-a"></span><br/></div><br/>
-<div class="frame"><span class="title">DEDUÇÕES</span><br/>
-<span class="action-variable" id="char_deduc1-a"></span><br/>
-<span class="action-variable" id="char_deduc2-a"></span><br/>
-<span class="action-variable" id="char_deduc3-a"></span></div>
-</td>
-<td rowspan="2" style="vertical-align: top;">
-<div style="display: flex; flex-direction: column; align-items: center; ">
-<table border="1"><tr><td class="atr-num-none" height="40" id="char_por-a" width="50"></td></tr><tr><td class="atr">POR</td></tr></table>
-<table border="1"><tr><td class="atr-num-none" height="40" id="char_ndf-a" width="50"></td></tr><tr><td class="atr">NdF</td></tr></table><br/>
-<span class="atr">Agi <span class="title" id="char_agi-a" style="text-align: left;"></span></span>
-<span class="atr">Per <span class="title" id="char_passiveperc-a" style="text-align: left;"></span></span>
-<span class="atr">✦ <input class="cond-obs" data-tooltip="Pontos de Naração" id="char_narrativepoints-a" placeholder="0" style="width:15px; font-size:15px; padding:4px;" type="text"/></span><br/>
-<div style="display: flex; gap: 4px; align-items: center;">
-<button class="button" id="inc-btn-a">+</button>
-<button class="button" id="dec-btn-a">−</button>
-</div><br/>
-<button class="button" id="obs-toggle-a">Obs.</button>
-</div>
-</td>
-</tr>
-<tr>
-<td colspan="2">
-<div class="slider-set" style="width: 300px;">
-<div class="slider-container">
-<div class="separated"><span class="minititle">Medo</span><span>Raiva</span></div>
-<div class="emotion-bar" id="fear-anger-a"></div>
-
-<div class="separated"><span>Desconfiança</span><span>Afeto</span></div>
-<div class="emotion-bar" id="distrust-trust-a"></div>
-
-<div class="separated"><span>Estresse</span><span>Calma</span></div>
-<div class="emotion-bar" id="stress-calm-a"></div>
-
-<div class="separated"><span>Culpa</span><span>Satisfação</span></div>
-<div class="emotion-bar" id="guilt-satisf-a"></div>
-</div> </td>
-<td colspan="2" style="text-align: center; vertical-align: top;">
-<div id="input-container-a" style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
-<span class="title">CONDIÇÕES</span>
-<div style="display: flex; gap: 6px; align-items: center;">
-<input id="cond-a" placeholder="Nome da condição" style="width: 140px; padding: 4px; font-size: 14px;" type="text"/>
-<input id="cond-turns-a" placeholder="Turnos" style="width: 60px; padding: 4px; font-size: 14px;" type="number"/>
-<button onclick="addArenaCondition('a')">+</button>
-</div>
-<div class="tag-list" id="cond-tags-a"></div>
-</div>
-</td>
-</tr>
-<tr style="border-top-style: solid; border-top-color: #222;">
-<td colspan="6">
-<div id="obs-field-a" style="display: none; margin-top: 6px;">
-<textarea id="char_obs-a" placeholder="Adicione uma observação e pressione Enter..." rows="3" style="width: 95%; font-size: 15px; padding: 5px;"></textarea>
-</div>
-</td>
-</tr>
-</table></center>
-<!-- Action Roller goes here! -->
-<center><table class="roll-section" id="roll-section-a" style="width: 95%;">
-<tr>
-<td style="width:600px;">
-<span class="roll-formula sub-variable" id="action_formula_lit-a"></span>
-</td>
-<td rowspan="2">
-<button class="button" id="rollalldice-a">Rolar!</button>
-</td>
-<td>
-<span id="roll_result-a"></span>
-</td>
-</tr>
-<tr>
-<td class="dice-rolling-line" id="dice-rolling-line">
-<div class="back-variable dice-select-block" id="selected_att-block-a">
-<span id="selected_att-a"></span>
-<span class="sub-variable"><span id="selected_att_label-a"></span>
-</span>
-</div>
-        +
-        <div class="back-variable dice-select-block" id="dice-select-block-a">
-<input id="diceamount-a" min="1" style="width:50px; font-size: 16px; text-align: center;" type="number" value="1">
-<span id="diceamount_label-a"></span>
-<span class="sub-variable">DADOS</span>
-</input></div>
-        +
-        <div class="back-variable dice-select-block" id="fixedbonus-block-a">
-<input id="fixedbonus-a" style="width:50px; font-size: 16px; text-align: center;" type="number" value="0">
-<span id="fixedbonus_label-a"></span>
-<span class="sub-variable">BÔNUS FIXO</span>
-</input></div>
-        +
-        <span id="specialdice_controls-a" style="display: flex; align-items: center; gap: 4px;">
-<span id="specialdice_area-a"></span>
-<button class="button" id="add-special-a" title="Novo Dado" type="button">✦</button>
-</span>
-<span style="opacity: 20%">=
-        <span id="partialresult-a"></span></span>
-</td>
-<td>
-<span id="roll_breakdown-a"></span>
-</td>
-</tr>
-</table></center>
-<span id="specialdice-a" style="display:none;"></span>
-<span id="partialresult_log-a" style="display:none;"></span>
-<!-- Action Info Table -->
-<center><table border="1" cellpadding="10" cellspacing="0" class="back-variable" id="back-div-a" style="text-align: center; width:95%; margin-top: 12px; border-radius: 4px;">
-<tr height="60">
-<td rowspan="7" width="240"><span class="cover-img" id="img_action-a"></span></td>
-<td width="60"><div style="display: inline-flex; gap: 5px;"><span class="img" id="att_img-a"></span> <span class="text-variable" id="selected_att_name-a"></span></div></td>
-<td width="60"><span class="text-variable" id="action_energy-a"></span></td>
-<td width="60"><span class="text-variable-emoji" id="action_type1-a"></span></td>
-<td width="60"><span class="text-variable-emoji" id="action_type2-a"></span></td>
-<td width="60"><span class="text-variable-emoji" id="action_type3-a"></span></td>
-<td width="60"><span class="text-variable-emoji" id="action_group_possib-a"></span></td>
-<td width="90"><span class="sub-variable" id="action_type-a" style="font-size: 14px; text-transform: uppercase;"></span></td>
-</tr>
-<tr height="70">
-<td class="light-div" colspan="6" id="light-div-action-a"><select class="title-variable" id="action-select-a"></select></td>
-<td class="light-div right-gap" id="light-div-symbol-a" style="margin-left: 5px;"><span class="text-variable" id="img_action_type-a"></span></td>
-</tr>
-<tr height="40">
-<td class="dark-div" colspan="3" id="dark-div-1-a"><span class="sub-variable" id="cell-contra-a">ROLA CONTRA</span></td>
-<td class="dark-div" colspan="2" id="dark-div-2-a"><span class="sub-variable" id="cell-bonus-se-a">BÔNUS SE</span></td>
-<td class="dark-div right-gap" colspan="2" id="dark-div-3-a"><span class="sub-variable" id="cell-adv-bonus-se-a">ADVERSÁRIO TEM BÔNUS SE</span></td>
-</tr>
-<tr height="50">
-<td class="dark-div" colspan="3" id="dark-div-4-a"><span id="counter-a"></span></td>
-<td class="dark-div" colspan="2" id="dark-div-5-a"><span class="strong-variable" id="has_bonus-a"></span></td>
-<td class="dark-div right-gap" colspan="2" id="dark-div-6-a"><span class="strong-variable" id="opp_has_bonus-a"></span></td>
-</tr>
-<tr height="90">
-<td class="light-div right-gap" colspan="7" id="light-div-desc-a" style="padding: 20px; !important;"><span class="descr-variable" id="action_description-a"></span></td>
-</tr>
-<tr height="80">
-<td class="dark-div right-gap right-gap bottom-gap" colspan="7" id="dark-div-7-a" style="padding: 20px; !important;"><span class="sub-variable" id="action_condition-a" style="font-size: 14px; text-transform: uppercase;"></span></td>
-</tr>
-</table></center>
-</div>
-</td>
-<!-- Character B Cell (everything repeated, with only interactive/output ids made unique with -b) -->
-<td valign="top">
-<div class="char-block" id="char-b">
-<!-- Character Info Table -->
-<table border="1" cellpadding="10" name="Character-B" style="border-collapse:collapse; table-layout:fixed; width:95%; background-color: #151515; border-radius: 4px;">
-<colgroup>
-<col style="width:150px;"/>
-<col style="width:140px;"/>
-<col style="width:190px;"/>
-<col style="width:70px;"/>
-<col style="width:140px;"/>
-<col style="width:100px;"/>
-</colgroup>
-<tr>
-<td id="char_avatar-b" rowspan="2"></td>
-<td colspan="2" height="60"><select class="char-name" id="char-select-b"></select>
-<div style="text-align: right">(<span class="minititle" id="char_player-b"></span>)</div></td>
-<td colspan="3">
-<div style="display: flex; gap: 18px; align-items: flex-start; width: 100%;">
-<div style="width: 155px;">
-<div>
-<div style="text-align: right; width: 134px;">
-                  🩸<input class="cond-obs" id="char_hp-b" style="width:30px; font-size:15px; padding:2px; text-align:center;" type="number" min="0"/> /
-                  <span class="text-hp" id="char_maxhp-b"></span>
-</div>
-</div>
-<input class="slider-top" id="char_hp_range-b" style="width: 135px; display: block;" type="range"/>
-</div>
-<div style="width: 155px;">
-<div>
-<div style="text-align: right; width: 134px;">
-                  ⚡<input class="cond-obs" id="char_energy-b" style="width:30px; font-size:15px; padding:2px; text-align:center;" type="number" min="0"/> /
-                  <span class="text-energy" id="char_maxenergy-b"></span>
-</div>
-</div>
-<input class="slider-top" id="char_energy_range-b" style="width: 135px; display: block;" type="range"/>
-</div>
-</div>
-</td>
-</tr>
-<tr>
-<td colspan="3" height="110" style="text-align: center; vertical-align: top;">
-<div style="display: flex; gap: 10px; padding-left: 12px;">
-<table border="1"><tr><td class="atr-num-ins" height="60" id="char_ins-b" width="70"></td></tr><tr><td class="atr">🔥 INS</td></tr></table>
-<table border="1"><tr><td class="atr-num-sim" height="60" id="char_sim-b" width="70"></td></tr><tr><td class="atr">❤️ SIM</td></tr></table>
-<table border="1"><tr><td class="atr-num-raz" height="60" id="char_raz-b" width="70"></td></tr><tr><td class="atr">⚙️ RAZ</td></tr></table>
-<table border="1"><tr><td class="atr-num-mal" height="60" id="char_mal-b" width="70"></td></tr><tr><td class="atr">𖦹 MAL</td></tr></table>
-</div>
-</td>
-<td rowspan="2" style="text-align: center; vertical-align: top;">
-<div class="frame"><span class="title">BÔNUS</span><br/>
-<span class="action-variable" id="char_bonus1-b"></span><br/>
-<span class="action-variable" id="char_bonus2-b"></span><br/>
-<span class="action-variable" id="char_bonus3-b"></span><br/>
-<span class="action-variable" id="char_bonus4-b"></span><br/>
-<span class="action-variable" id="char_bonus5-b"></span><br/>
-<span class="action-variable" id="char_bonus6-b"></span><br/></div><br/>
-<div class="frame"><span class="title">DEDUÇÕES</span><br/>
-<span class="action-variable" id="char_deduc1-b"></span><br/>
-<span class="action-variable" id="char_deduc2-b"></span><br/>
-<span class="action-variable" id="char_deduc3-b"></span></div>
-</td>
-<td rowspan="2" style="vertical-align: top;">
-<div style="display: flex; flex-direction: column; align-items: center;">
-<table border="1"><tr><td class="atr-num-none" height="40" id="char_por-b" width="50"></td></tr><tr><td class="atr">POR</td></tr></table>
-<table border="1"><tr><td class="atr-num-none" height="40" id="char_ndf-b" width="50"></td></tr><tr><td class="atr">NdF</td></tr></table><br/>
-<span class="atr">Agi <span class="title" id="char_agi-b" style="text-align: left;"></span></span>
-<span class="atr">Per <span class="title" id="char_passiveperc-b" style="text-align: left;"></span></span>
-<span class="atr">✦ <input class="cond-obs" data-tooltip="Pontos de Naração" id="char_narrativepoints-b" placeholder="0" style="width:15px; font-size:15px; padding:4px;" type="text"/></span><br/>
-<div style="display: flex; gap: 4px; align-items: center;">
-<button class="button" id="inc-btn-b">+</button>
-<button class="button" id="dec-btn-b">−</button>
-</div><br/>
-<button class="button" id="obs-toggle-b">Obs.</button>
-</div>
-</td>
-</tr>
-<tr>
-<td colspan="2">
-<div class="slider-set" style="width: 300px;">
-<div class="slider-container">
-<div class="separated"><span class="minititle">Medo</span><span>Raiva</span></div>
-<div class="emotion-bar" id="fear-anger-b"></div>
-
-<div class="separated"><span>Desconfiança</span><span>Afeto</span></div>
-<div class="emotion-bar" id="distrust-trust-b"></div>
-
-<div class="separated"><span>Estresse</span><span>Calma</span></div>
-<div class="emotion-bar" id="stress-calm-b"></div>
-
-<div class="separated"><span>Culpa</span><span>Satisfação</span></div>
-<div class="emotion-bar" id="guilt-satisf-b"></div>
-</div>
-</td>
-<td colspan="2" style="text-align: center; vertical-align: top;">
-<div id="input-container-b" style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
-<span class="title">CONDIÇÕES</span>
-<div style="display: flex; gap: 6px; align-items: center;">
-<input class="cond-obs" id="cond-b" placeholder="Nome da condição" style="width: 140px; padding: 4px; font-size: 14px;" type="text"/>
-<input id="cond-turns-b" placeholder="Turnos" style="width: 60px; padding: 4px; font-size: 14px;" type="number"/>
-<button onclick="addArenaCondition('b')">+</button>
-</div>
-<div class="tag-list" id="cond-tags-b"></div>
-</div>
-</td>
-</tr>
-<tr style="border-top-style: solid; border-top-color: #222;">
-<td colspan="6">
-<div id="obs-field-b" style="display: none; margin-top: 6px;">
-<textarea id="char_obs-b" placeholder="Adicione uma observação e pressione Enter..." rows="3" style="width: 95%; font-size: 15px; padding: 5px;"></textarea>
-</div>
-</td>
-</tr>
-</table>
-<!-- Action Roller for B -->
-<table class="roll-section" id="roll-section-b" style="width: 95%;">
-<tr>
-<td style="width:600px;">
-<span class="roll-formula sub-variable" id="action_formula_lit-b"></span>
-</td>
-<td rowspan="2">
-<button class="button" id="rollalldice-b">Rolar!</button>
-</td>
-<td>
-<span id="roll_result-b"></span>
-</td>
-</tr>
-<tr>
-<td class="dice-rolling-line" id="dice-rolling-line-b">
-<div class="back-variable dice-select-block" id="selected_att-block-b">
-<span id="selected_att-b"></span>
-<span class="sub-variable"><span id="selected_att_label-b"></span></span>
-</div>
-      +
-      <div class="back-variable dice-select-block" id="dice-select-block-b">
-<input id="diceamount-b" min="1" style="width:50px; font-size: 16px; text-align: center;" type="number" value="1">
-<span id="diceamount_label-b"></span>
-<span class="sub-variable">DADOS</span>
-</input></div>
-      +
-      <div class="back-variable dice-select-block" id="fixedbonus-block-b">
-<input id="fixedbonus-b" style="width:50px; font-size: 16px; text-align: center;" type="number" value="0">
-<span id="fixedbonus_label-b"></span>
-<span class="sub-variable">BÔNUS FIXO</span>
-</input></div>
-      +
-      <span id="specialdice_controls-b" style="display: flex; align-items: center; gap: 4px;">
-<span id="specialdice_area-b"></span>
-<button class="button" id="add-special-b" title="Novo Dado" type="button">✦</button>
-</span>
-<span style="opacity: 20%">=
-        <span id="partialresult-b"></span></span>
-</td>
-<td>
-<span id="roll_breakdown-b"></span>
-</td>
-</tr>
-</table>
-<span id="specialdice-b" style="display:none;"></span>
-<span id="partialresult_log-b" style="display:none;"></span>
-<!-- Action B Info Table -->
-<table border="1" cellpadding="10" cellspacing="0" class="back-variable" id="back-div-b" style="text-align: center; width:95%; margin-top: 12px; border-radius: 4px;">
-<tr height="60">
-<td rowspan="7" width="240"><span class="cover-img" id="img_action-b"></span></td>
-<td width="60"><div style="display: inline-flex; gap: 5px;"><span class="img" id="att_img-b"></span> <span class="text-variable" id="selected_att_name-b"></span></div></td>
-<td width="60"><span class="text-variable" id="action_energy-b"></span></td>
-<td width="60"><span class="text-variable-emoji" id="action_type1-b"></span></td>
-<td width="60"><span class="text-variable-emoji" id="action_type2-b"></span></td>
-<td width="60"><span class="text-variable-emoji" id="action_type3-b"></span></td>
-<td width="60"><span class="text-variable-emoji" id="action_group_possib-b"></span></td>
-<td width="90"><span class="sub-variable" id="action_type-b" style="font-size: 14px; text-transform: uppercase;"></span></td>
-</tr>
-<tr height="70">
-<td class="light-div" colspan="6" id="light-div-action-b"><select class="title-variable" id="action-select-b"></select></td>
-<td class="light-div right-gap" id="light-div-symbol-b" style="margin-left: 5px;"><span class="text-variable" id="img_action_type-b"></span></td>
-</tr>
-<tr height="40">
-<td class="dark-div" colspan="3" id="dark-div-1-b"><span class="sub-variable" id="cell-contra-b">ROLA CONTRA</span></td>
-<td class="dark-div" colspan="2" id="dark-div-2-b"><span class="sub-variable" id="cell-bonus-se-b">BÔNUS SE</span></td>
-<td class="dark-div right-gap" colspan="2" id="dark-div-3-b"><span class="sub-variable" id="cell-adv-bonus-se-b">ADVERSÁRIO TEM BÔNUS SE</span></td>
-</tr>
-<tr height="50">
-<td class="dark-div" colspan="3" id="dark-div-4-b"><span id="counter-b"></span></td>
-<td class="dark-div" colspan="2" id="dark-div-5-b"><span class="strong-variable" id="has_bonus-b"></span></td>
-<td class="dark-div right-gap" colspan="2" id="dark-div-6-b"><span class="strong-variable" id="opp_has_bonus-b"></span></td>
-</tr>
-<tr height="90">
-<td class="light-div right-gap" colspan="7" id="light-div-desc-b" style="padding: 20px;"><span class="descr-variable" id="action_description-b"></span></td>
-</tr>
-<tr height="80">
-<td class="dark-div right-gap bottom-gap" colspan="7" id="dark-div-7-b" style="padding: 20px;"><span class="sub-variable" id="action_condition-b" style="font-size: 14px; text-transform: uppercase;"></span></td>
-</tr>
-</table>
-</div>
-</td>
-</tr>
-</table>
-<h2>Log de Rolagens</h2>
-<div id="event-log-toolbar">
-<button class="button" onclick="deleteSelectedLogs()">🗑️ Excluir</button>
-<button class="button" onclick="toggleVisibility()">👁️ Ocultar Selecionados</button>
-<select class="button" id="status-filter" onchange="filterStatusLogs()">
-<option value="all">🔄 Todos</option>
-<option value="visible">👁️ Visíveis</option>
-<option value="hidden">🙈 Ocultos</option>
-<option value="done">✅ Feitos</option>
-<option value="todo">📝 A Fazer</option>
-</select>
-<button class="button" onclick="addManualLog()">➕ Linha Manual</button>
-<button class="button" onclick="addTurnChange()">🔁 Mudança de Turno</button>
-  Turno atual: <input id="current-turn" min="1" style="width: 60px;" type="number" value="1"/>
-</div>
-<div id="event-log-container"></div>
 <!-- JAVASCRIPT -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
@@ -2409,5 +1963,451 @@ async function addGameLogEntry(htmlString) {
 // Final: onload trigger
 window.onload = loadFirebaseData;
 </script>
+</head>
+<body>
+<div id="save-indicator" style="
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  background: #222;
+  padding: 8px 12px;
+  font-size: 16px;
+  font-family: 'Nova Flat', sans-serif;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 6px;
+  z-index: 9999;
+  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+">☁️✅</div>
+<div class="top-toolbar" id="top-bar">
+<button class="top-button" id="toggle-spells" onclick="toggleSpellSection()" title="Feitiços">🪄</button>
+<button class="top-button" id="calculator-button" onclick="window.open('difficulty_calculator.html', 'CalculadoraDeDificuldade', 'width=1000,height=700,resizable=yes,scrollbars=yes')" title="Calculadora de Dificuldade">🧮</button>
+<button class="top-button" title="Relacionamentos">💞</button>
+<button class="top-button" title="Aprendizados">📚</button>
+<button class="top-button" onclick="window.open('uso_ambiente.html', 'UsoDoAmbiente', 'width=1000,height=700,resizable=yes,scrollbars=yes')" title="Uso do ambiente">🌎</button>
+<button class="top-button" title="Inventário">🎒</button>
+<button class="top-button" title="Filtro de Ações">❓</button>
+</div>
+<center><div class="spell-container" id="spells-area">
+<div style="display: grid; grid-template-columns: 880px 880px; gap: 30px; justify-content: center;">
+<!-- Lado A -->
+<div class="spell-side" id="spells-a" style="flex: 1;"></div>
+<!-- Lado B -->
+<div class="spell-side" id="spells-b" style="flex: 1;"></div>
+</div>
+</div></center>
+<!-- Script para autocomplete e preenchimento -->	
+<table border="0" cellpadding="0" cellspacing="0" class="twocell-table">
+<tr>
+<!-- Character A Cell -->
+<td valign="top">
+<div class="char-block" id="char-a">
+<!-- Character Info Table -->
+<center><table border="1" cellpadding="10" name="Character-A" style="border-collapse:collapse; table-layout:fixed; width:95%; background-color: #151515; border-radius: 4px;">
+<colgroup>
+<col style="width:150px;"/>
+<col style="width:140px;"/>
+<col style="width:190px;"/>
+<col style="width:70px;"/>
+<col style="width:140px;"/>
+<col style="width:100px;"/>
+</colgroup>
+<tr>
+<td id="char_avatar-a" rowspan="2"></td>
+<td colspan="2" height="60"><select class="char-name" id="char-select-a"></select>
+<div style="text-align: right">(<span class="minititle" id="char_player-a"></span>)</div></td>
+<td colspan="3">
+<div style="display: flex; gap: 18px; align-items: flex-start; width: 100%;">
+<!-- HP -->
+<div style="width: 155px;">
+<div>
+<div style="text-align: right; width: 134px;">
+        🩸<input class="cond-obs" id="char_hp-a" style="width:30px; font-size:15px; padding:2px; text-align:center;" type="number" min="0"/> /
+        <span class="text-hp" id="char_maxhp-a"></span>
+</div>
+</div>
+<input class="slider-top" id="char_hp_range-a" style="width: 135px; display: block;" type="range"/>
+</div>
+<!-- Energy -->
+<div style="width: 155px;">
+<div>
+<div style="text-align: right; width: 134px;">
+                  ⚡<input class="cond-obs" id="char_energy-a" style="width:30px; font-size:15px; padding:2px; text-align:center;" type="number" min="0"/> /
+                  <span class="text-energy" id="char_maxenergy-a"></span>
+</div>
+</div>
+<input class="slider-top" id="char_energy_range-a" style="width: 135px; display: block;" type="range"/>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="3" height="110" style="text-align: center; vertical-align: top;">
+<div style="display: flex; gap: 10px; padding-left: 12px;">
+<table border="1"><tr><td class="atr-num-ins" height="60" id="char_ins-a" width="70"></td></tr><tr><td class="atr">🔥 INS</td></tr></table>
+<table border="1"><tr><td class="atr-num-sim" height="60" id="char_sim-a" width="70"></td></tr><tr><td class="atr">❤️ SIM</td></tr></table>
+<table border="1"><tr><td class="atr-num-raz" height="60" id="char_raz-a" width="70"></td></tr><tr><td class="atr">⚙️ RAZ</td></tr></table>
+<table border="1"><tr><td class="atr-num-mal" height="60" id="char_mal-a" width="70"></td></tr><tr><td class="atr">𖦹 MAL</td></tr></table>
+</div>
+</td>
+<td rowspan="2" style="text-align: center; text-align: center; vertical-align: top;">
+<div class="frame"><span class="title">BÔNUS</span><br/>
+<span class="action-variable" id="char_bonus1-a"></span><br/>
+<span class="action-variable" id="char_bonus2-a"></span><br/>
+<span class="action-variable" id="char_bonus3-a"></span><br/>
+<span class="action-variable" id="char_bonus4-a"></span><br/>
+<span class="action-variable" id="char_bonus5-a"></span><br/>
+<span class="action-variable" id="char_bonus6-a"></span><br/></div><br/>
+<div class="frame"><span class="title">DEDUÇÕES</span><br/>
+<span class="action-variable" id="char_deduc1-a"></span><br/>
+<span class="action-variable" id="char_deduc2-a"></span><br/>
+<span class="action-variable" id="char_deduc3-a"></span></div>
+</td>
+<td rowspan="2" style="vertical-align: top;">
+<div style="display: flex; flex-direction: column; align-items: center; ">
+<table border="1"><tr><td class="atr-num-none" height="40" id="char_por-a" width="50"></td></tr><tr><td class="atr">POR</td></tr></table>
+<table border="1"><tr><td class="atr-num-none" height="40" id="char_ndf-a" width="50"></td></tr><tr><td class="atr">NdF</td></tr></table><br/>
+<span class="atr">Agi <span class="title" id="char_agi-a" style="text-align: left;"></span></span>
+<span class="atr">Per <span class="title" id="char_passiveperc-a" style="text-align: left;"></span></span>
+<span class="atr">✦ <input class="cond-obs" data-tooltip="Pontos de Naração" id="char_narrativepoints-a" placeholder="0" style="width:15px; font-size:15px; padding:4px;" type="text"/></span><br/>
+<div style="display: flex; gap: 4px; align-items: center;">
+<button class="button" id="inc-btn-a">+</button>
+<button class="button" id="dec-btn-a">−</button>
+</div><br/>
+<button class="button" id="obs-toggle-a">Obs.</button>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<div class="slider-set" style="width: 300px;">
+<div class="slider-container">
+<div class="separated"><span class="minititle">Medo</span><span>Raiva</span></div>
+<div class="emotion-bar" id="fear-anger-a"></div>
+
+<div class="separated"><span>Desconfiança</span><span>Afeto</span></div>
+<div class="emotion-bar" id="distrust-trust-a"></div>
+
+<div class="separated"><span>Estresse</span><span>Calma</span></div>
+<div class="emotion-bar" id="stress-calm-a"></div>
+
+<div class="separated"><span>Culpa</span><span>Satisfação</span></div>
+<div class="emotion-bar" id="guilt-satisf-a"></div>
+</div> </td>
+<td colspan="2" style="text-align: center; vertical-align: top;">
+<div id="input-container-a" style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+<span class="title">CONDIÇÕES</span>
+<div style="display: flex; gap: 6px; align-items: center;">
+<input id="cond-a" placeholder="Nome da condição" style="width: 140px; padding: 4px; font-size: 14px;" type="text"/>
+<input id="cond-turns-a" placeholder="Turnos" style="width: 60px; padding: 4px; font-size: 14px;" type="number"/>
+<button onclick="addArenaCondition('a')">+</button>
+</div>
+<div class="tag-list" id="cond-tags-a"></div>
+</div>
+</td>
+</tr>
+<tr style="border-top-style: solid; border-top-color: #222;">
+<td colspan="6">
+<div id="obs-field-a" style="display: none; margin-top: 6px;">
+<textarea id="char_obs-a" placeholder="Adicione uma observação e pressione Enter..." rows="3" style="width: 95%; font-size: 15px; padding: 5px;"></textarea>
+</div>
+</td>
+</tr>
+</table></center>
+<!-- Action Roller goes here! -->
+<center><table class="roll-section" id="roll-section-a" style="width: 95%;">
+<tr>
+<td style="width:600px;">
+<span class="roll-formula sub-variable" id="action_formula_lit-a"></span>
+</td>
+<td rowspan="2">
+<button class="button" id="rollalldice-a">Rolar!</button>
+</td>
+<td>
+<span id="roll_result-a"></span>
+</td>
+</tr>
+<tr>
+<td class="dice-rolling-line" id="dice-rolling-line">
+<div class="back-variable dice-select-block" id="selected_att-block-a">
+<span id="selected_att-a"></span>
+<span class="sub-variable"><span id="selected_att_label-a"></span>
+</span>
+</div>
+        +
+        <div class="back-variable dice-select-block" id="dice-select-block-a">
+<input id="diceamount-a" min="1" style="width:50px; font-size: 16px; text-align: center;" type="number" value="1">
+<span id="diceamount_label-a"></span>
+<span class="sub-variable">DADOS</span>
+</input></div>
+        +
+        <div class="back-variable dice-select-block" id="fixedbonus-block-a">
+<input id="fixedbonus-a" style="width:50px; font-size: 16px; text-align: center;" type="number" value="0">
+<span id="fixedbonus_label-a"></span>
+<span class="sub-variable">BÔNUS FIXO</span>
+</input></div>
+        +
+        <span id="specialdice_controls-a" style="display: flex; align-items: center; gap: 4px;">
+<span id="specialdice_area-a"></span>
+<button class="button" id="add-special-a" title="Novo Dado" type="button">✦</button>
+</span>
+<span style="opacity: 20%">=
+        <span id="partialresult-a"></span></span>
+</td>
+<td>
+<span id="roll_breakdown-a"></span>
+</td>
+</tr>
+</table></center>
+<span id="specialdice-a" style="display:none;"></span>
+<span id="partialresult_log-a" style="display:none;"></span>
+<!-- Action Info Table -->
+<center><table border="1" cellpadding="10" cellspacing="0" class="back-variable" id="back-div-a" style="text-align: center; width:95%; margin-top: 12px; border-radius: 4px;">
+<tr height="60">
+<td rowspan="7" width="240"><span class="cover-img" id="img_action-a"></span></td>
+<td width="60"><div style="display: inline-flex; gap: 5px;"><span class="img" id="att_img-a"></span> <span class="text-variable" id="selected_att_name-a"></span></div></td>
+<td width="60"><span class="text-variable" id="action_energy-a"></span></td>
+<td width="60"><span class="text-variable-emoji" id="action_type1-a"></span></td>
+<td width="60"><span class="text-variable-emoji" id="action_type2-a"></span></td>
+<td width="60"><span class="text-variable-emoji" id="action_type3-a"></span></td>
+<td width="60"><span class="text-variable-emoji" id="action_group_possib-a"></span></td>
+<td width="90"><span class="sub-variable" id="action_type-a" style="font-size: 14px; text-transform: uppercase;"></span></td>
+</tr>
+<tr height="70">
+<td class="light-div" colspan="6" id="light-div-action-a"><select class="title-variable" id="action-select-a"></select></td>
+<td class="light-div right-gap" id="light-div-symbol-a" style="margin-left: 5px;"><span class="text-variable" id="img_action_type-a"></span></td>
+</tr>
+<tr height="40">
+<td class="dark-div" colspan="3" id="dark-div-1-a"><span class="sub-variable" id="cell-contra-a">ROLA CONTRA</span></td>
+<td class="dark-div" colspan="2" id="dark-div-2-a"><span class="sub-variable" id="cell-bonus-se-a">BÔNUS SE</span></td>
+<td class="dark-div right-gap" colspan="2" id="dark-div-3-a"><span class="sub-variable" id="cell-adv-bonus-se-a">ADVERSÁRIO TEM BÔNUS SE</span></td>
+</tr>
+<tr height="50">
+<td class="dark-div" colspan="3" id="dark-div-4-a"><span id="counter-a"></span></td>
+<td class="dark-div" colspan="2" id="dark-div-5-a"><span class="strong-variable" id="has_bonus-a"></span></td>
+<td class="dark-div right-gap" colspan="2" id="dark-div-6-a"><span class="strong-variable" id="opp_has_bonus-a"></span></td>
+</tr>
+<tr height="90">
+<td class="light-div right-gap" colspan="7" id="light-div-desc-a" style="padding: 20px; !important;"><span class="descr-variable" id="action_description-a"></span></td>
+</tr>
+<tr height="80">
+<td class="dark-div right-gap right-gap bottom-gap" colspan="7" id="dark-div-7-a" style="padding: 20px; !important;"><span class="sub-variable" id="action_condition-a" style="font-size: 14px; text-transform: uppercase;"></span></td>
+</tr>
+</table></center>
+</div>
+</td>
+<!-- Character B Cell (everything repeated, with only interactive/output ids made unique with -b) -->
+<td valign="top">
+<div class="char-block" id="char-b">
+<!-- Character Info Table -->
+<table border="1" cellpadding="10" name="Character-B" style="border-collapse:collapse; table-layout:fixed; width:95%; background-color: #151515; border-radius: 4px;">
+<colgroup>
+<col style="width:150px;"/>
+<col style="width:140px;"/>
+<col style="width:190px;"/>
+<col style="width:70px;"/>
+<col style="width:140px;"/>
+<col style="width:100px;"/>
+</colgroup>
+<tr>
+<td id="char_avatar-b" rowspan="2"></td>
+<td colspan="2" height="60"><select class="char-name" id="char-select-b"></select>
+<div style="text-align: right">(<span class="minititle" id="char_player-b"></span>)</div></td>
+<td colspan="3">
+<div style="display: flex; gap: 18px; align-items: flex-start; width: 100%;">
+<div style="width: 155px;">
+<div>
+<div style="text-align: right; width: 134px;">
+                  🩸<input class="cond-obs" id="char_hp-b" style="width:30px; font-size:15px; padding:2px; text-align:center;" type="number" min="0"/> /
+                  <span class="text-hp" id="char_maxhp-b"></span>
+</div>
+</div>
+<input class="slider-top" id="char_hp_range-b" style="width: 135px; display: block;" type="range"/>
+</div>
+<div style="width: 155px;">
+<div>
+<div style="text-align: right; width: 134px;">
+                  ⚡<input class="cond-obs" id="char_energy-b" style="width:30px; font-size:15px; padding:2px; text-align:center;" type="number" min="0"/> /
+                  <span class="text-energy" id="char_maxenergy-b"></span>
+</div>
+</div>
+<input class="slider-top" id="char_energy_range-b" style="width: 135px; display: block;" type="range"/>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="3" height="110" style="text-align: center; vertical-align: top;">
+<div style="display: flex; gap: 10px; padding-left: 12px;">
+<table border="1"><tr><td class="atr-num-ins" height="60" id="char_ins-b" width="70"></td></tr><tr><td class="atr">🔥 INS</td></tr></table>
+<table border="1"><tr><td class="atr-num-sim" height="60" id="char_sim-b" width="70"></td></tr><tr><td class="atr">❤️ SIM</td></tr></table>
+<table border="1"><tr><td class="atr-num-raz" height="60" id="char_raz-b" width="70"></td></tr><tr><td class="atr">⚙️ RAZ</td></tr></table>
+<table border="1"><tr><td class="atr-num-mal" height="60" id="char_mal-b" width="70"></td></tr><tr><td class="atr">𖦹 MAL</td></tr></table>
+</div>
+</td>
+<td rowspan="2" style="text-align: center; vertical-align: top;">
+<div class="frame"><span class="title">BÔNUS</span><br/>
+<span class="action-variable" id="char_bonus1-b"></span><br/>
+<span class="action-variable" id="char_bonus2-b"></span><br/>
+<span class="action-variable" id="char_bonus3-b"></span><br/>
+<span class="action-variable" id="char_bonus4-b"></span><br/>
+<span class="action-variable" id="char_bonus5-b"></span><br/>
+<span class="action-variable" id="char_bonus6-b"></span><br/></div><br/>
+<div class="frame"><span class="title">DEDUÇÕES</span><br/>
+<span class="action-variable" id="char_deduc1-b"></span><br/>
+<span class="action-variable" id="char_deduc2-b"></span><br/>
+<span class="action-variable" id="char_deduc3-b"></span></div>
+</td>
+<td rowspan="2" style="vertical-align: top;">
+<div style="display: flex; flex-direction: column; align-items: center;">
+<table border="1"><tr><td class="atr-num-none" height="40" id="char_por-b" width="50"></td></tr><tr><td class="atr">POR</td></tr></table>
+<table border="1"><tr><td class="atr-num-none" height="40" id="char_ndf-b" width="50"></td></tr><tr><td class="atr">NdF</td></tr></table><br/>
+<span class="atr">Agi <span class="title" id="char_agi-b" style="text-align: left;"></span></span>
+<span class="atr">Per <span class="title" id="char_passiveperc-b" style="text-align: left;"></span></span>
+<span class="atr">✦ <input class="cond-obs" data-tooltip="Pontos de Naração" id="char_narrativepoints-b" placeholder="0" style="width:15px; font-size:15px; padding:4px;" type="text"/></span><br/>
+<div style="display: flex; gap: 4px; align-items: center;">
+<button class="button" id="inc-btn-b">+</button>
+<button class="button" id="dec-btn-b">−</button>
+</div><br/>
+<button class="button" id="obs-toggle-b">Obs.</button>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<div class="slider-set" style="width: 300px;">
+<div class="slider-container">
+<div class="separated"><span class="minititle">Medo</span><span>Raiva</span></div>
+<div class="emotion-bar" id="fear-anger-b"></div>
+
+<div class="separated"><span>Desconfiança</span><span>Afeto</span></div>
+<div class="emotion-bar" id="distrust-trust-b"></div>
+
+<div class="separated"><span>Estresse</span><span>Calma</span></div>
+<div class="emotion-bar" id="stress-calm-b"></div>
+
+<div class="separated"><span>Culpa</span><span>Satisfação</span></div>
+<div class="emotion-bar" id="guilt-satisf-b"></div>
+</div>
+</td>
+<td colspan="2" style="text-align: center; vertical-align: top;">
+<div id="input-container-b" style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+<span class="title">CONDIÇÕES</span>
+<div style="display: flex; gap: 6px; align-items: center;">
+<input class="cond-obs" id="cond-b" placeholder="Nome da condição" style="width: 140px; padding: 4px; font-size: 14px;" type="text"/>
+<input id="cond-turns-b" placeholder="Turnos" style="width: 60px; padding: 4px; font-size: 14px;" type="number"/>
+<button onclick="addArenaCondition('b')">+</button>
+</div>
+<div class="tag-list" id="cond-tags-b"></div>
+</div>
+</td>
+</tr>
+<tr style="border-top-style: solid; border-top-color: #222;">
+<td colspan="6">
+<div id="obs-field-b" style="display: none; margin-top: 6px;">
+<textarea id="char_obs-b" placeholder="Adicione uma observação e pressione Enter..." rows="3" style="width: 95%; font-size: 15px; padding: 5px;"></textarea>
+</div>
+</td>
+</tr>
+</table>
+<!-- Action Roller for B -->
+<table class="roll-section" id="roll-section-b" style="width: 95%;">
+<tr>
+<td style="width:600px;">
+<span class="roll-formula sub-variable" id="action_formula_lit-b"></span>
+</td>
+<td rowspan="2">
+<button class="button" id="rollalldice-b">Rolar!</button>
+</td>
+<td>
+<span id="roll_result-b"></span>
+</td>
+</tr>
+<tr>
+<td class="dice-rolling-line" id="dice-rolling-line-b">
+<div class="back-variable dice-select-block" id="selected_att-block-b">
+<span id="selected_att-b"></span>
+<span class="sub-variable"><span id="selected_att_label-b"></span></span>
+</div>
+      +
+      <div class="back-variable dice-select-block" id="dice-select-block-b">
+<input id="diceamount-b" min="1" style="width:50px; font-size: 16px; text-align: center;" type="number" value="1">
+<span id="diceamount_label-b"></span>
+<span class="sub-variable">DADOS</span>
+</input></div>
+      +
+      <div class="back-variable dice-select-block" id="fixedbonus-block-b">
+<input id="fixedbonus-b" style="width:50px; font-size: 16px; text-align: center;" type="number" value="0">
+<span id="fixedbonus_label-b"></span>
+<span class="sub-variable">BÔNUS FIXO</span>
+</input></div>
+      +
+      <span id="specialdice_controls-b" style="display: flex; align-items: center; gap: 4px;">
+<span id="specialdice_area-b"></span>
+<button class="button" id="add-special-b" title="Novo Dado" type="button">✦</button>
+</span>
+<span style="opacity: 20%">=
+        <span id="partialresult-b"></span></span>
+</td>
+<td>
+<span id="roll_breakdown-b"></span>
+</td>
+</tr>
+</table>
+<span id="specialdice-b" style="display:none;"></span>
+<span id="partialresult_log-b" style="display:none;"></span>
+<!-- Action B Info Table -->
+<table border="1" cellpadding="10" cellspacing="0" class="back-variable" id="back-div-b" style="text-align: center; width:95%; margin-top: 12px; border-radius: 4px;">
+<tr height="60">
+<td rowspan="7" width="240"><span class="cover-img" id="img_action-b"></span></td>
+<td width="60"><div style="display: inline-flex; gap: 5px;"><span class="img" id="att_img-b"></span> <span class="text-variable" id="selected_att_name-b"></span></div></td>
+<td width="60"><span class="text-variable" id="action_energy-b"></span></td>
+<td width="60"><span class="text-variable-emoji" id="action_type1-b"></span></td>
+<td width="60"><span class="text-variable-emoji" id="action_type2-b"></span></td>
+<td width="60"><span class="text-variable-emoji" id="action_type3-b"></span></td>
+<td width="60"><span class="text-variable-emoji" id="action_group_possib-b"></span></td>
+<td width="90"><span class="sub-variable" id="action_type-b" style="font-size: 14px; text-transform: uppercase;"></span></td>
+</tr>
+<tr height="70">
+<td class="light-div" colspan="6" id="light-div-action-b"><select class="title-variable" id="action-select-b"></select></td>
+<td class="light-div right-gap" id="light-div-symbol-b" style="margin-left: 5px;"><span class="text-variable" id="img_action_type-b"></span></td>
+</tr>
+<tr height="40">
+<td class="dark-div" colspan="3" id="dark-div-1-b"><span class="sub-variable" id="cell-contra-b">ROLA CONTRA</span></td>
+<td class="dark-div" colspan="2" id="dark-div-2-b"><span class="sub-variable" id="cell-bonus-se-b">BÔNUS SE</span></td>
+<td class="dark-div right-gap" colspan="2" id="dark-div-3-b"><span class="sub-variable" id="cell-adv-bonus-se-b">ADVERSÁRIO TEM BÔNUS SE</span></td>
+</tr>
+<tr height="50">
+<td class="dark-div" colspan="3" id="dark-div-4-b"><span id="counter-b"></span></td>
+<td class="dark-div" colspan="2" id="dark-div-5-b"><span class="strong-variable" id="has_bonus-b"></span></td>
+<td class="dark-div right-gap" colspan="2" id="dark-div-6-b"><span class="strong-variable" id="opp_has_bonus-b"></span></td>
+</tr>
+<tr height="90">
+<td class="light-div right-gap" colspan="7" id="light-div-desc-b" style="padding: 20px;"><span class="descr-variable" id="action_description-b"></span></td>
+</tr>
+<tr height="80">
+<td class="dark-div right-gap bottom-gap" colspan="7" id="dark-div-7-b" style="padding: 20px;"><span class="sub-variable" id="action_condition-b" style="font-size: 14px; text-transform: uppercase;"></span></td>
+</tr>
+</table>
+</div>
+</td>
+</tr>
+</table>
+<h2>Log de Rolagens</h2>
+<div id="event-log-toolbar">
+<button class="button" onclick="deleteSelectedLogs()">🗑️ Excluir</button>
+<button class="button" onclick="toggleVisibility()">👁️ Ocultar Selecionados</button>
+<select class="button" id="status-filter" onchange="filterStatusLogs()">
+<option value="all">🔄 Todos</option>
+<option value="visible">👁️ Visíveis</option>
+<option value="hidden">🙈 Ocultos</option>
+<option value="done">✅ Feitos</option>
+<option value="todo">📝 A Fazer</option>
+</select>
+<button class="button" onclick="addManualLog()">➕ Linha Manual</button>
+<button class="button" onclick="addTurnChange()">🔁 Mudança de Turno</button>
+  Turno atual: <input id="current-turn" min="1" style="width: 60px;" type="number" value="1"/>
+</div>
+<div id="event-log-container"></div>
 </body>
 </html>
