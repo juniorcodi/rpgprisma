@@ -840,48 +840,46 @@ function setupConditionsAutocomplete(side) {
 window.setupConditionsAutocomplete = setupConditionsAutocomplete;
 
 // --- CHARACTER LISTENERS (LIVE SYNC) ---
-function setupCharacterListeners() {
-  let charListenerA = null;
-  let charListenerB = null;
+function setupCharacterListeners(charId, side) {
+  const ref = doc(db, "campaigns", "alpha", "characters_range", charId);
+  onSnapshot(ref, (docSnap) => {
+    if (!docSnap.exists()) return;
+    const data = docSnap.data();
 
-  function setupCharListener(side) {
-    const charSelect = document.getElementById(`char-select-${side}`);
-    const charId = charSelect.value;
+    // Update each bound field
+    for (let field in data) {
+      const el = document.getElementById(field + "-" + side);
+      if (!el) continue;
 
-    if (!charId) return;
-
-    if (side === "a" && charListenerA) { charListenerA(); charListenerA = null; }
-    if (side === "b" && charListenerB) { charListenerB(); charListenerB = null; }
-
-    const charRef = doc(db, "campaigns", "alpha", "characters_range", charId);
-    const unsubscribe = onSnapshot(charRef, (doc) => {
-      if (doc.exists()) {
-        const data = doc.data();
-        charFields.forEach(field => {
-          const el = document.getElementById(`${field}-${side}`);
-          if (el && data[field] !== undefined) {
-            if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-              el.value = data[field];
-            } else {
-              el.textContent = data[field];
-            }
-          }
-        });
-        updateStatRanges(side);
-        if (data.char_cond) updateConditionTags(side, data.char_cond);
-        applyBonusDeductionStyling(side);
+      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+        if (document.activeElement !== el) {
+          el.value = data[field];
+        }
+      } else {
+        el.textContent = data[field];
       }
-    });
+    }
 
-    if (side === "a") { charListenerA = unsubscribe; }
-    else { charListenerB = unsubscribe; }
-  }
+    // Update HP slider fill
+    const hpRange = document.getElementById("char_hp_range-" + side);
+    const hpInput = document.getElementById("char_hp-" + side);
+    if (hpRange && hpInput) {
+      hpRange.value = hpInput.value;
+      updateSliderFill(hpRange, "crimson");
+    }
 
-  setupCharListener("a");
-  setupCharListener("b");
+    // Update Energy slider fill
+    const energyRange = document.getElementById("char_energy_range-" + side);
+    const energyInput = document.getElementById("char_energy-" + side);
+    if (energyRange && energyInput) {
+      energyRange.value = energyInput.value;
+      updateSliderFill(energyRange, "#FDA528");
+    }
 
-  document.getElementById("char-select-a").addEventListener("change", () => setupCharListener("a"));
-  document.getElementById("char-select-b").addEventListener("change", () => setupCharListener("b"));
+    // 🔥 Repaint emotion bars from DB values
+    setupAllEmotionBars(charId, side);
+  });
+}
 }
 
 // --- COLORING/STYLE HELPERS ---
@@ -1019,39 +1017,57 @@ async function updateEmotion(charId, leftField, rightField, leftVal, rightVal) {
 }
 
 // Create one emotion bar (7 blocks: 3 left, 1 neutral, 3 right)
-function createEmotionBar(charId, side, pairId, leftField, rightField, leftColor, rightColor) {
+function paintEmotionBlocks(bar, leftVal, rightVal, leftColor, rightColor) {
+  Array.from(bar.children).forEach((b) => {
+    const blockVal = parseInt(b.dataset.value);
+    b.style.background = "#444";
+
+    // Left side (blocks 1–3)
+    if (blockVal <= 3 && leftVal > 0 && (4 - blockVal) <= leftVal) {
+      b.style.background = leftColor;
+    }
+
+    // Right side (blocks 5–7)
+    if (blockVal >= 5 && rightVal > 0 && (blockVal - 4) <= rightVal) {
+      b.style.background = rightColor;
+    }
+  });
+}
+
+async function createEmotionBar(charId, side, pairId, leftField, rightField, leftColor, rightColor) {
   const bar = document.getElementById(`${pairId}-${side}`);
   if (!bar) return;
 
   bar.innerHTML = ""; // clear old content
 
+  // Build blocks
   for (let i = 1; i <= 7; i++) {
     const block = document.createElement("span");
     block.classList.add("block");
-    if (i === 4) block.classList.add("neutral"); // middle gap
+    if (i === 4) block.classList.add("neutral");
     block.dataset.value = i;
     bar.appendChild(block);
 
     block.addEventListener("click", async () => {
       let leftVal = 0, rightVal = 0;
-
-      if (i <= 3) leftVal = 4 - i;       // 1→3, 2→2, 3→1
+      if (i <= 3) leftVal = 4 - i;      // 1→3, 2→2, 3→1
       else if (i >= 5) rightVal = i - 4; // 5→1, 6→2, 7→3
 
-      // Visual update
-      Array.from(bar.children).forEach((b, idx) => {
-  b.style.background = "#444";
-  const blockVal = parseInt(b.dataset.value);
-  if (blockVal <= 3 && leftVal > 0 && (4 - blockVal) <= leftVal) {
-    b.style.background = leftColor;
-  }
-  if (blockVal >= 5 && rightVal > 0 && (blockVal - 4) <= rightVal) {
-    b.style.background = rightColor;
-  }
-});
-      // Firebase update
+      paintEmotionBlocks(bar, leftVal, rightVal, leftColor, rightColor);
       await updateEmotion(charId, leftField, rightField, leftVal, rightVal);
     });
+  }
+
+  // 🔥 Fetch current values from Firebase and paint correctly
+  const ref = doc(db, "campaigns", "alpha", "characters_range", charId);
+  const snap = await getDoc(ref);
+  if (snap.exists()) {
+    const data = snap.data();
+    const leftVal = data[leftField] || 0;
+    const rightVal = data[rightField] || 0;
+    paintEmotionBlocks(bar, leftVal, rightVal, leftColor, rightColor);
+  } else {
+    paintEmotionBlocks(bar, 0, 0, leftColor, rightColor);
   }
 }
 
@@ -1407,14 +1423,15 @@ function updateStatRanges(side) {
   hpRange.classList.add("hp-slider-fill");
   updateSliderFill(hpRange, "crimson");
   hpRange.oninput = function () {
-    const hpInput = document.getElementById('char_hp-' + side);
-    if (hpInput.tagName === "INPUT") {
-      hpInput.value = this.value;
-    } else {
-      hpInput.textContent = this.value;
-    }
-    updateSliderFill(this, "crimson");
-  };
+  const hpInput = document.getElementById('char_hp-' + side);
+  if (hpInput.tagName === "INPUT") {
+    hpInput.value = this.value;
+  } else {
+    hpInput.textContent = this.value;
+  }
+  updateSliderFill(this, "crimson");
+  hpInput.dispatchEvent(new Event("input", { bubbles: true })); // 🔥 trigger Firebase save
+};
 
   // Energy - read from input field
   const energyEl = document.getElementById('char_energy-' + side);
@@ -1427,15 +1444,17 @@ function updateStatRanges(side) {
   energyRange.style.accentColor = "#FDA528";
   energyRange.classList.add("energy-slider-fill");
   updateSliderFill(energyRange, "#FDA528");
-  energyRange.oninput = function () {
-    const energyInput = document.getElementById('char_energy-' + side);
-    if (energyInput.tagName === "INPUT") {
-      energyInput.value = this.value;
-    } else {
-      energyInput.textContent = this.value;
-    }
-    updateSliderFill(this, "#FDA528");
-  };
+ energyRange.oninput = function () {
+  const energyInput = document.getElementById('char_energy-' + side);
+  if (energyInput.tagName === "INPUT") {
+    energyInput.value = this.value;
+  } else {
+    energyInput.textContent = this.value;
+  }
+  updateSliderFill(this, "#FDA528");
+  energyInput.dispatchEvent(new Event("input", { bubbles: true })); // 🔥 trigger Firebase save
+};
+
 }
 
 // ------------------ SPELLS AND AUTOCOMPLETE ---------------------
