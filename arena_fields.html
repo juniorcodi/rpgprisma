@@ -603,7 +603,41 @@ body { background: #0F0F0F; color: whitesmoke;}
 }
 	
 </style>
-<!-- JAVASCRIPT -->
+</head>
+<body>
+<div id="save-indicator" style="
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  background: #222;
+  padding: 8px 12px;
+  font-size: 16px;
+  font-family: 'Nova Flat', sans-serif;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 6px;
+  z-index: 9999;
+  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+">☁️✅</div>
+<div class="top-toolbar" id="top-bar">
+<button class="top-button" id="toggle-spells" onclick="toggleSpellSection()" title="Feitiços">🪄</button>
+<button class="top-button" id="calculator-button" onclick="window.open('difficulty_calculator.html', 'CalculadoraDeDificuldade', 'width=1000,height=700,resizable=yes,scrollbars=yes')" title="Calculadora de Dificuldade">🧮</button>
+<button class="top-button" title="Relacionamentos">💞</button>
+<button class="top-button" title="Aprendizados">📚</button>
+<button class="top-button" onclick="window.open('uso_ambiente.html', 'UsoDoAmbiente', 'width=1000,height=700,resizable=yes,scrollbars=yes')" title="Uso do ambiente">🌎</button>
+<button class="top-button" title="Inventário">🎒</button>
+<button class="top-button" title="Filtro de Ações">❓</button>
+</div>
+<center><div class="spell-container" id="spells-area">
+<div style="display: grid; grid-template-columns: 880px 880px; gap: 30px; justify-content: center;">
+<!-- Lado A -->
+<div class="spell-side" id="spells-a" style="flex: 1;"></div>
+<!-- Lado B -->
+<div class="spell-side" id="spells-b" style="flex: 1;"></div>
+</div>
+</div></center>
+<!-- Script para autocomplete e preenchimento -->
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import {
@@ -635,8 +669,6 @@ const db = getFirestore(app);
 
 let charData = [], actionData = [], spellsData = [], conditionsData = [];
 let spellsList = [];
-let unsubscribeA = null;
-let unsubscribeB = null;
 
 // Make variables globally accessible
 window.charData = charData;
@@ -1017,93 +1049,39 @@ function setupDropdowns() {
     createEmotionBar(charId, side, "guilt-satisf", "char_guilt", "char_satisf", "deeppink", "teal");
   }
 
-async function refreshA() {
-  // detach old listener if any
-  if (unsubscribeA) unsubscribeA();
+  function refreshA() {
+    setFields(charData.find(row => row.id === charSelA.value), actionData[actSelA.value], "-a");
+    updatePartialResult("a");
+    updateStatRanges("a");
+    setTimeout(() => {
+      applyActionVariableClasses("a");
+      applySimpleVariableClassesFromField("a");
+      setupDiceSection("a");
+      setupAllEmotionBars(charSelA.value, "a");
+    }, 30);
+  }
 
-  const charId = charSelA.value;
-  setFields(charData.find(row => row.id === charId), actionData[actSelA.value], "-a");
-  updatePartialResult("a");
-  updateStatRanges("a");
-  setTimeout(() => {
-    applyActionVariableClasses("a");
-    applySimpleVariableClassesFromField("a");
-    setupDiceSection("a");
-    setupAllEmotionBars(charId, "a");
-  }, 30);
+  function refreshB() {
+    setFields(charData.find(row => row.id === charSelB.value), actionData[actSelB.value], "-b");
+    updatePartialResult("b");
+    updateStatRanges("b");
+    setTimeout(() => {
+      applyActionVariableClasses("b");
+      applySimpleVariableClassesFromField("b");
+      setupDiceSection("b");
+      setupAllEmotionBars(charSelB.value, "b");
+    }, 30);
+  }
 
-  // attach fresh Firestore listener
-  unsubscribeA = onSnapshot(doc(db, "campaigns", "alpha", "characters_range", charId), (docSnap) => {
-    if (!docSnap.exists()) return;
-    const data = docSnap.data();
-    for (let field in data) {
-      const el = document.getElementById(field + "-a");
-      if (!el) continue;
-      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-        if (document.activeElement !== el) el.value = data[field];
-      } else {
-        el.textContent = data[field];
-      }
-    }
-    const hpRange = document.getElementById("char_hp_range-a");
-    if (hpRange) {
-      hpRange.value = data.char_hp || 0;
-      updateSliderFill(hpRange, "crimson");
-    }
-    const energyRange = document.getElementById("char_energy_range-a");
-    if (energyRange) {
-      energyRange.value = data.char_energy || 0;
-      updateSliderFill(energyRange, "#FDA528");
-    }
-  });
+  charSelA.onchange = () => { refreshA(); updateSessionState(); };
+  actSelA.onchange = () => { refreshA(); updateSessionState(); };
+  charSelB.onchange = () => { refreshB(); updateSessionState(); };
+  actSelB.onchange = () => { refreshB(); updateSessionState(); };
+
+  refreshA();
+  refreshB();
 }
 
-  async function refreshB() {
-  // Detach old listener if any
-  if (unsubscribeB) unsubscribeB();
-
-  const charId = charSelB.value;
-  setFields(charData.find(row => row.id === charId), actionData[actSelB.value], "-b");
-  updatePartialResult("b");
-  updateStatRanges("b");
-
-  setTimeout(() => {
-    applyActionVariableClasses("b");
-    applySimpleVariableClassesFromField("b");
-    setupDiceSection("b");
-    setupAllEmotionBars(charId, "b");
-  }, 30);
-
-  // Attach fresh Firestore listener
-  unsubscribeB = onSnapshot(doc(db, "campaigns", "alpha", "characters_range", charId), (docSnap) => {
-    if (!docSnap.exists()) return;
-    const data = docSnap.data();
-
-    for (let field in data) {
-      const el = document.getElementById(field + "-b");
-      if (!el) continue;
-      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-        if (document.activeElement !== el) el.value = data[field];
-      } else {
-        el.textContent = data[field];
-      }
-    }
-
-    // Update HP slider fill
-    const hpRange = document.getElementById("char_hp_range-b");
-    if (hpRange) {
-      hpRange.value = data.char_hp || 0;
-      updateSliderFill(hpRange, "crimson");
-    }
-
-    // Update Energy slider fill
-    const energyRange = document.getElementById("char_energy_range-b");
-    if (energyRange) {
-      energyRange.value = data.char_energy || 0;
-      updateSliderFill(energyRange, "#FDA528");
-    }
-  });
-}
 	
 function getCharacterData(side) {
   // ID reverso do adversário
@@ -1950,7 +1928,7 @@ async function loadFirebaseData() {
 }
 	
 // --------- FINAL: LAZY EXPORT FOR GAME SYSTEM TO CALL -----------
-async function addGameLogEntry(htmlString) {
+export async function addGameLogEntry(htmlString) {
   await addDoc(eventLogColl, {
     content: htmlString,
     manual: false,
@@ -1963,40 +1941,7 @@ async function addGameLogEntry(htmlString) {
 // Final: onload trigger
 window.onload = loadFirebaseData;
 </script>
-</head>
-<body>
-<div id="save-indicator" style="
-  position: fixed;
-  top: 12px;
-  right: 16px;
-  background: #222;
-  padding: 8px 12px;
-  font-size: 16px;
-  font-family: 'Nova Flat', sans-serif;
-  color: white;
-  border: 1px solid #555;
-  border-radius: 6px;
-  z-index: 9999;
-  box-shadow: 0 0 8px rgba(0,0,0,0.3);
-">☁️✅</div>
-<div class="top-toolbar" id="top-bar">
-<button class="top-button" id="toggle-spells" onclick="toggleSpellSection()" title="Feitiços">🪄</button>
-<button class="top-button" id="calculator-button" onclick="window.open('difficulty_calculator.html', 'CalculadoraDeDificuldade', 'width=1000,height=700,resizable=yes,scrollbars=yes')" title="Calculadora de Dificuldade">🧮</button>
-<button class="top-button" title="Relacionamentos">💞</button>
-<button class="top-button" title="Aprendizados">📚</button>
-<button class="top-button" onclick="window.open('uso_ambiente.html', 'UsoDoAmbiente', 'width=1000,height=700,resizable=yes,scrollbars=yes')" title="Uso do ambiente">🌎</button>
-<button class="top-button" title="Inventário">🎒</button>
-<button class="top-button" title="Filtro de Ações">❓</button>
-</div>
-<center><div class="spell-container" id="spells-area">
-<div style="display: grid; grid-template-columns: 880px 880px; gap: 30px; justify-content: center;">
-<!-- Lado A -->
-<div class="spell-side" id="spells-a" style="flex: 1;"></div>
-<!-- Lado B -->
-<div class="spell-side" id="spells-b" style="flex: 1;"></div>
-</div>
-</div></center>
-<!-- Script para autocomplete e preenchimento -->	
+	
 <table border="0" cellpadding="0" cellspacing="0" class="twocell-table">
 <tr>
 <!-- Character A Cell -->
@@ -2276,7 +2221,7 @@ window.onload = loadFirebaseData;
 <tr>
 <td colspan="2">
 <div class="slider-set" style="width: 300px;">
-<div class="slider-container">
+</style<div class="slider-container">
 <div class="separated"><span class="minititle">Medo</span><span>Raiva</span></div>
 <div class="emotion-bar" id="fear-anger-b"></div>
 
@@ -2409,5 +2354,6 @@ window.onload = loadFirebaseData;
   Turno atual: <input id="current-turn" min="1" style="width: 60px;" type="number" value="1"/>
 </div>
 <div id="event-log-container"></div>
+<!-- END -->
 </body>
 </html>
