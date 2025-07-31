@@ -593,9 +593,8 @@ body { background: #0F0F0F; color: whitesmoke;}
   margin: 6px 0;
 }
 .emotion-bar .block {
-  width: 32px; height: 5px;
+  width: 48px; height: 5px;
   background: #444;
-  border-radius: 3px;
   cursor: pointer;
 }
 .emotion-bar .block.neutral {
@@ -985,8 +984,29 @@ function setupDropdowns() {
     }
   }
 
-// === EMOTIONS HANDLING ===
+// --- LIVE FIELD BINDINGS ---
+["char_hp", "char_energy", "char_narrativepoints"].forEach(field => {
+  ["a", "b"].forEach(side => {
+    setupLiveCharField(field, side, "input", x => parseInt(x) || 0);
+  });
+});
 
+// Observations (free text)
+["a", "b"].forEach(side => {
+  setupLiveCharField("char_obs", side, "input", x => x);
+
+  // Toggle Obs textarea visibility
+  const toggleBtn = document.getElementById(`obs-toggle-${side}`);
+  const obsField = document.getElementById(`obs-field-${side}`);
+  if (toggleBtn && obsField) {
+    toggleBtn.addEventListener("click", () => {
+      obsField.style.display = obsField.style.display === "none" ? "block" : "none";
+    });
+  }
+});
+
+	
+// === EMOTIONS HANDLING ===
 // Update Firebase whenever emotion value changes
 async function updateEmotion(charId, leftField, rightField, leftVal, rightVal) {
   const ref = doc(db, "campaigns", "alpha", "characters_range", charId);
