@@ -1020,6 +1020,44 @@ function setupDropdowns() {
       actSelB.value = state.actionB; refreshB();
     }
   });
+}  // ✅ closes setupDropdowns
+
+
+  // --- Session state ---
+  async function updateSessionState() {
+    try {
+      const sessionStateRef = doc(db, "campaigns", "alpha", "session_state", "main");
+      await updateDoc(sessionStateRef, {
+        charA: charSelA.value,
+        charB: charSelB.value,
+        actionA: actSelA.value,
+        actionB: actSelB.value
+      });
+      showSaveIndicator("☁️ Sincronizado");
+    } catch (error) {
+      console.error("Error updating session state:", error);
+      showSaveIndicator("❌ Erro");
+    }
+  }
+
+  // --- Sync session_state across clients ---
+  const sessionStateRef = doc(db, "campaigns", "alpha", "session_state", "main");
+  onSnapshot(sessionStateRef, (snap) => {
+    if (!snap.exists()) return;
+    const state = snap.data();
+    if (state.charA && charSelA.value !== state.charA) {
+      charSelA.value = state.charA; refreshA();
+    }
+    if (state.charB && charSelB.value !== state.charB) {
+      charSelB.value = state.charB; refreshB();
+    }
+    if (state.actionA && actSelA.value !== state.actionA) {
+      actSelA.value = state.actionA; refreshA();
+    }
+    if (state.actionB && actSelB.value !== state.actionB) {
+      actSelB.value = state.actionB; refreshB();
+    }
+  });
 }
 
 
@@ -1233,8 +1271,6 @@ async function refreshB() {
 
   refreshA();
   refreshB();
-}
-
 	
 function getCharacterData(side) {
   // ID reverso do adversário
