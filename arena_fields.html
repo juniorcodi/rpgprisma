@@ -961,146 +961,117 @@ function setupDropdowns() {
       });
       showSaveIndicator("☁️ Sincronizado");
     } catch (error) {
-      if (error.code === 'not-found') {
-        try {
-          await setDoc(sessionStateRef, {
-            charA: charSelA.value,
-            charB: charSelB.value,
-            actionA: actSelA.value,
-            actionB: actSelB.value
-          });
-          showSaveIndicator("☁️ Sincronizado");
-        } catch (createError) {
-          console.error("Error creating session state:", createError);
-          showSaveIndicator("❌ Erro");
-        }
-      } else {
-        console.error("Error updating session state:", error);
-        showSaveIndicator("❌ Erro");
-      }
+      console.error("Error updating session state:", error);
+      showSaveIndicator("❌ Erro");
     }
   }
 
-// --- LIVE FIELD BINDINGS ---
-["char_hp", "char_energy", "char_narrativepoints"].forEach(field => {
+  // --- LIVE FIELD BINDINGS ---
+
+  // HP / Energy / Narrative Points
+  ["char_hp", "char_energy", "char_narrativepoints"].forEach(field => {
+    ["a", "b"].forEach(side => {
+      setupLiveCharField(field, side, "input", x => parseInt(x) || 0);
+    });
+  });
+
+  // Observations (free text)
   ["a", "b"].forEach(side => {
-    setupLiveCharField(field, side, "input", x => parseInt(x) || 0);
+    setupLiveCharField("char_obs", side, "input", x => x);
+
+    const toggleBtn = document.getElementById(`obs-toggle-${side}`);
+    const obsField = document.getElementById(`obs-field-${side}`);
+    if (toggleBtn && obsField) {
+      toggleBtn.addEventListener("click", () => {
+        obsField.style.display = obsField.style.display === "none" ? "block" : "none";
+      });
+    }
   });
-});
 
-// Observations (free text)
-["a", "b"].forEach(side => {
-  setupLiveCharField("char_obs", side, "input", x => x);
-
-  // Toggle Obs textarea visibility
-  const toggleBtn = document.getElementById(`obs-toggle-${side}`);
-  const obsField = document.getElementById(`obs-field-${side}`);
-  if (toggleBtn && obsField) {
-    toggleBtn.addEventListener("click", () => {
-      obsField.style.display = obsField.style.display === "none" ? "block" : "none";
+  // Dice/session state fields
+  ["diceamount", "fixedbonus"].forEach(field => {
+    ["a", "b"].forEach(side => {
+      setupSessionField(field, side, "input", x => parseInt(x) || 0);
     });
-  }
-});
-
-	
-// === EMOTIONS HANDLING ===
-// Update Firebase whenever emotion value changes
-async function updateEmotion(charId, leftField, rightField, leftVal, rightVal) {
-  const ref = doc(db, "campaigns", "alpha", "characters_range", charId);
-  const updateData = {
-    [leftField]: leftVal,
-    [rightField]: rightVal
-  };
-  await updateDoc(ref, updateData);
-  console.log("Updated emotions for", charId, updateData);
-}
-
-// Create one emotion bar (7 blocks: 3 left, 1 neutral, 3 right)
-function paintEmotionBlocks(bar, leftVal, rightVal, leftColor, rightColor) {
-  Array.from(bar.children).forEach((b) => {
-    const blockVal = parseInt(b.dataset.value);
-    b.style.background = "#444";
-
-    // Left side (blocks 1–3)
-    if (blockVal <= 3 && leftVal > 0 && (4 - blockVal) <= leftVal) {
-      b.style.background = leftColor;
-    }
-
-    // Right side (blocks 5–7)
-    if (blockVal >= 5 && rightVal > 0 && (blockVal - 4) <= rightVal) {
-      b.style.background = rightColor;
-    }
   });
-}
 
-async function createEmotionBar(charId, side, pairId, leftField, rightField, leftColor, rightColor) {
-  const bar = document.getElementById(`${pairId}-${side}`);
-  if (!bar) return;
+  // === EMOTIONS HANDLING ===
+  async function updateEmotion(charId, leftField, rightField, leftVal, rightVal) {
+    const ref = doc(db, "campaigns", "alpha", "characters_range", charId);
+    const updateData = { [leftField]: leftVal, [rightField]: rightVal };
+    await updateDoc(ref, updateData);
+    console.log("Updated emotions for", charId, updateData);
+  }
 
-  bar.innerHTML = ""; // clear old content
-
-  // Build blocks
-  for (let i = 1; i <= 7; i++) {
-    const block = document.createElement("span");
-    block.classList.add("block");
-    if (i === 4) block.classList.add("neutral");
-    block.dataset.value = i;
-    bar.appendChild(block);
-
-    block.addEventListener("click", async () => {
-      let leftVal = 0, rightVal = 0;
-      if (i <= 3) leftVal = 4 - i;      // 1→3, 2→2, 3→1
-      else if (i >= 5) rightVal = i - 4; // 5→1, 6→2, 7→3
-
-      paintEmotionBlocks(bar, leftVal, rightVal, leftColor, rightColor);
-      await updateEmotion(charId, leftField, rightField, leftVal, rightVal);
+  function paintEmotionBlocks(bar, leftVal, rightVal, leftColor, rightColor) {
+    Array.from(bar.children).forEach((b) => {
+      const blockVal = parseInt(b.dataset.value);
+      b.style.background = "#444";
+      if (blockVal <= 3 && leftVal > 0 && (4 - blockVal) <= leftVal) {
+        b.style.background = leftColor;
+      }
+      if (blockVal >= 5 && rightVal > 0 && (blockVal - 4) <= rightVal) {
+        b.style.background = rightColor;
+      }
     });
   }
 
-  // 🔥 Fetch current values from Firebase and paint correctly
-  const ref = doc(db, "campaigns", "alpha", "characters_range", charId);
-  const snap = await getDoc(ref);
-  if (snap.exists()) {
-    const data = snap.data();
-    const leftVal = data[leftField] || 0;
-    const rightVal = data[rightField] || 0;
-    paintEmotionBlocks(bar, leftVal, rightVal, leftColor, rightColor);
-  } else {
-    paintEmotionBlocks(bar, 0, 0, leftColor, rightColor);
+  async function createEmotionBar(charId, side, pairId, leftField, rightField, leftColor, rightColor) {
+    const bar = document.getElementById(`${pairId}-${side}`);
+    if (!bar) return;
+    bar.innerHTML = "";
+    for (let i = 1; i <= 7; i++) {
+      const block = document.createElement("span");
+      block.classList.add("block");
+      if (i === 4) block.classList.add("neutral");
+      block.dataset.value = i;
+      bar.appendChild(block);
+      block.addEventListener("click", async () => {
+        let leftVal = 0, rightVal = 0;
+        if (i <= 3) leftVal = 4 - i;
+        else if (i >= 5) rightVal = i - 4;
+        paintEmotionBlocks(bar, leftVal, rightVal, leftColor, rightColor);
+        await updateEmotion(charId, leftField, rightField, leftVal, rightVal);
+      });
+    }
+    const ref = doc(db, "campaigns", "alpha", "characters_range", charId);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const data = snap.data();
+      paintEmotionBlocks(bar, data[leftField] || 0, data[rightField] || 0, leftColor, rightColor);
+    }
   }
-}
 
-// Setup all four pairs for one side (a or b)
-function setupAllEmotionBars(charId, side) {
-  createEmotionBar(charId, side, "fear-anger", "char_fear", "char_anger", "teal", "tomato");
-  createEmotionBar(charId, side, "distrust-trust", "char_distrust", "char_trust", "purple", "deeppink");
-  createEmotionBar(charId, side, "stress-calm", "char_stress", "char_calm", "tomato", "purple");
-  createEmotionBar(charId, side, "guilt-satisf", "char_guilt", "char_satisf", "deeppink", "teal");
-}
+  function setupAllEmotionBars(charId, side) {
+    createEmotionBar(charId, side, "fear-anger", "char_fear", "char_anger", "teal", "tomato");
+    createEmotionBar(charId, side, "distrust-trust", "char_distrust", "char_trust", "purple", "deeppink");
+    createEmotionBar(charId, side, "stress-calm", "char_stress", "char_calm", "tomato", "purple");
+    createEmotionBar(charId, side, "guilt-satisf", "char_guilt", "char_satisf", "deeppink", "teal");
+  }
 
-function refreshA() {
-  setFields(charData.find(row => row.id === charSelA.value), actionData[actSelA.value], "-a");
-  updatePartialResult("a");
-  updateStatRanges("a");
-  setTimeout(() => {
-    applyActionVariableClasses("a");
-    applySimpleVariableClassesFromField("a");
-    setupDiceSection("a");
-    setupAllEmotionBars(charSelA.value, "a"); // NEW
-  }, 30);
-}
+  function refreshA() {
+    setFields(charData.find(row => row.id === charSelA.value), actionData[actSelA.value], "-a");
+    updatePartialResult("a");
+    updateStatRanges("a");
+    setTimeout(() => {
+      applyActionVariableClasses("a");
+      applySimpleVariableClassesFromField("a");
+      setupDiceSection("a");
+      setupAllEmotionBars(charSelA.value, "a");
+    }, 30);
+  }
 
-function refreshB() {
-  setFields(charData.find(row => row.id === charSelB.value), actionData[actSelB.value], "-b");
-  updatePartialResult("b");
-  updateStatRanges("b");
-  setTimeout(() => {
-    applyActionVariableClasses("b");
-    applySimpleVariableClassesFromField("b");
-    setupDiceSection("b");
-    setupAllEmotionBars(charSelB.value, "b"); // NEW
-  }, 30);
-}
+  function refreshB() {
+    setFields(charData.find(row => row.id === charSelB.value), actionData[actSelB.value], "-b");
+    updatePartialResult("b");
+    updateStatRanges("b");
+    setTimeout(() => {
+      applyActionVariableClasses("b");
+      applySimpleVariableClassesFromField("b");
+      setupDiceSection("b");
+      setupAllEmotionBars(charSelB.value, "b");
+    }, 30);
+  }
 
   charSelA.onchange = () => { refreshA(); updateSessionState(); };
   actSelA.onchange = () => { refreshA(); updateSessionState(); };
@@ -1111,7 +1082,7 @@ function refreshB() {
   refreshB();
 }
 
-
+	
 function getCharacterData(side) {
   // ID reverso do adversário
   const other = side === "a" ? "b" : "a";
@@ -1421,16 +1392,6 @@ function updateStatRanges(side) {
   hpRange.style.accentColor = "crimson";
   hpRange.classList.add("hp-slider-fill");
   updateSliderFill(hpRange, "crimson");
-  hpRange.oninput = function () {
-  const hpInput = document.getElementById('char_hp-' + side);
-  if (hpInput.tagName === "INPUT") {
-    hpInput.value = this.value;
-  } else {
-    hpInput.textContent = this.value;
-  }
-  updateSliderFill(this, "crimson");
-  hpInput.dispatchEvent(new Event("input", { bubbles: true })); // 🔥 trigger Firebase save
-};
 
   // Energy - read from input field
   const energyEl = document.getElementById('char_energy-' + side);
@@ -1443,15 +1404,27 @@ function updateStatRanges(side) {
   energyRange.style.accentColor = "#FDA528";
   energyRange.classList.add("energy-slider-fill");
   updateSliderFill(energyRange, "#FDA528");
- energyRange.oninput = function () {
-  const energyInput = document.getElementById('char_energy-' + side);
+	
+hpRange.oninput = function () {
+  const hpInput = document.getElementById("char_hp-" + side);
+  if (hpInput.tagName === "INPUT") {
+    hpInput.value = this.value;
+    hpInput.dispatchEvent(new Event("input", { bubbles: true })); // 🔥 trigger Firebase update
+  } else {
+    hpInput.textContent = this.value;
+  }
+  updateSliderFill(this, "crimson");
+};
+
+energyRange.oninput = function () {
+  const energyInput = document.getElementById("char_energy-" + side);
   if (energyInput.tagName === "INPUT") {
     energyInput.value = this.value;
+    energyInput.dispatchEvent(new Event("input", { bubbles: true })); // 🔥 trigger Firebase update
   } else {
     energyInput.textContent = this.value;
   }
   updateSliderFill(this, "#FDA528");
-  energyInput.dispatchEvent(new Event("input", { bubbles: true })); // 🔥 trigger Firebase save
 };
 
 }
