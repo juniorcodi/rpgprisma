@@ -1986,7 +1986,7 @@ async function loadFirebaseData() {
 }
 	
 // --------- FINAL: LAZY EXPORT FOR GAME SYSTEM TO CALL -----------
-export async function addGameLogEntry(htmlString) {
+async function addGameLogEntry(htmlString) {
   await addDoc(eventLogColl, {
     content: htmlString,
     manual: false,
