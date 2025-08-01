@@ -61,6 +61,12 @@ body { background: #0F0F0F; color: whitesmoke;}
 	margin-bottom: 3px;
 	font-family: 'Faculty Glyphic';
 }
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nova+Flat&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Faculty+Glyphic&display=swap" rel="stylesheet">
+	
 	
     .slider-set {
       width: 340px;
@@ -213,7 +219,26 @@ body { background: #0F0F0F; color: whitesmoke;}
   border: none;
 }
 
-	.autocomplete-suggestions div:hover {
+.autocomplete-suggestions {
+  border: 1px solid #444;
+  background: #222;
+  position: absolute;
+  z-index: 9999;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.autocomplete-suggestions div {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.autocomplete-suggestions div:hover {
+  background: #333;
+}
+
+	
+.autocomplete-suggestions div:hover {
   background: #333;
 }
 	
@@ -456,7 +481,7 @@ body { background: #0F0F0F; color: whitesmoke;}
 		padding: 5px;
 	}
 	.partial-result {
-		background: yellow;
+		background: #343434;
 	}
 	.special-dice-box {
 		border: solid 2px gray;
@@ -946,10 +971,10 @@ function setupDropdowns() {
   const actSelB = document.getElementById("action-select-b");
 
   // Populate dropdowns
-  charSelA.innerHTML = charData.map(row => `<option value="${row.id}">${row.char_name}</option>`).join("");
-  charSelB.innerHTML = charData.map(row => `<option value="${row.id}">${row.char_name}</option>`).join("");
-  actSelA.innerHTML = actionData.map((row, i) => `<option value="${i}">${row.action}</option>`).join("");
-  actSelB.innerHTML = actionData.map((row, i) => `<option value="${i}">${row.action}</option>`).join("");
+  charSelA.innerHTML = charData.map(row => `<option class="autocomplete-suggestions" value="${row.id}">${row.char_name}</option>`).join("");
+  charSelB.innerHTML = charData.map(row => `<option class="autocomplete-suggestions" value="${row.id}">${row.char_name}</option>`).join("");
+  actSelA.innerHTML = actionData.map((row, i) => `<option class="autocomplete-suggestions" value="${i}">${row.action}</option>`).join("");
+  actSelB.innerHTML = actionData.map((row, i) => `<option class="autocomplete-suggestions" value="${i}">${row.action}</option>`).join("");
 
   // --- LIVE FIELD BINDINGS ---
   ["char_hp", "char_energy", "char_narrativepoints"].forEach(field => {
